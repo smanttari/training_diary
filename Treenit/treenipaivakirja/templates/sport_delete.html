@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Treenipäiväkirja | Poista laji{% endblock %}
+
+{% block header %}POISTA LAJI{% endblock %}
+
+{% load widget_tweaks %}
+
+
+{% block content %}
+
+<div class="mt-2">
+    <div class="col-lg-6">
+        <div class="alert alert-info" role="alert">
+        Haluatko varmasti poistaa lajin "<b>{{ sport_name }}</b>"?
+        </div>
+        {% if messages %}
+            {% for message in messages %}<p class="text-danger">{{message}}</p>{% endfor %} 
+        {% else %}  
+        {% endif %}
+        <form method="post">{% csrf_token %}
+            <button class="btn btn-primary mr-2 mt-2" name="confirm" type="submit" value="yes" {{ btn_status }}>Kyllä</button>
+            <button class="btn btn-primary mr-2 mt-2" name="confirm" type="submit" value="no">Ei</button>
+        </form>
+    </div>
+</div>
+
+
+
+{% endblock %}

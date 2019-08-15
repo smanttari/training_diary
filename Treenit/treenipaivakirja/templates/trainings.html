@@ -1,0 +1,310 @@
+{% extends "base_generic.html" %}
+{% block title %}Treenipäiväkirja | Harjoitukset{% endblock %}
+{% load l10n %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block header %}
+
+HARJOITUKSET
+<a href="{% url 'training_add' %}" class="btn btn-success btn-sm float-right mr-3" role="button" aria-pressed="true"> <i class="fa fa-plus mr-2"></i> Lisää uusi harjoitus</a>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+
+    <div class="bg-light border mb-2 p-2 pb-3">
+        <form class="form-inline mt-2" method="get">
+
+            <div class="form-group ml-2 mr-1">
+                <label class="text-muted mr-2" for="startdate">Aikaväli:</label>
+                <input class="form-control form-control ml-2" id="startdate" name="startdate" pattern="\d{1,2}.\d{1,2}.\d{4}" placeholder="dd.mm.yyyy" required/>
+            </div>
+
+            <div class="form-group ml-1 mr-3">
+                <label class="text-muted" for="enddate">-</label>
+                <input class="form-control form-control ml-2" id="enddate" name="enddate" pattern="\d{1,2}.\d{1,2}.\d{4}" placeholder="dd.mm.yyyy" required/>
+            </div>
+
+            <div class="form-group ml-3 mr-3">
+                <label class="text-muted mr-2" for="laji">Laji:</label>
+                <select class="form-control form-control" id="sport" name="sport">
+                    {% for group,items in sports.items %}
+                        <option class="font-weight-bold" type="submit" value="{{ group }}" {% ifequal group sport %} selected {% endifequal %}>{{ group }}</option>
+                        {% for item in items %}
+                            <option type="submit" value="{{ item }}" {% ifequal item sport %} selected {% endifequal %}>&nbsp;&nbsp;&nbsp;{{ item }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm ml-3 mr-3 mb-2 mt-2" name="search" id="search"><i class="fa fa-search pr-2"></i>Hae</button>
+            
+            <div class="dropdown">
+                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="download_menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-download mr-2"></i>Lataa
+                </button>
+                <div class="dropdown-menu" aria-labelledby="download_menu">
+                    <button name="export" class="dropdown-item" type="submit" value="csv">CSV</button>
+                    <button name="export" class="dropdown-item" type="submit" value="xls">Excel</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+<form method="get">
+
+<div class="mt-4">
+
+    <div class="table-responsive">
+
+    <table id="treenit" class="table table-sm">
+    <thead class="thead-light">
+        <tr class="text-nowrap">
+        {% for header in trainings_headers %}
+            {% if header == 'edit' %}
+            <th></th>
+            {% elif header == 'delete' %}
+            <th></th>
+            {% else %}
+            <th class="pl-3 pr-3">{{ header }}</th>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for id,row in trainings_dict.items %}
+        <tr>
+            {% for column,value in row.items %}
+            {% if column == 'edit' and value != '' %}
+            <td class="pr-3"><a href="{% url 'training_modify' value  %}"><i class="far fa-edit"></i></a></td>
+            {% elif column == 'delete' and value != '' %}
+            <td class="pr-3"><a href="{% url 'training_delete' value  %}"><i class="far fa-trash-alt"></i></a></td>
+            {% elif column == 'Kommentti' %}
+            <td class="pl-3 pr-3">{{ value }}</td>
+            {% else %}
+            <td class="text-nowrap pl-3 pr-3">{{ value }}</td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+        <tfoot class="thead-light">
+        <tr class="text-nowrap">
+            {% for header in trainings_headers %}
+            <th></th>
+            {% endfor %}
+        </tr>
+        </tfoot>
+    </table>
+
+    </div>
+
+</div>
+
+</form>
+
+</div>
+
+<div id="messages" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h6 class="modal-title"><i class="fas fa-info-circle"></i> {{ message_header }}</h6>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                {% for message in messages %}
+                <p>{{ message|safe }}</p>
+                {% endfor %}
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Sulje</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+
+$(window).on('load',function(){
+    {% if messages %}
+        $('#messages').modal('show');
+    {% endif %}
+})
+
+// activate nav item
+document.getElementById("trainings").classList.add('active')
+
+
+// Datepickers
+var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+$('#startdate').datepicker({
+    uiLibrary: 'bootstrap4',
+    calendarWeeks: true,
+    format: 'dd.mm.yyyy',
+    header: true,
+    iconsLibrary: 'fontawesome',
+    showOtherMonths: true,
+    selectOtherMonths: true,
+    weekStartDay: 1,
+    width: 190,
+    value: '{{ startdate }}',
+    maxDate: function () {
+        return $('#enddate').val();
+    }
+});
+$('#enddate').datepicker({
+    uiLibrary: 'bootstrap4',
+    calendarWeeks: true,
+    format: 'dd.mm.yyyy',
+    header: true,
+    iconsLibrary: 'fontawesome',
+    showOtherMonths: true,
+    selectOtherMonths: true,
+    weekStartDay: 1,
+    width: 190,
+    value: '{{ enddate }}',
+    minDate: function () {
+        return $('#startdate').val();
+    }
+});
+
+
+
+// Datatables
+$(document).ready(function() {
+    $('#treenit').DataTable( {
+
+    "searching": true,
+    "ordering":  true,
+    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Kaikki"]],
+    "autoWidth": false,
+    "order": [],
+    "lengthChange": true,
+    "language": {
+        search: "Etsi:",
+        lengthMenu: "Näytä _MENU_ per sivu",
+        paginate: {
+            previous: "Edellinen",
+            next: "Seuraava",
+        },
+        info: "_START_ - _END_ / _TOTAL_",
+        thousands: " ",
+        decimal: ",",
+        emptyTable: "Ei harjoituksia",
+        infoEmpty:      "0 - 0 / 0",
+        infoFiltered:   "(yhteensä _MAX_)",
+        zeroRecords:    "Ei harjoituksia",
+    },
+
+    "columnDefs": [{ "orderable": false, "targets": [0,1] }],
+
+    "footerCallback": function ( row, data, start, end, display ) {
+        var api = this.api(), data;
+
+        // Remove the formatting to get numeric data for summation
+        function intVal(i) {
+            if (typeof i === 'string' ) {
+                x = i.replace('-','0').replace(',','.')*1
+            }
+            else if (typeof i === 'number' ) {
+                x = i
+            }
+            else {
+              x = 0
+            }
+            return x
+        };
+
+        function round(value, decimals) {
+          return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+        }
+
+        // convert "{}h {}min" to decimal
+        function timeToDecimal(time){
+            if (typeof time === 'string' ) {
+                hIndex = time.indexOf('h')
+                minIndex = time.indexOf('min')
+                var h = 0
+                var min = 0
+                if (hIndex != -1){
+                    h = time.slice(0,hIndex).trim()
+                }
+                if (minIndex != -1){
+                    min = time.slice(hIndex+1,minIndex).trim()
+                }
+                return parseInt(h) + parseInt(min)/60.0
+            }
+            else if (typeof time === 'number' ) {
+                return time
+            }
+            else {
+                return 0
+            }
+        }
+
+        // Total over all pages
+        kesto_total = api
+            .column(5)
+            .data()
+            .reduce( function (a, b) {
+                return timeToDecimal(a) + timeToDecimal(b);
+            }, 0 );
+
+        matka_total = api
+            .column(7)
+            .data()
+            .reduce( function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0 );
+
+        // Total over this page
+        kesto_page_total = api
+            .column(5, { page: 'current'} )
+            .data()
+            .reduce( function (a, b) {
+                return timeToDecimal(a) + timeToDecimal(b);
+            }, 0 );
+
+        matka_page_total = api
+            .column(7, { page: 'current'} )
+            .data()
+            .reduce( function (a, b) {
+                return intVal(a) + intVal(b);
+            }, 0 );
+
+        $( api.column(0).footer() ).html('Yht.');
+        $( api.column(5).footer() ).html(round(kesto_page_total,1) + ' / '+  round(kesto_total,1) + 'h');
+        $( api.column(7).footer() ).html(round(matka_page_total,1) + ' / '+  round(matka_total,1) + 'km');
+
+        }
+    } ); 
+    } );
+
+
+// Background color for 'Lepo' rows
+let lepoRows = []
+let table = document.getElementById('treenit')
+let rows = table.rows 
+for(i = 0; i < rows.length; i++){  
+    let sport = rows[i].cells[4].innerHTML
+    if (sport == 'Lepo'){
+        lepoRows.push(i)
+    }
+}
+
+for (i = 0; i < lepoRows.length; i++){
+    rows[lepoRows[i]].style.backgroundColor = '#edfcfc' //'#f7ebeb'
+}
+
+</script>
+
+{% endblock %}

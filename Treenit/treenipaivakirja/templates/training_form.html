@@ -1,0 +1,358 @@
+{% extends "base_generic.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block header %}{{ page_header }}{% endblock %}
+
+{% load widget_tweaks %}
+
+
+{% block content %}
+
+<div class="mt-3">
+
+    <form method="post">{% csrf_token %}
+        <fieldset>
+            
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.pvm.label }}</b></label> 
+                <div class="col-md-3">{{ harjoitus_form.pvm|add_class:'form-control' }}</div>
+                {% if harjoitus_form.pvm.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.pvm.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.pvm.help_text }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"></label> 
+                <div class="col-md-3">
+                    {% for radio in harjoitus_form.vuorokaudenaika %}
+                        <div class="form-check form-check-inline">{{ radio }}</div>
+                    {% endfor %}
+                </div>
+                {% if harjoitus_form.vuorokaudenaika.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.vuorokaudenaika.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.vuorokaudenaika.help_text }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.laji_fk.label }}</b></label> 
+                <div class="col-md-2">{{ harjoitus_form.laji_fk|add_class:'form-control' }}</div>
+                <div class="col-md-3"><a class="nav-link" href="{% url 'sport_add' %}"> <i class="fa fa-plus"></i> Lisää laji</a></div>
+                {% if harjoitus_form.laji_fk.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.laji_fk.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.laji_fk.help_text }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>Kesto</b></label> 
+                <div class="input-group col-md-3">
+                    {{ harjoitus_form.kesto_h|add_class:'form-control' }}
+                    {{ harjoitus_form.kesto_min|add_class:'form-control' }}
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">h</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.keskisyke.label }}</b></label> 
+                <div class="col-md-3">{{ harjoitus_form.keskisyke|add_class:'form-control' }}</div>
+                {% if harjoitus_form.keskisyke.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.keskisyke.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.keskisyke.help_text }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>Matka</b></label> 
+                <div class="input-group col-md-3">
+                        {{ harjoitus_form.matka|add_class:'form-control' }}
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">km</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>Vauhti</b></label> 
+                <div class="input-group col-md-3">
+                        {{ harjoitus_form.vauhti_km_h|add_class:'form-control' }}
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">km/h</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b></b></label> 
+                <div class="input-group col-md-3">
+                        {{ harjoitus_form.vauhti_min|add_class:'form-control' }}
+                        {{ harjoitus_form.vauhti_s|add_class:'form-control' }}
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">min/km</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.kalorit.label }}</b></label> 
+                <div class="col-md-2">{{ harjoitus_form.kalorit|add_class:'form-control' }}</div>
+                {% if harjoitus_form.kalorit.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.kalorit.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.kalorit.help_text }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>Nousu</b></label> 
+                <div class="input-group col-md-2">
+                        {{ harjoitus_form.nousu|add_class:'form-control' }}
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">m</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.tuntuma.label }}</b></label> 
+                <div class="col-md-2">{{ harjoitus_form.tuntuma|add_class:'form-control' }}</div>
+                {% if harjoitus_form.tuntuma.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.tuntuma.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.tuntuma.help_text }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.kommentti.label }}</b></label> 
+                <div class="col-md-4">{{ harjoitus_form.kommentti|add_class:'form-control' }}</div>
+                {% if harjoitus_form.kommentti.errors %}
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.kommentti.errors %}{{ error }}{% endfor %}</div>
+                {% else %}
+                    <div class="col-md-4 text-muted small">{{ harjoitus_form.kommentti.help_text }}</div>
+                {% endif %}
+            </div>       
+        
+            {{ tehot_formset.management_form }}
+        
+            <div class="row">
+                <div class="col-md-10 border-bottom ml-3 mt-4 mb-3">
+                    <h5>Tehot</h5>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.nro.label }}</b></div>
+                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.teho.label }}</b></div>
+                <div class="form-group col-md-2 ml-2"><b>Kesto</b></div>
+                <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.kesto.label }}</div>
+                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.keskisyke.label }}</b></div>
+                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.maksimisyke.label }}</b></div>
+                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.matka.label }} (km)</b></div>
+                <div class="form-group col-md-2 ml-2"><b>Vauhti</b></div>
+                <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.vauhti_min_km.label }}</div>
+                <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.vauhti_km_h.label }}</div>
+            </div>
+
+            {% for form in tehot_formset %}
+            <div id="tehot_{{forloop.counter0}}" class="collapse hide">
+                <div class="form-row">
+                    <div class="form-group col-md-1">
+                        {{ form.nro|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-1 ml-2">
+                        {{ form.teho|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-2 ml-2">
+                        <div class="input-group">
+                            {{ form.kesto_h|add_class:'form-control' }}
+                            {{ form.kesto_min|add_class:'form-control' }}
+                        </div>
+                    </div>
+                    <div class="form-group col-md-1 ml-2" hidden>
+                        {{ form.kesto|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-1 ml-2">
+                        {{ form.keskisyke|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-1 ml-2">
+                        {{ form.maksimisyke|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-1 ml-2">
+                        {{ form.matka|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-3 ml-2">
+                        <div class="input-group">
+                                {{ form.vauhti_min|add_class:'form-control' }}
+                                {{ form.vauhti_s|add_class:'form-control' }}
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">min/km</span>
+                            </div>
+                        </div> 
+                    </div>
+                    <div class="form-group col-md-1 ml-2" hidden>
+                        {{ form.vauhti_min_km|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-1 ml-2" hidden>
+                        {{ form.vauhti_km_h|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group col-md-1 ml-2">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#tehot_{{forloop.counter0}}" id="poista_tehot_{{forloop.counter0}}" name="poista_tehot_{{forloop.counter0}}" onclick="deleteTehot(this.id)"><i class="far fa-trash-alt"></i></button> 
+                    </div> 
+                    {% if tehot_formset.can_delete %}
+                    <div class="form-check mt-1">
+                        {{ form.DELETE }}  
+                    </div>
+                    {% endif %} 
+                </div>
+                {% for field in form.hidden_fields %}
+                {{ field }}
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        <button type="button" class="btn btn-link text-decoration-none mb-1" onclick="addTehot()"><i class="fa fa-plus"></i> Lisää tehot</button>
+        <div class="form-actions mt-5 col-6">
+            <button type="submit" id="save" name="save" class="btn btn-success mr-3" onclick="calculateKesto();calculateVauhtiMinKm();calculateVauhtiKmH();">Tallenna</button>
+            <a class="btn btn-danger" href="{% url 'trainings' %}" role="button">Peruuta</a>
+        </div>
+        <br><br>
+    </form>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+
+$(window).on('load',function(){
+    showTehot()
+    splitVauhtiMinKm()
+})
+
+
+// activate nav item
+document.getElementById("trainings").classList.add('active')
+
+
+let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+$('#id_pvm').datepicker({
+    uiLibrary: 'bootstrap4',
+    calendarWeeks: true,
+    format: 'dd.mm.yyyy',
+    header: true,
+    iconsLibrary: 'fontawesome',
+    showOtherMonths: true,
+    selectOtherMonths: true,
+    weekStartDay: 1,
+    width: 160,
+})
+
+
+function deleteTehot(id){
+    let number = id.split('_').pop()
+    let checkbox = document.getElementById("id_tehot_set-" + number + "-DELETE")
+    if (checkbox){
+        checkbox.checked = true
+        document.getElementById("id_tehot_set-" + number + "-nro").required = false
+    }
+}
+
+function addTehot(){
+    let id = 0
+    let max_count = {{max_count}}
+    while (id < max_count) {
+        let tehot = document.getElementById("tehot_" + id)
+        let deleteCheckbox = document.getElementById("id_tehot_set-" + id + "-DELETE")
+        let isDeleted = false
+        if (deleteCheckbox){
+            isDeleted = deleteCheckbox.checked
+        }
+        let isHidden = $("#tehot_" + id).is(":hidden")
+        if (isHidden && !(isDeleted)){
+            $('#tehot_' + id).collapse('show')
+            $('#id_tehot_set-' + id + '-nro').prop('required',true)
+            break
+        }
+        id++
+    }
+}
+
+function showTehot(){
+    let id = 0
+    let max_count = {{max_count}}
+    while (id < max_count) {
+        let nro = document.getElementById("id_tehot_set-" + id + "-nro").value
+        let deleteCheckbox = document.getElementById("id_tehot_set-" + id + "-DELETE")
+        deleteCheckbox.style.display = "none"
+        if (nro != ""){ 
+            $('#tehot_' + id).collapse('show')
+            $('#id_tehot_set-' + id + '-nro').prop('required',true)
+            }
+        id++
+    }
+}
+
+function calculateKesto(){
+    let id = 0
+    let max_count = {{max_count}}
+    while (id < max_count) {
+        let kesto_h = document.getElementById("id_tehot_set-" + id + "-kesto_h").value
+        let kesto_min = document.getElementById("id_tehot_set-" + id + "-kesto_min").value
+        if (kesto_h != "" || kesto_min != ""){
+            if (kesto_h == "") {kesto_h = 0}
+            if (kesto_min == "") {kesto_min = 0}
+            let kesto = parseInt(kesto_h) + parseInt(kesto_min)/60.0
+            kesto = Math.round(kesto * 100) / 100
+            document.getElementById("id_tehot_set-" + id + "-kesto").value = kesto
+        }
+        id++
+    }
+}
+
+function calculateVauhtiMinKm(){
+    let id = 0
+    let max_count = {{max_count}}
+    while (id < max_count) {
+        let vauhti_min = document.getElementById("id_tehot_set-" + id + "-vauhti_min").value
+        let vauhti_s = document.getElementById("id_tehot_set-" + id + "-vauhti_s").value
+        if (vauhti_min != "" || vauhti_s != ""){
+            if(vauhti_min == "") {vauhti_min = 0}
+            if(vauhti_s == "") {vauhti_s = 0}
+            let vauhti_min_km = parseInt(vauhti_min) + parseInt(vauhti_s)/60.0
+            vauhti_min_km = Math.round(vauhti_min_km * 100) / 100
+            document.getElementById("id_tehot_set-" + id + "-vauhti_min_km").value = vauhti_min_km
+        }
+        id++
+    }
+}
+
+function splitVauhtiMinKm(){
+    let id = 0
+    let max_count = {{max_count}}
+    while (id < max_count) {
+        let vauhti_min_km = document.getElementById("id_tehot_set-" + id + "-vauhti_min_km").value
+        if (vauhti_min_km != ""){
+            let vauhti_min = Math.floor(vauhti_min_km)
+            let vauhti_s = Math.round((vauhti_min_km - vauhti_min) * 60.0)
+            document.getElementById("id_tehot_set-" + id + "-vauhti_min").value = vauhti_min
+            document.getElementById("id_tehot_set-" + id + "-vauhti_s").value = vauhti_s
+        }
+        id++
+    }
+}
+
+function calculateVauhtiKmH(){
+    let id = 0
+    let max_count = {{max_count}}
+    while (id < max_count) {
+        let vauhti_min_km = document.getElementById("id_tehot_set-" + id + "-vauhti_min_km").value
+        if (vauhti_min_km != ""){
+            let vauhti_km_h = Math.round(60.0/vauhti_min_km * 100) / 100
+            document.getElementById("id_tehot_set-" + id + "-vauhti_km_h").value = vauhti_km_h
+        }
+        id++
+    }
+}
+
+</script>
+
+{% endblock %}

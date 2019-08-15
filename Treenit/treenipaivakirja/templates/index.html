@@ -1,0 +1,128 @@
+{% extends "base_generic.html" %}
+{% block title %}Treenipäiväkirja{% endblock %}
+
+{% load l10n %}
+
+{% block head %}
+
+{% endblock %}
+
+
+{% block header %}TREENIPÄIVÄKIRJA{% endblock %}
+
+{% block content %}
+
+<div class="container mb-3 mt-2 border-bottom">
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-5">
+      <ul class="list-inline">
+        <li class="list-inline-item"><p class="text-muted">Kuluvana vuonna yhteensä</p></li>
+        <li class="list-inline-item"><h1 class="display-4 text-primary">{{ training_hours_total }}</h1></li>
+        <li class="list-inline-item"><p class="text-muted">tuntia</p></li>
+      </ul>
+    </div>
+    <div class="col-sm-5">
+      <ul class="list-inline">
+        <li class="list-inline-item"><p class="text-muted">Keskimäärin</p></li>
+        <li class="list-inline-item"><h1 class="display-4 text-primary">{{ trainings_per_week_avg }}</h1></li>
+        <li class="list-inline-item"><p class="text-muted">tuntia/viikko</p></li>
+      </ul>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+
+</div>
+
+
+<div class="container-fluid mb-2 mt-5">
+
+  <div class="row mr-4 ml-4">
+    <div class="col-lg-1"></div>
+    <div class="col-lg-4 mb-4">
+      <h4 class="mb-4"><small>Viimeisimmät harjoituksesi</small></h4>
+      <table class="table table-sm table-bordered" id="treenit">
+        <thead class="thead-light">
+          <tr>
+            {% for header in trainings_latest_cols %}
+              <th>{{ header }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+            {% if trainings_latest|length == 0 %}
+              <tr><td class="text-center" colspan="{{trainings_latest_cols|length}}"><small>Ei harjoituksia</small></td></tr>
+            {% else %}
+              {% for row in trainings_latest %}
+              <tr>{% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>
+              {% endfor %}
+            {% endif %}
+        </tbody>
+      </table>
+      <p class="small"><a href="{% url 'trainings' %}">Katso kaikki <i class="fas fa-arrow-right"></i></a></p>
+      </div>
+    <div class="col-lg-1"></div>
+    <div class="col-lg-5">
+      <h4 class="mb-4"><small>Harjoitustunnit viikoittain</small></h4>
+      <div id="chart_trainings_per_week"></div>
+    </div>
+    <div class="col-lg-1"></div>
+  </div>
+
+</div>
+
+
+<script>
+
+    // activate nav item
+    document.getElementById("index").classList.add('active')
+
+    // enable Bootstrap tooltips
+    $(function () {$('[data-toggle="tooltip"]').tooltip()})
+  
+    // load data
+    let trainingsPerWeek = {{ trainings_per_week_json|safe }}
+
+    // draw charts
+    drawTrainingsPerWeek()
+
+    function drawTrainingsPerWeek(){
+      let div = 'chart_trainings_per_week'
+      let data = trainingsPerWeek
+      let options = {
+        type:'bar',
+        serietype:{1:'line'},
+        width: 550,
+        height: 200,
+        margin: {top: 10, bottom: 20, left: 30, right: 120},
+        colors: ['#4BA6FF','#4f616e'],
+        line: {width: 1.5},
+        grid: true,
+        tooltip: true,
+        yaxis: {font: {size:10}, min:0},
+        circle: {radius: 3, display: false},
+        legend: {coord: {x: 450, y: 10}},
+        ticks: {count: data.length/2},
+        responsiveness: true
+        }
+        drawComboChart(div,data,options)
+    }
+
+    let heatmap = {10:'#a4f173',9:'#b6f18d',8:'#c6f2a7',7:'#d5f1bf',6:'#e3f1d8',
+      5:'#f1f1f1',4:'#f4e4dd',3:'#f6d8ca',2:'#f7ccb8',1:'#f7bfa5'}
+
+    let table = document.getElementById('treenit')
+    let rows = table.rows 
+    if (rows.length > 2){
+      for(i = 1; i < rows.length; i++){  
+        let cell = rows[i].cells[3] 
+        let tuntuma = cell.innerHTML
+        cell.style.backgroundColor = heatmap[tuntuma]
+        cell.style.textAlign = 'right'
+      }
+    }
+
+</script>
+ 
+
+{% endblock %}
