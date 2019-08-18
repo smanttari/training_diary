@@ -59,10 +59,10 @@
             {% endif %}
         </tbody>
       </table>
-      <p class="small"><a href="{% url 'trainings' %}">Katso kaikki <i class="fas fa-arrow-right"></i></a></p>
+      <p><a href="{% url 'trainings' %}">Katso kaikki <i class="fas fa-arrow-right"></i></a></p>
       </div>
     <div class="col-lg-1"></div>
-    <div class="col-lg-5">
+    <div class="col-lg-4">
       <h4 class="mb-4"><small>Harjoitustunnit viikoittain</small></h4>
       <div id="chart_trainings_per_week"></div>
     </div>
@@ -92,8 +92,8 @@
       let options = {
         type:'bar',
         serietype:{1:'line'},
-        width: 550,
-        height: 200,
+        width: 600,
+        height: 250,
         margin: {top: 10, bottom: 20, left: 30, right: 120},
         colors: ['#4BA6FF','#4f616e'],
         line: {width: 1.5},
@@ -101,7 +101,7 @@
         tooltip: true,
         yaxis: {font: {size:10}, min:0},
         circle: {radius: 3, display: false},
-        legend: {coord: {x: 450, y: 10}},
+        legend: {coord: {x: 500, y: 10}},
         ticks: {count: data.length/2},
         responsiveness: true
         }

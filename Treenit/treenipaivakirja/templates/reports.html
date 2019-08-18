@@ -397,8 +397,8 @@
     let options = {
       type:'bar',
       barlabel: {size:10, color:'#fff'},
-      width: 600,
-      height: 300,
+      width: 800,
+      height: 400,
       margin: {top: 40, bottom: 50, left: 40, right: 40},
       xaxis: {font: {size:10}, orientation: 'horizontal'},
       yaxis: {font: {size:10}, min:0},
@@ -421,8 +421,8 @@
     let options = {
       type:'bar',
       barlabel: {size:10, color:'#fff'},
-      width: 600,
-      height: 300,
+      width: 800,
+      height: 400,
       margin: {top: 40, bottom: 50, left: 40, right: 40},
       xaxis: {font: {size:10}, orientation: 'horizontal'},
       yaxis: {font: {size:10}, min:0},
@@ -447,8 +447,8 @@
     let options = {
       type:'bar',
       barlabel: {size:10, color:'#fff'},
-      width: 600,
-      height: 300,
+      width: 800,
+      height: 400,
       margin: {top: 40, bottom: 50, left: 40, right: 60},
       xaxis: {font: {size:10}, orientation: 'skew'},
       yaxis: {font: {size:10}, min:0},
@@ -471,8 +471,8 @@
     let data = filterByYear(hoursPerWeek,year)
     let options = {
       type:'bar',
-      width: 600,
-      height: 300,
+      width: 800,
+      height: 400,
       margin: {top: 40, bottom: 50, left: 40, right: 60},
       xaxis: {font: {size:10}, orientation: 'horizontal'},
       yaxis: {font: {size:10}, min:0},
@@ -495,14 +495,14 @@
     let div = 'chart_hours_per_sport'
     let data = filterByYear(hoursPerSport,year)
     let options = {
-      width: 600,
-      height: 300,
+      width: 800,
+      height: 400,
       margin: {top: 40, bottom: 40, left: 40, right: 100},
       colors: ['#4ba6ff','#969efc','#c995ed','#ed8ed6','#ff8cba','#ff919d','#ff9c84','#ffab71'],
       tooltip: {prefix:"", suffix:"h"},
-      radius: {inner: 20, outer: 120},
+      radius: {inner: 20, outer: 150},
       slicelabel: {size:10, color: '#FFF', threshold: 0.07},
-      legend: {coord: {x: 510, y: 50}, font: {size: 10}},
+      legend: {coord: {x: 600, y: 50}, font: {size: 10}},
       maxSliceCount: 8,
       responsiveness: true
       }
@@ -528,14 +528,14 @@ function drawHoursPerSportGroup(){
   let div = 'chart_hours_per_sport'
   let data = filterByYear(hoursPerSportGroup,year)
   let options = {
-    width: 600,
-    height: 300,
+    width: 800,
+    height: 400,
     margin: {top: 40, bottom: 40, left: 40, right: 100},
     colors: ['#4ba6ff','#969efc','#c995ed','#ed8ed6','#ff8cba','#ff919d','#ff9c84','#ffab71'],
     tooltip: {prefix:"", suffix:"h"},
-    radius: {inner: 20, outer: 120},
+    radius: {inner: 20, outer: 150},
     slicelabel: {size:10, color: '#FFF', threshold: 0.07},
-    legend: {coord: {x: 510, y: 50}, font: {size: 10}},
+    legend: {coord: {x: 600, y: 50}, font: {size: 10}},
     maxSliceCount: 8,
     responsiveness: true
     }
@@ -551,9 +551,9 @@ function drawHoursPerSportGroup(){
     let options = {
       type:'bar',
       barlabel: {size: 10, color: '#fff'},
-      width: 600,
-      height: 300,
-      margin: {top: 40, bottom: 60, left: 40, right: 70},
+      width: 800,
+      height: 400,
+      margin: {top: 40, bottom: 60, left: 40, right: 100},
       xaxis: {font: {size:10}, orientation: 'skew'},
       yaxis: {font: {size:10}, min:0},
       colors: ['#c995ed','#4BA6FF'],
@@ -561,7 +561,7 @@ function drawHoursPerSportGroup(){
       grid: true,
       tooltip: {suffix:" h"},
       animation: {duration: 500, delay: 20},
-      legend: {coord: {x: 550, y: 50}, font: {size: 10}},
+      legend: {coord: {x: 730, y: 50}, font: {size: 10}},
       responsiveness: true
       }
       drawComboChart(div,data,options)
@@ -578,8 +578,8 @@ function drawHoursPerYearPerSport(){
   let options = {
     type:'bar',
     barlabel: {size:10, color:'#fff'},
-    width: 600,
-    height: 300,
+    width: 800,
+    height: 400,
     margin: {top: 40, bottom: 60, left: 40, right: 40},
     xaxis: {font: {size:10}, orientation: 'skew'},
     yaxis: {font: {size:10}, min:0},
@@ -604,8 +604,8 @@ function drawKilometersPerYearPerSport(){
   let options = {
     type:'bar',
     barlabel: {size:10, color:'#fff'},
-    width: 600,
-    height: 300,
+    width: 800,
+    height: 400,
     margin: {top: 40, bottom: 60, left: 40, right: 40},
     xaxis: {font: {size:10}, orientation: 'skew'},
     yaxis: {font: {size:10}, min:0},
@@ -629,20 +629,20 @@ function drawAvgPerSport(){
   }
   let options = {
     type:'line',
-    width: 600,
-    height: 300,
+    width: 800,
+    height: 400,
     margin: {top: 40, bottom: 60, left: 60, right: 140},
     xaxis: {font: {size: 10}, orientation: 'skew'},
     yaxis: {font: {size: 10}},
     y2axis: {font: {size: 10}, serieIndex: [0]},
-    ylabel: {label: 'keskisyke', size: 10},
-    y2label: {label: 'vauhti', size: 10},
+    ylabel: {label: 'keskisyke', size: 12},
+    y2label: {label: 'vauhti', size: 12},
     colors: ['#c995ed','#4BA6FF'],
     grid: true,
     tooltip: true,
     line: {labels:true},
     circle: {radius: 4, display: true},
-    legend: {coord: {x: 520, y: 50}, font: {size: 10}},
+    legend: {coord: {x: 720, y: 50}, font: {size: 10}},
     responsiveness: true
     }
     drawComboChart(div,data,options)
@@ -686,9 +686,9 @@ function drawAmountPerZonePerYear(){
   let options = {
     type:'bar',
     barlabel: {size: 9, color: '#fff'},
-    width: 600,
-    height: 300,
-    margin: {top: 40, bottom: 40, left: 40, right: 70},
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 40, left: 40, right: 100},
     xaxis: {font: {size:10}},
     yaxis: {font: {size:10}, min:0},
     colors: ['#4ba6ff','#969efc','#c995ed','#ed8ed6','#ff8cba','#ff919d','#ff9c84','#ffab71'],
@@ -696,7 +696,7 @@ function drawAmountPerZonePerYear(){
     grid: true,
     tooltip: {suffix:" h"},
     animation: {duration: 500, delay: 20},
-    legend: {coord: {x: 550, y: 50}, font: {size: 10}},
+    legend: {coord: {x: 730, y: 50}, font: {size: 10}},
     responsiveness: true
     }
     drawComboChart(div,data,options)
@@ -722,14 +722,14 @@ function drawAmountPerZone(){
     for (d in data['series']){piedata.push({'category': d, 'series':data['series'][d]})}
   } 
   let options = {
-    width: 600,
-    height: 300,
+    width: 800,
+    height: 400,
     margin: {top: 40, bottom: 40, left: 40, right: 100},
     colors: ['#4ba6ff','#969efc','#c995ed','#ed8ed6','#ff8cba','#ff919d','#ff9c84','#ffab71'],
     tooltip: {prefix:"", suffix:"h"},
-    radius: {inner: 20, outer: 120},
+    radius: {inner: 20, outer: 150},
     slicelabel: {size:10, color: '#FFF', threshold: 0.07},
-    legend: {coord: {x: 510, y: 50}, font: {size: 10}},
+    legend: {coord: {x: 600, y: 50}, font: {size: 10}},
     maxSliceCount: 8,
     responsiveness: true
     }
