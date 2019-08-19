@@ -1,10 +1,20 @@
+var localeFI = {
+    "decimal": ",",
+    "thousands": "\u00a0",
+    "grouping": [3],
+    "currency": ["", "\u00a0€"]
+  }
+
+var FI = d3.formatLocale(localeFI)
+
+
 function drawComboChart(div,dataset,opt){
 
     // set default values
     let options = opt || {} 
     let animation = options.animation || false
     let avgLine = options.avgLine || false
-    let barlabel = options.barlabel || false
+    let bar = options.bar || {labels: false}
     let circle = options.circle || {radius: 4, display: false}
     let colors = options.colors || d3.schemeCategory10 
     let fontFamily = options.fontFamily || 'Helvetica'
@@ -16,15 +26,14 @@ function drawComboChart(div,dataset,opt){
     let padding = options.padding || 0.1
     let responsiveness = options.responsiveness || false
     let serietype = options.serietype || false
-    let ticks = options.ticks || {count: (dataset) ? dataset.length : 0}
     let title = options.title || {label:'', size:10, fontWeight: 'normal'}
     let tooltip = options.tooltip || false
     let traceDiff = options.traceDiff || false
     let type = options.type || 'bar'
     let width = options.width || 500
-    let xaxis = options.xaxis || {font: {size: 10}, orientation: 'horizontal'}
+    let xaxis = options.xaxis || {font: {size: 10}, orientation: 'horizontal', format: false, tickCount: (dataset) ? dataset.length : 0, date:false}
     let xlabel = options.xlabel || {label:'', size:10, fontWeight: 'normal'}
-    let yaxis = options.yaxis || {font: {size: 10}}
+    let yaxis = options.yaxis || {font: {size: 10}, format: false}
     let ylabel = options.ylabel || {label:'', size:10, fontWeight: 'normal'}
     let y2axis = options.y2axis || false
     let y2label = options.y2label || {label:'', size:10, fontWeight: 'normal'}
@@ -79,6 +88,14 @@ function drawComboChart(div,dataset,opt){
             }
             data[i]['series'] = series_dict
         }
+    }
+
+    // if timeserie convert to date and sort
+    if (xaxis.date){
+        data.forEach(d => {
+            d.category = new Date(d.category)
+        })
+        data.sort((a, b) => {return a.category - b.category})
     }
 
     // extract categories, series and values from data
@@ -141,15 +158,22 @@ function drawComboChart(div,dataset,opt){
     catch(err) {}
 
     // create scales
-    let categoryScale = d3.scaleBand()
-        .range([margin.left, width - margin.right])
-        .domain(categories) 
-        .padding(padding)
+    if (xaxis.date){
+        var xScale = d3.scaleTime()
+            .range([margin.left, width - margin.right])
+            .domain(d3.extent(categories)) 
+    }
+    else {
+        var xScale = d3.scaleBand()
+            .range([margin.left, width - margin.right])
+            .domain(categories) 
+            .padding(padding)
 
-    let seriesScale = d3.scaleBand()
-        .range([0, categoryScale.bandwidth()])
-        .domain(series.filter(d => types[d] == 'bar')) 
-        .padding(padding)
+        var seriesScale = d3.scaleBand()
+            .range([0, xScale.bandwidth()])
+            .domain(series.filter(d => types[d] == 'bar')) 
+            .padding(padding)
+    }
 
     let yaxisMin = yaxis.min
     let yaxisMax = yaxis.max
@@ -176,6 +200,7 @@ function drawComboChart(div,dataset,opt){
     // create Y1-axis
     if (series1.length > 0){
         var axisY1 = d3.axisLeft(y1Scale)
+        axisY1.tickFormat(FI.format(yaxis.format || ''))
         svg.append('g')
             .attr('class', 'axisy1')
             .style('font-size', yaxis.font.size || 12)
@@ -186,6 +211,7 @@ function drawComboChart(div,dataset,opt){
     // create Y2-axis
     if (series2.length > 0){
         var axisY2 = d3.axisRight(y2Scale)
+        axisY2.tickFormat(FI.format(yaxis.format || ''))
         svg.append('g')
             .attr('class', 'axisy2')
             .style('font-size', y2axis.font.size || 12)
@@ -213,7 +239,7 @@ function drawComboChart(div,dataset,opt){
     // create X-axis
     // get tick values based on number of ticks provided as parameter
     let categoryCount = data.length
-    let gap = Math.round(categoryCount / Math.min(ticks.count,data.length))
+    let gap = Math.round(categoryCount / Math.min(xaxis.ticksCount || dataset.length, data.length))
     let tickValues = []
 
     for (var i = 0; i < categories.length; i++){
@@ -221,12 +247,16 @@ function drawComboChart(div,dataset,opt){
             tickValues.push(categories[i])
         }
     }
-    
-    let axisX = d3.axisBottom(categoryScale).tickValues(tickValues)
+    let axisX = d3.axisBottom(xScale).tickValues(tickValues)
+
+    if (xaxis.format){
+        if (xaxis.date){axisX.tickFormat(d3.timeFormat(xaxis.format))}
+        else {axisX.tickFormat(FI.format(xaxis.format))}
+    }
 
     svg.append('g')
         .attr('class', 'axisx')  
-        .style('font-size', xaxis.font.size || 12)  
+        .style('font-size', xaxis.font ? xaxis.font.size : 12)  
         .attr('transform', `translate(0,${height - margin.bottom})`)
         .call(axisX)
 
@@ -328,9 +358,9 @@ function drawComboChart(div,dataset,opt){
             series.forEach(serie => {
                 svg.select('.barlabels_' + serie.replace(/[^a-zA-Z0-9-_]/g,'_'))
                     .selectAll('.barlabel')
-                    .text(d => {return (!barlabel || d.series[serie] == 0) ? '' : d.series[serie]})
-                    .style('font-size', barlabel.size)
-                    .style('fill', barlabel.color)
+                    .text(d => {return (!bar.labels || d.series[serie] == 0) ? '' : d.series[serie]})
+                    .style('font-size', bar.labels ? bar.labels.size : 10)
+                    .style('fill', bar.labels ? bar.labels.color : '#000')
             })
     })
 
@@ -342,7 +372,7 @@ function drawComboChart(div,dataset,opt){
             .data(data.filter((d,i) => {return typeof d.series[serie] !== 'undefined' && d.series[serie] !== ''})) 
 
         bars.enter().append('rect')
-            .attr('x', d => categoryScale(d.category) + seriesScale(serie))
+            .attr('x', d => xScale(d.category) + seriesScale(serie))
             .attr('y', d => {return animation ? yScale(yaxisMin) : yScale(d.series[serie])})
             .attr('width', seriesScale.bandwidth()) 
             .attr('height', d => {return animation ? 0 : yScale(yaxisMin) - yScale(d.series[serie])})
@@ -370,13 +400,13 @@ function drawComboChart(div,dataset,opt){
             .enter()
             .append('text')
             .attr('class','barlabel')
-            .attr('x', d => categoryScale(d.category) + seriesScale(serie) + seriesScale.bandwidth() / 2 )
+            .attr('x', d => xScale(d.category) + seriesScale(serie) + seriesScale.bandwidth() / 2 )
             .attr('y', d => yScale(d.series[serie]))
             .attr('dy', '2em')
             .attr('text-anchor', 'middle')
-            .text(d => {return (!barlabel || d.series[serie] == 0) ? '' : d.series[serie]})
-            .style('font-size', barlabel.size || 10)
-            .style('fill', barlabel.color)
+            .text(d => {return (!bar.labels || d.series[serie] == 0) ? '' : d.series[serie]})
+            .style('font-size', bar.labels ? bar.labels.size : 10)
+            .style('fill', bar.labels ? bar.labels.color : '#000')
             .style('opacity', animation ? '0' : '1')
 
         if (animation) {
@@ -390,7 +420,10 @@ function drawComboChart(div,dataset,opt){
 
     function addLine(serie,yScale){
         let valueline = d3.line()
-            .x(d => categoryScale(d.category) + categoryScale.bandwidth() / 2)
+            .x(d => {
+                if (xaxis.date) {return xScale(new Date(d.category))}
+                else {return xScale(d.category) + xScale.bandwidth() / 2}
+            })
             .y(d => yScale(d.series[serie]))
 
         svg.append('g')
@@ -411,7 +444,10 @@ function drawComboChart(div,dataset,opt){
             .enter()
             .append('text')
             .attr('class','linelabel')
-            .attr('x', d => categoryScale(d.category) + categoryScale.bandwidth() / 2 )
+            .attr('x', d => {
+                if (xaxis.date) {return xScale(new Date(d.category))}
+                else {return xScale(d.category) + xScale.bandwidth() / 2}
+            })
             .attr('y', d => yScale(d.series[serie]))
             .attr('dy', '-1em')
             .attr('text-anchor', 'middle')
@@ -428,7 +464,10 @@ function drawComboChart(div,dataset,opt){
             .enter()
             .append('circle') 
             .attr('class', 'dot')
-            .attr('cx', d => categoryScale(d.category) + categoryScale.bandwidth() / 2)
+            .attr('cx', d => {
+                if (xaxis.date) {return xScale(new Date(d.category))}
+                else {return xScale(d.category) + xScale.bandwidth() / 2}
+            })
             .attr('cy', d => yScale(d.series[serie]))
             .attr('r', circle.radius)
             .style('fill', colorScale(serie))

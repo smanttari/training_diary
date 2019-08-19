@@ -100,9 +100,9 @@
         grid: true,
         tooltip: true,
         yaxis: {font: {size:10}, min:0},
+        xaxis: {ticksCount: data.length/5},
         circle: {radius: 3, display: false},
         legend: {coord: {x: 500, y: 10}},
-        ticks: {count: data.length/2},
         responsiveness: true
         }
         drawComboChart(div,data,options)
