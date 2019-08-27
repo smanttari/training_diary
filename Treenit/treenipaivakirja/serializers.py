@@ -3,6 +3,9 @@ from treenipaivakirja.models import harjoitus
 
 
 class HarjoitusSerializer(serializers.ModelSerializer):
+    laji_fk = serializers.StringRelatedField(many=False)
+    user = serializers.StringRelatedField(many=False)
+
     class Meta:
         model = harjoitus
         fields = [
@@ -19,6 +22,7 @@ class HarjoitusSerializer(serializers.ModelSerializer):
             'nousu',
             'kalorit',
             'tuntuma',
-            'kommentti'
+            'kommentti',
+            'user'
         ]
             

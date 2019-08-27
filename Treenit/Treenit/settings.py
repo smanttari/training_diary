@@ -40,9 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'widget_tweaks',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -129,3 +132,9 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 
 FILEPATH_EXPORT = 'c:\\temp\\treenit\\'
+
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:8080'
+]

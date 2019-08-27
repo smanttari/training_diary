@@ -1,5 +1,4 @@
 from django.urls import include,path
-from rest_framework.urlpatterns import format_suffix_patterns
 from treenipaivakirja import views
 
 
@@ -19,8 +18,6 @@ urlpatterns = [
     path('zones/<int:pk>/delete', views.zone_delete, name='zone_delete'),
     path('settings/', views.settings_view, name='settings'),
     path('register', views.register, name='register'),
-    path('trainings_list/', views.TrainingsList.as_view()),
-    path('training_detail/<int:pk>/', views.TrainingDetail.as_view())
+    path('rest/trainings/', views.trainings_api),
+    path('rest/trainings/<int:pk>', views.training_api),
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)

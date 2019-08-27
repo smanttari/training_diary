@@ -14,9 +14,10 @@ from django.db import IntegrityError
 from django.http import Http404
 from django.conf import settings
 from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from datetime import datetime
 import pandas as pd
@@ -883,18 +884,18 @@ def register(request):
         context = {'form': form})
 
 
-class TrainingsList(APIView):
+@api_view(['GET', 'POST'])
+#@permission_classes((IsAuthenticated, ))
+def trainings_api(request):
     """ 
     List all trainings or create a new training.
     """
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request, format=None):
+    if request.method == 'GET':
         trainings = harjoitus.objects.all()
         serializer = HarjoitusSerializer(trainings, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
+    elif request.method == 'POST':
         serializer = HarjoitusSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -902,32 +903,28 @@ class TrainingsList(APIView):
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class TrainingDetail(APIView):
+@api_view(['GET', 'PUT', 'DELETE'])
+#@permission_classes((IsAuthenticated, ))
+def training_api(request,pk):
     """
     Retrieve, update or delete a training.
     """
-    permission_classes = (IsAuthenticated,)
+    try:
+        training = harjoitus.objects.get(id=pk)
+    except harjoitus.DoesNotExist:
+        raise Http404
 
-    def get_object(self, pk):
-        try:
-            return harjoitus.objects.get(id=pk)
-        except harjoitus.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        training = self.get_object(pk)
+    if request.method == 'GET':
         serializer = HarjoitusSerializer(training)
         return Response(serializer.data)
 
-    def put(self, request, pk, format=None):
-        training = self.get_object(pk)
+    elif request.method == 'PUT':
         serializer = HarjoitusSerializer(training, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, format=None):
-        training = self.get_object(pk)
+    elif request.method == 'DELETE':
         training.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
