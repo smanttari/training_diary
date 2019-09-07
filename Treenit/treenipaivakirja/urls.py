@@ -8,6 +8,7 @@ urlpatterns = [
     path('trainings/add/', views.training_add, name='training_add'),
     path('trainings/<int:pk>/modify', views.training_modify, name='training_modify'),
     path('trainings/<int:pk>/delete', views.training_delete, name='training_delete'),
+    path('trainings/data', views.trainings_data, name='trainings_data'),
     path('sports/add', views.sport_add, name='sport_add'),
     path('sports/<int:pk>/modify', views.sport_modify, name='sport_modify'),
     path('sports/<int:pk>/delete', views.sport_delete, name='sport_delete'),

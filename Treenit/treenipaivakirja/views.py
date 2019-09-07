@@ -1,6 +1,7 @@
 from treenipaivakirja.models import harjoitus,aika,laji,tehot,tehoalue
 from treenipaivakirja.forms import HarjoitusForm,LajiForm,TehotForm,TehoalueForm,UserForm,RegistrationForm
 from treenipaivakirja.serializers import HarjoitusSerializer
+import treenipaivakirja.data_operations as data_operations
 from django.db.models import Sum,Max,Min
 from django.shortcuts import render,redirect
 from django.forms import inlineformset_factory
@@ -11,7 +12,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.db.models.deletion import ProtectedError
 from django.db import IntegrityError
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -26,75 +27,6 @@ import os
 import json
 
 
-# HELPER FUNCTIONS
-def duration_to_string(h,mins):
-    """ 
-    Formats duration given in hours and minutes to single string. 
-    """
-    if h is None or np.isnan(h):
-        h = 0
-    if mins is None or np.isnan(mins):
-        mins = 0
-    h = str(int(h))
-    mins = str(int(mins))
-    if h == '0' and mins == '0':
-        return ''
-    elif mins == '0':
-        return h + 'h'
-    else:
-        return '{}h {}min'.format(h,mins)
-
-
-def h_min_to_hours(h,mins):
-    """ 
-    Calculates duration in hours (decimal) when given hours and minutes seperately. 
-    """
-    if h is None:
-        h = 0
-    if mins is None:
-        mins = 0
-    hours = h + mins/60
-    return hours
-
-
-def vauhti_min_km(m,s):
-    """ 
-    Calculates speed in min/km when given minutes and seconds seperately. 
-    """
-    if m is None and s is None:
-        vauhti_min_km = None
-    elif m is None and s is not None:
-        vauhti_min_km = s/60.0
-    elif m is not None and s is None:
-        vauhti_min_km = m
-    else:
-        vauhti_min_km = m + s/60.0
-    return vauhti_min_km
-
-
-def dataframe_to_json(df):
-    """
-    Converts pandas dataframe to json which is compatible with d3Charts.js.
-    Dataframe index should be chart category and columns represent chart series.
-    """
-    data_list = []
-    for index, row in df.iterrows():
-        row_dict = {}
-        row_dict['category'] = index
-        row_dict['series'] = row.fillna('').to_dict()
-        data_list.append(row_dict)
-    return json.dumps(data_list)
-
-
-def coalesce(x,val):
-    """ Returns given value if x is None. """
-    if x is None:
-        return val
-    else:
-        return x
-
-
-# VIEWS
 @login_required
 def index(request):
     """ 
@@ -125,7 +57,7 @@ def index(request):
         trainings_latest['Päivä'] = trainings_latest['Päivä'].dt.strftime('%d.%m')
         trainings_latest['Viikonpäivä'] = trainings_latest['Viikonpäivä'].str.capitalize()
         trainings_latest['Päivä'] = trainings_latest[['Päivä', 'Viikonpäivä']].apply(lambda x: ' - '.join(x), axis=1)
-        trainings_latest['Kesto'] = trainings_latest.apply(lambda row: duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
+        trainings_latest['Kesto'] = trainings_latest.apply(lambda row: data_operations.duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
         trainings_latest['Tuntuma'] = trainings_latest['Tuntuma'].fillna(-1).astype(int).astype(str).replace('-1', '')
         trainings_latest = trainings_latest[trainings_latest_cols].values.tolist()
 
@@ -138,7 +70,7 @@ def index(request):
         trainings_per_week = trainings_per_week.set_index('Viikko').round(1)
         trainings_per_week = trainings_per_week.rename(columns={'Kesto': 'Tunnit','Tuntuma': 'Tuntuma (1-10)'})
         
-        trainings_per_week_json = dataframe_to_json(trainings_per_week)
+        trainings_per_week_json = data_operations.dataframe_to_json(trainings_per_week)
         trainings_per_week_avg = round(trainings_per_week.mean()['Tunnit'],1)
 
         training_hours_total = int(round(trainings_df[trainings_df['Vuosi'] == current_year]['Kesto'].sum(),0))
@@ -161,32 +93,13 @@ def trainings_view(request):
     message_header = ''
     current_user_id = request.user.id
     current_day = datetime.now().date()
-    current_day_yyyymmdd = current_day.strftime('%Y%m%d')
-    first_day_yyyymmdd = harjoitus.objects.filter(user=current_user_id).aggregate(Min('pvm_fk_id'))['pvm_fk_id__min']
-    table_columns = [
-        'delete','edit','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)',
-        'Vauhti (km/h)','Tuntuma','Kommentti'
-        ]
-
-    # get filtering parameters
-    if 'sport' in request.GET:
-        sport = request.GET['sport']
-    else:
-        sport = 'Kaikki'
-
-    if 'startdate' in request.GET:
-        startdate = request.GET['startdate']
-    else:
-        startdate = '01.01.{}'.format(current_day.year)
-    startdate_dt = datetime.strptime(startdate,'%d.%m.%Y')
-    startdate_yyyymmdd = startdate_dt.strftime('%Y%m%d')
-
-    if 'enddate' in request.GET:
-        enddate = request.GET['enddate']
-    else:
-        enddate = current_day.strftime('%d.%m.%Y')
-    enddate_dt = datetime.strptime(enddate,'%d.%m.%Y')
-    enddate_yyyymmdd = enddate_dt.strftime('%Y%m%d')
+    first_day = harjoitus.objects.filter(user=current_user_id).aggregate(Min('pvm_fk__pvm'))['pvm_fk__pvm__min']
+    zones = list(tehoalue.objects.values_list('teho',flat=True).filter(user=current_user_id).order_by('jarj_nro'))
+    table_headers = ['','','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti']
+    table_headers = table_headers[:-1] + zones + table_headers[-1:]
+    sport = 'Kaikki'
+    enddate = current_day.strftime('%d.%m.%Y')
+    startdate = data_operations.coalesce(first_day.strftime('%d.%m.%Y'),enddate)
 
     # sports to dropdown list
     sports = {}
@@ -202,84 +115,32 @@ def trainings_view(request):
                     sports[l.laji_ryhma] = []
                 sports[l.laji_ryhma].append(l.laji_nimi)
     sports['Muut'] = other
+    
+    # export data
+    if request.method == "POST":
+        sport = request.POST['sport']
+        startdate = request.POST['startdate']
+        enddate = request.POST['enddate']
 
-    if first_day_yyyymmdd is None:
-        trainings_dict = {}
-    else:
-        # trainings to dataframe
-        days = aika.objects.filter(
-            vvvvkkpp__gte = max(int(startdate_yyyymmdd),int(first_day_yyyymmdd)),
-            vvvvkkpp__lte = min(int(enddate_yyyymmdd),int(current_day_yyyymmdd))
-            ).values_list('pvm','vvvvkkpp','viikonpaiva_lyh','vko')
-        days_df = pd.DataFrame(list(days), columns=['Pvm','vvvvkkpp','Viikonpäivä','Vko'])
+        startdate_dt = datetime.strptime(startdate,'%d.%m.%Y')
+        startdate_yyyymmdd = startdate_dt.strftime('%Y%m%d')
+        enddate_dt = datetime.strptime(enddate,'%d.%m.%Y')
+        enddate_yyyymmdd = enddate_dt.strftime('%Y%m%d')
 
-        trainings = harjoitus.objects.filter(user = current_user_id).values_list(
-            'id','id','pvm_fk_id','kesto','kesto_h','kesto_min','laji_fk__laji_nimi',
-            'laji_fk__laji_ryhma','matka','vauhti_km_h','vauhti_min_km','keskisyke',
-            'tuntuma','kommentti','nousu')
+        trainings_df = data_operations.get_training_data(current_user_id)
+        trainings_df = trainings_df[(trainings_df['vvvvkkpp']>=int(startdate_yyyymmdd)) & (trainings_df['vvvvkkpp']<=int(enddate_yyyymmdd))]
 
-        trainings_df = pd.DataFrame(list(trainings), 
-            columns = [
-                'edit','delete','vvvvkkpp','Kesto (h)','Kesto_h','Kesto_min',
-                'Laji','Lajiryhmä','Matka (km)','Vauhti (km/h)','Vauhti (min/km)',
-                'Keskisyke','Tuntuma','Kommentti','Nousu (m)'
-                ])
-
-        trainings_df = days_df.merge(trainings_df, how='left', left_on='vvvvkkpp', right_on='vvvvkkpp')
-        trainings_df['Laji'] = trainings_df['Laji'].fillna('Lepo')
-        trainings_df.loc[trainings_df['Laji'] != 'Lepo','Lajiryhmä'] = trainings_df.loc[trainings_df['Laji'] != 'Lepo','Lajiryhmä'].fillna('Muut')
-        
         if sport != 'Kaikki':
             if sport in sports.keys():
                 trainings_df = trainings_df[trainings_df['Lajiryhmä'] == sport]
             else:
                 trainings_df = trainings_df[trainings_df['Laji'] == sport]
 
-        # cleaning data
-        trainings_df['Pvm'] = pd.to_datetime(trainings_df['Pvm'])
-        trainings_df = trainings_df.sort_values(by='Pvm', ascending=False)
-        trainings_df['Pvm'] = trainings_df['Pvm'].dt.strftime('%Y-%m-%d')
-        trainings_df[['Kesto (h)','Matka (km)','Vauhti (km/h)','Vauhti (min/km)']] = trainings_df[['Kesto (h)','Matka (km)','Vauhti (km/h)','Vauhti (min/km)']].astype(float).round(1)
-        trainings_df['Viikonpäivä'] = trainings_df['Viikonpäivä'].str.capitalize()
-        trainings_df[['delete','edit','Keskisyke','Tuntuma','Nousu (m)']] = trainings_df[['delete','edit','Keskisyke','Tuntuma','Nousu (m)']].fillna(-1).astype(int).astype(str).replace('-1', np.nan)
-        
-        if not trainings_df.empty:
-            trainings_df['Päivä'] = trainings_df[['Pvm', 'Viikonpäivä']].apply(lambda x: ' '.join(x), axis=1)
-            trainings_df['Kesto'] = trainings_df.apply(lambda row: duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
-        else:
-            trainings_df['Päivä'] = np.nan
-            trainings_df['Kesto'] = np.nan
-
-        # calculate duration per zone
-        zones_duration = tehot.objects.filter(harjoitus_fk_id__user=current_user_id).values_list('harjoitus_fk_id','teho_id__teho','kesto_h','kesto_min')
-        if zones_duration:
-            zones_duration_df = pd.DataFrame(list(zones_duration),columns = ['id','teho','kesto_h','kesto_min'])
-            zones_duration_df = zones_duration_df.fillna(np.nan)  #replace None with NaN
-            zones_duration_df = zones_duration_df.groupby(['id','teho']).sum().reset_index()
-            zones_duration_df['kesto'] = zones_duration_df.apply(lambda row: duration_to_string(row['kesto_h'], row['kesto_min']), axis=1)
-            zones_duration_df = zones_duration_df.pivot(index='id', columns='teho', values='kesto')
-            zones_duration_df.index = zones_duration_df.index.map(str)
-            zones = list(tehoalue.objects.values_list('teho',flat=True).filter(user=current_user_id).order_by('jarj_nro'))
-            zones = [zone for zone in zones if zone in zones_duration_df.columns]
-            table_columns = table_columns[:-1] + zones + table_columns[-1:]
-            trainings_df = trainings_df.merge(zones_duration_df, how='left', left_on='edit', right_index=True)
-        else:
-            zones = []
-
-        trainings_table = trainings_df[table_columns]
-        trainings_dict = trainings_table.fillna('').to_dict(orient='index')
-
-    # export data
-    if 'export' in request.GET:
-        try: 
-            trainings_df
-        except:
+        if trainings_df is None or trainings_df.empty:
             message_header = 'ERROR'
             messages.add_message(request, messages.ERROR, 'Ei harjoituksia')
         else:
-            export_type = request.GET['export']
-            export_columns = ['Vko','Pvm','Viikonpäivä','Kesto (h)','Laji','Matka (km)','Vauhti (km/h)','Vauhti (min/km)',
-                            'Keskisyke', 'Nousu (m)','Tuntuma', 'Kommentti'] + zones
+            export_columns = ['Vko','Pvm','Viikonpäivä','Kesto (h)','Laji','Matka (km)','Vauhti (km/h)','Vauhti (min/km)','Keskisyke', 'Nousu (m)','Tuntuma', 'Kommentti'] + zones
             trainings_export = trainings_df[export_columns]
             trainings_export = trainings_export.sort_values(by='Pvm', ascending=True)
             trainings_export['Pvm'] = pd.to_datetime(trainings_df['Pvm']).dt.strftime('%d.%m.%Y')
@@ -288,36 +149,32 @@ def trainings_view(request):
             if not os.path.exists(export_path):
                 os.makedirs(export_path)
 
-            if export_type == 'csv':
+            if 'export_csv' in request.POST:
                 filename = 'treenit.csv'
                 try:
                     trainings_export.to_csv(export_path + filename,sep=';',header=True,index=False,encoding='utf-8')
-                    message_header = 'Tallennettu'
-                    messages.add_message(request, messages.INFO, 'Harjoitukset tallennettu onnistuneesti tiedostoon <br><br><b>{}{}</b>'.format(export_path,filename))
+                    messages.add_message(request, messages.SUCCESS, 'Harjoitukset tallennettu tiedostoon {}{}'.format(export_path,filename))
                 except Exception as e:
-                    message_header = 'Virhe'
-                    messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui:<p class="text-danger">{}</p>'.format(str(e)))
+                    messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui: {}'.format(str(e)))
 
-            if export_type == 'xls':
+            if 'export_xls' in request.POST:
                 filename = 'treenit.xlsx'
                 try:
                     writer = pd.ExcelWriter(export_path + filename)
                     trainings_export.to_excel(writer,header=True,index=False)
                     writer.save()
-                    message_header = 'Tallennettu'
-                    messages.add_message(request, messages.SUCCESS, 'Harjoitukset tallennettu onnistuneesti tiedostoon <br><br><b>{}{}</b>'.format(export_path,filename))
+                    messages.add_message(request, messages.SUCCESS, 'Harjoitukset tallennettu tiedostoon {}{}'.format(export_path,filename))
                 except Exception as e:
-                    message_header = 'Virhe'
-                    messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui <p class="text-danger">{}</p>'.format(str(e)))
+                    messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui: {}'.format(str(e)))
+
+            redirect('trainings')
 
     return render(request, 'trainings.html',
         context = {
-            'message_header': message_header,
             'sport': sport,
             'startdate': startdate,
             'enddate': enddate,
-            'trainings_headers': table_columns,
-            'trainings_dict': trainings_dict,
+            'table_headers': table_headers,
             'sports': sports
             })
 
@@ -400,7 +257,7 @@ def reports(request):
         trainings_per_month[['kesto','matka']] = trainings_per_month[['kesto','matka']].round(0)
         
         hours_per_month_pivot = trainings_per_month.pivot(index='kk',columns='vuosi',values='kesto').sort_values(by='kk').rename(index = month_names)
-        hours_per_month_json = dataframe_to_json(hours_per_month_pivot)
+        hours_per_month_json = data_operations.dataframe_to_json(hours_per_month_pivot)
 
         trainings_per_week = trainings_df.groupby(['vuosi','vko']).sum().reset_index()[['vuosi','vko','kesto','matka']]
         trainings_per_week = years_weeks.merge(trainings_per_week,how='left',right_on=['vuosi','vko'],left_on=['vuosi','vko'])
@@ -408,15 +265,15 @@ def reports(request):
         trainings_per_week[(trainings_per_week['vuosi'] < current_year) | (trainings_per_week['vko'] <= int(current_week))] = trainings_per_week[(trainings_per_week['vuosi'] < current_year) | (trainings_per_week['vko'] <= int(current_week))].fillna(0)
 
         hours_per_week_pivot = trainings_per_week.pivot(index='vko',columns='vuosi',values='kesto').sort_values(by='vko')
-        hours_per_week_json = dataframe_to_json(hours_per_week_pivot)
+        hours_per_week_json = data_operations.dataframe_to_json(hours_per_week_pivot)
 
         hours_per_sport = trainings_df.groupby(['vuosi','laji_nimi']).sum().reset_index()[['vuosi','laji_nimi','kesto']].round(1)
         hours_per_sport_pivot = hours_per_sport.pivot(index='laji_nimi',columns='vuosi',values='kesto').sort_values(by='laji_nimi') 
-        hours_per_sport_json = dataframe_to_json(hours_per_sport_pivot)
+        hours_per_sport_json = data_operations.dataframe_to_json(hours_per_sport_pivot)
 
         hours_per_sport_group = trainings_df.groupby(['vuosi','laji_ryhma']).sum().reset_index()[['vuosi','laji_ryhma','kesto']].round(1)
         hours_per_sport_group_pivot = hours_per_sport_group.pivot(index='laji_ryhma',columns='vuosi',values='kesto').sort_values(by='laji_ryhma') 
-        hours_per_sport_group_json = dataframe_to_json(hours_per_sport_group_pivot)
+        hours_per_sport_group_json = data_operations.dataframe_to_json(hours_per_sport_group_pivot)
 
         f = {'laji':['count'], 'kesto':['sum','mean'], 'matka':['sum','mean'], 'vauhti_km_h':['mean'], 'vauhti_min_km':['mean'], 'keskisyke':['mean']}
 
@@ -466,7 +323,7 @@ def reports(request):
             zones = [zone for zone in zones if zone in zones_duration_df.columns] + ['Muu']
             zones_duration_df = zones_duration_df[zones]
 
-            amount_per_zone_per_year_json = dataframe_to_json(zones_duration_df)
+            amount_per_zone_per_year_json = data_operations.dataframe_to_json(zones_duration_df)
         else:
             amount_per_zone_per_year_json = []
 
@@ -482,9 +339,9 @@ def reports(request):
                 amounts_per_year_per_sport[s] = data[['vuosi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
                 avg_per_year_per_sport_table[s] = data[['vuosi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
                 data = data.set_index('vuosi')
-                hours_per_year_per_sport[s] = json.loads(dataframe_to_json(data[['kesto (h)']]))
-                kilometers_per_year_per_sport[s] = json.loads(dataframe_to_json(data[['matka (km)']]))
-                avg_per_year_per_sport[s] = json.loads(dataframe_to_json(data[['vauhti (km/h)','keskisyke']]))
+                hours_per_year_per_sport[s] = json.loads(data_operations.dataframe_to_json(data[['kesto (h)']]))
+                kilometers_per_year_per_sport[s] = json.loads(data_operations.dataframe_to_json(data[['matka (km)']]))
+                avg_per_year_per_sport[s] = json.loads(data_operations.dataframe_to_json(data[['vauhti (km/h)','keskisyke']]))
         
         hours_per_year_per_sport_json = json.dumps(hours_per_year_per_sport)
         kilometers_per_year_per_sport_json = json.dumps(kilometers_per_year_per_sport)
@@ -524,14 +381,14 @@ def training_add(request):
             instance = harjoitus_form.save(commit=False)
             instance.pvm_fk_id = instance.pvm.strftime('%Y%m%d')
             instance.user = request.user
-            kesto_h = coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
-            kesto_min = coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
+            kesto_h = data_operations.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
+            kesto_min = data_operations.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
             instance.kesto_h = kesto_h
             instance.kesto_min = kesto_min
-            instance.kesto = h_min_to_hours(kesto_h,kesto_min)
+            instance.kesto = data_operations.h_min_to_hours(kesto_h,kesto_min)
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
-            instance.vauhti_min_km = vauhti_min_km(vauhti_m,vauhti_s)
+            instance.vauhti_min_km = data_operations.vauhti_min_km(vauhti_m,vauhti_s)
             vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
             if instance.vauhti_min_km is None and vauhti_km_h is not None:
                 instance.vauhti_min_km = 60 / vauhti_km_h
@@ -573,15 +430,15 @@ def training_modify(request,pk):
         if harjoitus_form.is_valid() and harjoitus_form.has_changed():
             post = harjoitus_form.save(commit=False)
             post.pvm_fk_id = post.pvm.strftime('%Y%m%d')
-            kesto_h = coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
-            kesto_min = coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
+            kesto_h = data_operations.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
+            kesto_min = data_operations.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
             post.kesto_h = kesto_h
             post.kesto_min = kesto_min
-            post.kesto = h_min_to_hours(kesto_h,kesto_min)
+            post.kesto = data_operations.h_min_to_hours(kesto_h,kesto_min)
             vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
-            post.vauhti_min_km = vauhti_min_km(vauhti_m,vauhti_s)
+            post.vauhti_min_km = data_operations.vauhti_min_km(vauhti_m,vauhti_s)
             if post.vauhti_min_km is None and vauhti_km_h is not None:
                 post.vauhti_min_km = 60 / vauhti_km_h
             elif post.vauhti_min_km is not None and vauhti_km_h is None:
@@ -882,6 +739,24 @@ def register(request):
     
     return render(request, 'register.html', 
         context = {'form': form})
+
+
+@login_required
+def trainings_data(request):
+    current_user_id = request.user.id
+    zones = list(tehoalue.objects.values_list('teho',flat=True).filter(user=current_user_id).order_by('jarj_nro'))
+    table_columns = [
+        'delete','edit','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)',
+        'Vauhti (km/h)','Tuntuma','Kommentti'
+        ]
+    table_columns = table_columns[:-1] + zones + table_columns[-1:]
+    trainings_df = data_operations.get_training_data(current_user_id)
+    trainings_df = trainings_df[table_columns]
+    trainings_dict = trainings_df.fillna('').to_dict(orient='records')
+    trainings_list = trainings_df.fillna('').values.tolist()
+
+    return JsonResponse(trainings_list, safe=False)
+
 
 
 @api_view(['GET', 'POST'])
