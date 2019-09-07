@@ -94,12 +94,12 @@ def trainings_view(request):
     current_user_id = request.user.id
     current_day = datetime.now().date()
     first_day = harjoitus.objects.filter(user=current_user_id).aggregate(Min('pvm_fk__pvm'))['pvm_fk__pvm__min']
-    zones = list(tehoalue.objects.values_list('teho',flat=True).filter(user=current_user_id).order_by('jarj_nro'))
+    zones = list(tehot.objects.filter(harjoitus_fk_id__user=current_user_id).values_list('teho_id__teho',flat=True).distinct().order_by('teho_id__jarj_nro'))
     table_headers = ['','','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti']
     table_headers = table_headers[:-1] + zones + table_headers[-1:]
     sport = 'Kaikki'
     enddate = current_day.strftime('%d.%m.%Y')
-    startdate = data_operations.coalesce(first_day.strftime('%d.%m.%Y'),enddate)
+    startdate = data_operations.coalesce(first_day,current_day).strftime('%d.%m.%Y')
 
     # sports to dropdown list
     sports = {}
@@ -744,16 +744,16 @@ def register(request):
 @login_required
 def trainings_data(request):
     current_user_id = request.user.id
-    zones = list(tehoalue.objects.values_list('teho',flat=True).filter(user=current_user_id).order_by('jarj_nro'))
-    table_columns = [
-        'delete','edit','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)',
-        'Vauhti (km/h)','Tuntuma','Kommentti'
-        ]
-    table_columns = table_columns[:-1] + zones + table_columns[-1:]
     trainings_df = data_operations.get_training_data(current_user_id)
-    trainings_df = trainings_df[table_columns]
-    trainings_dict = trainings_df.fillna('').to_dict(orient='records')
-    trainings_list = trainings_df.fillna('').values.tolist()
+    if trainings_df is None:
+        trainings_list = []
+    else:
+        zones = list(tehot.objects.filter(harjoitus_fk_id__user=current_user_id).values_list('teho_id__teho',flat=True).distinct().order_by('teho_id__jarj_nro'))
+        table_columns = ['delete','edit','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti']
+        table_columns = table_columns[:-1] + zones + table_columns[-1:]
+        trainings_df = trainings_df[table_columns]
+        trainings_dict = trainings_df.fillna('').to_dict(orient='records')
+        trainings_list = trainings_df.fillna('').values.tolist()
 
     return JsonResponse(trainings_list, safe=False)
 
