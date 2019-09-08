@@ -39,7 +39,7 @@
             <div class="form-group row">
                 <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.laji_fk.label }}</b></label> 
                 <div class="col-md-2">{{ harjoitus_form.laji_fk|add_class:'form-control' }}</div>
-                <div class="col-md-3"><a class="nav-link" href="{% url 'sport_add' %}"> <i class="fa fa-plus"></i> Lisää laji</a></div>
+                <div class="col-md-3"><a class="nav-link" href="{% url 'sport_add' %}"><i class="fas fa-plus-circle mr-1"></i>Lisää laji</a></div>
                 {% if harjoitus_form.laji_fk.errors %}
                     <div class="col-md-4 text-danger">{% for error in harjoitus_form.laji_fk.errors %}{{ error }}{% endfor %}</div>
                 {% else %}
@@ -208,7 +208,7 @@
             </div>
             {% endfor %}
         </fieldset>
-        <button type="button" class="btn btn-link text-decoration-none mb-1" onclick="addTehot()"><i class="fa fa-plus"></i> Lisää tehot</button>
+        <button type="button" class="btn btn-link text-decoration-none mb-1" onclick="addTehot()"><i class="fas fa-plus-circle mr-1"></i>Lisää tehot</button>
         <div class="form-actions mt-5 col-6">
             <button type="submit" id="save" name="save" class="btn btn-success mr-3" onclick="calculateKesto();calculateVauhtiMinKm();calculateVauhtiKmH();">Tallenna</button>
             <a class="btn btn-danger" href="{% url 'trainings' %}" role="button">Peruuta</a>

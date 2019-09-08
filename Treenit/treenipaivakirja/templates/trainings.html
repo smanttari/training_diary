@@ -20,7 +20,7 @@ HARJOITUKSET
 {% block content %}
 
 {% for message in messages %}
-<div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{%endif%} alert-dismissible fade show" role="alert">
+<div class="alert alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% else %}info{%endif%} alert-dismissible fade show" role="alert">
     <strong class="text-uppercase mr-1">{{ message.tags }}</strong>{{ message|safe }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
@@ -81,12 +81,6 @@ HARJOITUKSET
 <script type="text/javascript">
 
 let sports = {{ sports|safe }}
-
-$(window).on('load',function(){
-    {% if messages %}
-        $('#messages').modal('show');
-    {% endif %}
-})
 
 // activate nav item
 document.getElementById("trainings").classList.add('active')

@@ -7,6 +7,15 @@
 
 {% block content %}
 
+{% for message in messages %}
+<div class="alert alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% else %}info{%endif%} alert-dismissible fade show" role="alert">
+    <strong class="text-uppercase mr-1">{{ message.tags }}</strong>{{ message|safe }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+</div>
+{% endfor %}
+
   <div class="btn-group btn-group-sm" role="group" aria-label="">
     <button id="btn_profile" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('profile')">PROFIILI</button>
     <button id="btn_sports" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('sports')">LAJIT</button>
@@ -76,7 +85,7 @@
     </table>
   </div>
   <div class="row">
-      <a href="{% url 'sport_add' %}" class="btn btn-success mr-3 ml-4" role="button" aria-pressed="true"> <i class="fa fa-plus mr-2"></i>Lisää</a>  
+      <a href="{% url 'sport_add' %}" class="btn btn-success mr-3 ml-4" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää</a>  
     </div>
   </div>
 </div>
@@ -114,7 +123,7 @@
     </table>
   </div>
   <div class="row">
-    <a href="{% url 'zone_add' %}" class="btn btn-success mr-3 ml-4" role="button" aria-pressed="true"> <i class="fa fa-plus mr-2"></i>Lisää</a>  
+    <a href="{% url 'zone_add' %}" class="btn btn-success mr-3 ml-4" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää</a>  
   </div>
   </div>
 </div>
@@ -148,53 +157,29 @@
 
 </div>
 
-
-<div id="messages" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h6 class="modal-title"><i class="fas fa-info-circle"></i> Tallennettu</h6>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                {% for message in messages %}
-                <p>{{ message|safe }}</p>
-                {% endfor %}
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">Sulje</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 
-  {% if messages %}
-  $('#messages').modal('show');
-  {% endif %}
+function showDiv(id) {
+  buttons = document.getElementsByName("nav_btn")
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].classList.remove("active")
+  }
+  document.getElementById("btn_" + id).classList.add("active")
 
-  function showDiv(id) {
-    buttons = document.getElementsByName("nav_btn")
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].classList.remove("active")
+  var pages = document.getElementsByName("page")
+  for (var i = 0; i < pages.length; i++) {
+    if (pages[i].id == id) {
+      pages[i].style.display = 'block'
     }
-    document.getElementById("btn_" + id).classList.add("active")
-
-    var pages = document.getElementsByName("page")
-    for (var i = 0; i < pages.length; i++) {
-      if (pages[i].id == id) {
-        pages[i].style.display = 'block'
-      }
-      else {
-        pages[i].style.display = 'none'
-      }
+    else {
+      pages[i].style.display = 'none'
     }
   }
+}
 
-  // activate div
-  let button = 'btn_{{active_div}}'
-  document.getElementById(button).click()
+// activate div
+let button = 'btn_{{active_div}}'
+document.getElementById(button).click()
 
 </script>
 
