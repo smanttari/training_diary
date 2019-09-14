@@ -60,7 +60,11 @@ HARJOITUKSET
                 <thead class="thead-light">
                     <tr class="text-nowrap">
                     {% for header in table_headers %}
+                        {% if header == 'edit' or header == 'delete' %}
+                        <th></th>
+                        {% else %}
                         <th class="pl-3 pr-3">{{ header }}</th>
+                        {% endif %}
                     {% endfor %}
                     </tr>
                 </thead>
@@ -81,6 +85,7 @@ HARJOITUKSET
 <script type="text/javascript">
 
 let sports = {{ sports|safe }}
+let data_headers = {{ table_headers|safe }}
 
 // activate nav item
 document.getElementById("trainings").classList.add('active')
@@ -199,8 +204,15 @@ var treenitTable = $('#treenit').DataTable({
     "deferRender": true,
     "ajax": {
         "url" :"{% url 'trainings_data' %}",
+        "type": "post",
+        "data": {
+                'columns':data_headers,
+                "csrfmiddlewaretoken": '{{ csrf_token }}'
+            },
+        "dataType": "json",
         "dataSrc": function (json) {return json}
     },
+    "processing": true,
     "searching": true,
     "ordering":  true,
     "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Kaikki"]],
@@ -221,6 +233,7 @@ var treenitTable = $('#treenit').DataTable({
         infoEmpty:      "0 - 0 / 0",
         infoFiltered:   "",
             zeroRecords:    "Ei harjoituksia",
+        processing: "Ladataan..."
     },
     "columnDefs": [
         { className: "text-nowrap", targets: "_all" },

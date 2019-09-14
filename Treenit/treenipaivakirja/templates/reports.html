@@ -140,7 +140,7 @@
                 <li class="nav-item dropdown">
                   <a class="nav-link active dropdown-toggle" id="dropdown_amount_per_sport" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{sport}}</a>
                   <div class="dropdown-menu">
-                    {% for s in sports_list %}
+                    {% for s in sports %}
                     <button class="dropdown-item" type="button" value="{{ s }}" onclick="drawSportTimeserie(this.value)">{{ s }}</button>
                     {% endfor %}
                   </div>
@@ -161,7 +161,7 @@
                   <li class="nav-item dropdown">
                     <a class="nav-link active dropdown-toggle" id="dropdown_avg_per_sport" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{sport}}</a>
                     <div class="dropdown-menu">
-                      {% for s in sports_list %}
+                      {% for s in sports %}
                       <button class="dropdown-item" type="button" value="{{ s }}" onclick="drawAvgPerYearPerSport(this.value)">{{ s }}</button>
                       {% endfor %}
                     </div>
@@ -258,7 +258,7 @@
   let avgPerYearPerSport = {{ avg_per_year_per_sport|safe }}
   let amountsPerYearPerSport = {{amounts_per_year_per_sport|safe}}
   let avgPerYearPerSportTable = {{avg_per_year_per_sport_table|safe}}
-  let amountPerZonePerYear = {{amount_per_zone_per_year_json|safe}}
+  let amountPerZonePerYear = {{hours_per_year_per_zone_json|safe}}
   let year = {{ current_year }}
 
 
