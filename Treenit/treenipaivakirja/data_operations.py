@@ -67,7 +67,7 @@ def dataframe_to_json(df):
 
 def coalesce(x,val):
     """ Returns given value if x is None. """
-    if x is None:
+    if x is None or np.isnan(x):
         return val
     else:
         return x

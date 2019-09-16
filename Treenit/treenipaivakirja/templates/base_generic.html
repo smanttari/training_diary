@@ -31,11 +31,9 @@
 </head>
 
 <body>
-		
-	<div class="loader"></div>
 
 	<nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
-		<a class="navbar-brand ml-1" href="{% url 'index' %}"><img src="{% static 'treenipaivakirja/images/logo-light.svg' %}" height="30" alt="logo"></a>
+		<a class="navbar-brand ml-1" href="{% url 'index' %}"><img src="{% static 'treenipaivakirja/images/logo-light.svg' %}" width="30" height="30" alt="logo"></a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
@@ -70,31 +68,21 @@
 
 	<div class="main_div">
 
-	<div class="container-fluid">
-		<h4 class="text-uppercase text-dark">{% block header %}{% endblock %}</h4>
-	</div>
-	<div class="container-fluid pt-3">
-		{% block content %}
-		{% endblock %}
-	</div>
-
-
-	<footer class="footer bg-dark pt-3 pb-3">
-		<div class="container">
-			<span class="text-muted">&copy; smanttari</span>
+		<div class="container-fluid">
+			<h4 class="text-uppercase text-dark">{% block header %}{% endblock %}</h4>
 		</div>
-	</footer>
+		<div class="container-fluid pt-3 pb-3">
+			{% block content %}
+			{% endblock %}
+		</div>
+
+		<footer class="footer bg-dark pt-3 pb-3">
+			<div class="container">
+				<span class="text-muted">&copy; smanttari</span>
+			</div>
+		</footer>
 
 	</div>
-
-
-<script>
-$(window).on('load', function() {
-	$(".loader").hide();
-	$(".main_div").show();
-});
-</script>
-
 
 </body>
 

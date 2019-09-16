@@ -20,7 +20,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 import os
@@ -36,52 +36,45 @@ def index(request):
     current_day = datetime.now().date()
     current_year = current_day.year
     current_week = current_day.strftime("%V")
-    trainings_latest_cols = ['Päivä', 'Laji', 'Kesto', 'Tuntuma']
+    current_day_pd = pd.Timestamp(current_day)
+    current_day_minus_14 = pd.Timestamp(current_day_pd - timedelta(days=14))
+    current_day_minus_28 = pd.Timestamp(current_day_pd - timedelta(days=28))
 
     if not harjoitus.objects.filter(user=current_user_id):
-        training_hours_total = 0
-        trainings_per_week_avg = 0
-        trainings_latest = []
-        trainings_per_week_json = []
+        hours_current_year = 0
+        hours_change = 0
+        hours_per_week_current_year = 0
+        hours_per_week_change = 0
+        feeling_current_period = 0
+        feeling_change = 0
     else:
-        trainings = harjoitus.objects.filter(user=current_user_id).values_list(
-            'pvm_fk_id__pvm','pvm_fk_id__vuosi','pvm_fk_id__vko','pvm_fk_id__viikonpaiva_lyh',
-            'laji_fk__laji_nimi','kesto','kesto_h','kesto_min','tuntuma')
-
-        trainings_df = pd.DataFrame(list(trainings), columns=['Päivä','Vuosi','Viikko','Viikonpäivä','Laji','Kesto','Kesto_h','Kesto_min','Tuntuma'])
+        trainings = harjoitus.objects.filter(user=current_user_id).values_list('pvm_fk_id__pvm','pvm_fk_id__vuosi','pvm_fk_id__vko','kesto','tuntuma')
+        trainings_df = pd.DataFrame(list(trainings), columns=['Päivä','Vuosi','Viikko','Kesto','Tuntuma'])
         trainings_df = trainings_df.fillna(np.nan)  #replace None with NaN
         trainings_df['Päivä'] = pd.to_datetime(trainings_df['Päivä'])
-        trainings_df['Kesto'] = trainings_df['Kesto'].astype(float).round(1)
+        trainings_df['Kesto'] = trainings_df['Kesto'].fillna(0).astype(float).round(1)
 
-        trainings_latest = trainings_df.sort_values(by='Päivä', ascending=False).head(5)
-        trainings_latest['Päivä'] = trainings_latest['Päivä'].dt.strftime('%d.%m')
-        trainings_latest['Viikonpäivä'] = trainings_latest['Viikonpäivä'].str.capitalize()
-        trainings_latest['Päivä'] = trainings_latest[['Päivä', 'Viikonpäivä']].apply(lambda x: ' - '.join(x), axis=1)
-        trainings_latest['Kesto'] = trainings_latest.apply(lambda row: data_operations.duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
-        trainings_latest['Tuntuma'] = trainings_latest['Tuntuma'].fillna(-1).astype(int).astype(str).replace('-1', '')
-        trainings_latest = trainings_latest[trainings_latest_cols].values.tolist()
+        hours_current_year = trainings_df[(trainings_df['Vuosi'] == current_year) & (trainings_df['Viikko'] < int(current_week))]['Kesto'].sum()
+        hours_past_year = trainings_df[(trainings_df['Vuosi'] == (current_year-1)) & (trainings_df['Viikko'] < int(current_week))]['Kesto'].sum()
+        hours_change = hours_current_year - hours_past_year
 
-        weeks = aika.objects.filter(vuosi=current_year).order_by('vko').values_list('vko', flat=True).distinct()
-        weeks = pd.DataFrame(list(weeks), columns=['Viikko'])
+        hours_per_week_current_year = hours_current_year / (int(current_week)-1)
+        hours_per_week_past_year = trainings_df[trainings_df['Vuosi'] == (current_year-1)]['Kesto'].sum() / 52
+        hours_per_week_change = hours_per_week_current_year - hours_per_week_past_year
 
-        trainings_per_week = trainings_df[trainings_df['Vuosi'] == current_year].groupby('Viikko').agg({'Kesto':'sum', 'Tuntuma':'mean'})
-        trainings_per_week = weeks.merge(trainings_per_week, how='left', right_index=True, left_on='Viikko')
-        trainings_per_week = trainings_per_week[trainings_per_week['Viikko'] <= int(current_week)]
-        trainings_per_week = trainings_per_week.set_index('Viikko').round(1)
-        trainings_per_week = trainings_per_week.rename(columns={'Kesto': 'Tunnit','Tuntuma': 'Tuntuma (1-10)'})
-        
-        trainings_per_week_json = data_operations.dataframe_to_json(trainings_per_week)
-        trainings_per_week_avg = round(trainings_per_week.mean()['Tunnit'],1)
-
-        training_hours_total = int(round(trainings_df[trainings_df['Vuosi'] == current_year]['Kesto'].sum(),0))
+        feeling_current_period = data_operations.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_14) & (trainings_df['Päivä'] <= current_day_pd)]['Tuntuma'].mean(),0)
+        feeling_last_period = data_operations.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_28) & (trainings_df['Päivä'] <= current_day_minus_14)]['Tuntuma'].mean(),0)
+        feeling_change = feeling_current_period - feeling_last_period
 
     return render(request,'index.html',
         context = {
-            'training_hours_total': training_hours_total,
-            'trainings_per_week_avg': trainings_per_week_avg,
-            'trainings_latest': trainings_latest,
-            'trainings_latest_cols': trainings_latest_cols,
-            'trainings_per_week_json': trainings_per_week_json
+            'hours_current_year': int(round(hours_current_year,0)),
+            'hours_change': int(round(hours_change,0)),
+            'hours_per_week_current_year': round(hours_per_week_current_year,1),
+            'hours_per_week_change': round(hours_per_week_change,1),
+            'feeling_current_period': round(feeling_current_period,1),
+            'feeling_change': round(feeling_change,1),
+            'current_day': current_day
             })
 
 
