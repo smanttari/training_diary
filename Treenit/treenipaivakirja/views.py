@@ -12,7 +12,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.db.models.deletion import ProtectedError
 from django.db import IntegrityError
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponse
 from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -21,6 +21,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from datetime import datetime, timedelta
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 import pandas as pd
 import numpy as np
 import os
@@ -99,7 +101,6 @@ def trainings_view(request):
         sport = request.POST['sport']
         startdate = request.POST['startdate']
         enddate = request.POST['enddate']
-
         startdate_dt = datetime.strptime(startdate,'%d.%m.%Y')
         startdate_yyyymmdd = startdate_dt.strftime('%Y%m%d')
         enddate_dt = datetime.strptime(enddate,'%d.%m.%Y')
@@ -110,14 +111,12 @@ def trainings_view(request):
         if trainings_df is None:
             messages.add_message(request, messages.ERROR, 'Ei harjoituksia')
         else:
-            trainings_df = trainings_df[(trainings_df['vvvvkkpp']>=int(startdate_yyyymmdd)) & (trainings_df['vvvvkkpp']<=int(enddate_yyyymmdd))]
-            
+            trainings_df = trainings_df[(trainings_df['vvvvkkpp']>=int(startdate_yyyymmdd)) & (trainings_df['vvvvkkpp']<=int(enddate_yyyymmdd))]    
             if sport != 'Kaikki':
                 if sport in sports.keys():
                     trainings_df = trainings_df[trainings_df['Lajiryhmä'] == sport]
                 else:
                     trainings_df = trainings_df[trainings_df['Laji'] == sport]
-
             if trainings_df.empty:
                 messages.add_message(request, messages.ERROR, 'Ei harjoituksia')
             else:
@@ -126,29 +125,27 @@ def trainings_view(request):
                 trainings_export = trainings_export.sort_values(by='Pvm', ascending=True)
                 trainings_export['Pvm'] = pd.to_datetime(trainings_df['Pvm']).dt.strftime('%d.%m.%Y')
 
-                export_path = settings.FILEPATH_EXPORT
-                if not os.path.exists(export_path):
-                    os.makedirs(export_path)
-
                 if 'export_csv' in request.POST:
-                    filename = 'treenit.csv'
                     try:
-                        trainings_export.to_csv(export_path + filename,sep=';',header=True,index=False,encoding='utf-8')
-                        messages.add_message(request, messages.SUCCESS, 'Harjoitukset tallennettu tiedostoon {}{}'.format(export_path,filename))
+                        response = HttpResponse(content_type='text/csv')
+                        response['Content-Disposition'] = 'attachment; filename="treenit.csv"'
+                        trainings_export.to_csv(response,sep=';',header=True,index=False,encoding='utf-8')
+                        return response
                     except Exception as e:
-                        messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui: {}'.format(str(e)))
+                        messages.add_message(request, messages.ERROR, 'Lataus epäonnistui: {}'.format(str(e)))
 
                 if 'export_xls' in request.POST:
-                    filename = 'treenit.xlsx'
                     try:
-                        writer = pd.ExcelWriter(export_path + filename)
-                        trainings_export.to_excel(writer,header=True,index=False)
-                        writer.save()
-                        messages.add_message(request, messages.SUCCESS, 'Harjoitukset tallennettu tiedostoon {}{}'.format(export_path,filename))
+                        response = HttpResponse(content_type='application/ms-excel')
+                        response['Content-Disposition'] = 'attachment; filename="treenit.xlsx"'
+                        wb = Workbook()
+                        ws = wb.active
+                        for r in dataframe_to_rows(trainings_export, index=False, header=True):
+                            ws.append(r)
+                        wb.save(response)
+                        return response
                     except Exception as e:
-                        messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui: {}'.format(str(e)))
-
-                redirect('trainings')
+                        messages.add_message(request, messages.ERROR, 'Lataus epäonnistui: {}'.format(str(e)))
 
     return render(request, 'trainings.html',
         context = {

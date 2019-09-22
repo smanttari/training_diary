@@ -131,8 +131,6 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 
-FILEPATH_EXPORT = 'c:\\temp\\treenit\\'
-
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = [

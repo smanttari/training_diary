@@ -157,7 +157,7 @@ var filterByDateRange = function (settings, data, dataIndex){
             return false
         }
     }
-    catch {
+    catch(err) {
         console.log('Invalid date format')
         return true
     }
@@ -170,31 +170,31 @@ $.fn.dataTable.ext.search.push(filterByDateRange)
 // Datatables
 
 // filtering
-$("#sport").change(function(){
+$("#sport").change(function(event){
     event.preventDefault()
     treenitTable.draw()
 })
 
-$("#startdate").change(function(){
+$("#startdate").change(function(event){
     event.preventDefault()
     treenitTable.draw()
 })
 
-$("#startdate").keypress(function(e){
-    if (e.which ==13){
+$("#startdate").keypress(function(event){
+    if (event.which ==13){
         event.preventDefault()
         treenitTable.draw()
         highlightLepoRows()
     }   
 })
 
-$("#enddate").change(function(){
+$("#enddate").change(function(event){
     event.preventDefault()
     treenitTable.draw()
 })
 
-$("#enddate").keypress(function(e){
-    if (e.which ==13){
+$("#enddate").keypress(function(event){
+    if (event.which ==13){
         event.preventDefault()
         treenitTable.draw()
     }   
