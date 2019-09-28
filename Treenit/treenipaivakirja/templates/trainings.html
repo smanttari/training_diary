@@ -215,7 +215,7 @@ var treenitTable = $('#treenit').DataTable({
     "processing": true,
     "searching": true,
     "ordering":  true,
-    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Kaikki"]],
+    "lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "Kaikki"]],
     "autoWidth": false,
     "order": [],
     "lengthChange": true,
@@ -268,6 +268,13 @@ var treenitTable = $('#treenit').DataTable({
         ],
     "fnDrawCallback": function( oSettings ) {
         highlightLepoRows()
+        var api = this.api()
+        if (window.innerHeight > 900){
+            api.page.len(15)
+        }
+        else {
+            api.page.len(10)
+        }
     },
     "footerCallback": function ( row, data, start, end, display ) {
         var api = this.api(), data;

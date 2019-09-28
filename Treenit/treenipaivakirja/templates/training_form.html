@@ -39,7 +39,7 @@
             <div class="form-group row">
                 <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.laji_fk.label }}</b></label> 
                 <div class="col-md-2">{{ harjoitus_form.laji_fk|add_class:'form-control' }}</div>
-                <div class="col-md-3"><a class="nav-link" href="{% url 'sport_add' %}"><i class="fas fa-plus-circle mr-1"></i>Lisää laji</a></div>
+                <div class="col-md-3 pt-1"><a class="nav-link" href="{% url 'sport_add' %}"><i class="fas fa-plus-circle mr-1"></i>Lisää laji</a></div>
                 {% if harjoitus_form.laji_fk.errors %}
                     <div class="col-md-4 text-danger">{% for error in harjoitus_form.laji_fk.errors %}{{ error }}{% endfor %}</div>
                 {% else %}
@@ -58,7 +58,7 @@
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-form-label"><b>{{ harjoitus_form.keskisyke.label }}</b></label> 
-                <div class="col-md-3">{{ harjoitus_form.keskisyke|add_class:'form-control' }}</div>
+                <div class="col-md-2">{{ harjoitus_form.keskisyke|add_class:'form-control' }}</div>
                 {% if harjoitus_form.keskisyke.errors %}
                     <div class="col-md-4 text-danger">{% for error in harjoitus_form.keskisyke.errors %}{{ error }}{% endfor %}</div>
                 {% else %}
@@ -138,29 +138,34 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.nro.label }}</b></div>
-                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.teho.label }}</b></div>
-                <div class="form-group col-md-2 ml-2"><b>Kesto</b></div>
-                <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.kesto.label }}</div>
-                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.keskisyke.label }}</b></div>
-                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.maksimisyke.label }}</b></div>
-                <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.matka.label }} (km)</b></div>
-                <div class="form-group col-md-2 ml-2"><b>Vauhti</b></div>
-                <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.vauhti_min_km.label }}</div>
-                <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.vauhti_km_h.label }}</div>
+            <div class="d-none d-md-block">
+                <div class="form-row">
+                    <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.nro.label }}</b></div>
+                    <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.teho.label }}</b></div>
+                    <div class="form-group col-md-2 ml-2"><b>Kesto</b></div>
+                    <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.kesto.label }}</div>
+                    <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.keskisyke.label }}</b></div>
+                    <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.maksimisyke.label }}</b></div>
+                    <div class="form-group col-md-1 ml-2"><b>{{ tehot_formset.0.matka.label }} (km)</b></div>
+                    <div class="form-group col-md-2 ml-2"><b>Vauhti</b></div>
+                    <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.vauhti_min_km.label }}</div>
+                    <div class="form-group col-md-1 ml-2" hidden>{{ tehot_formset.0.vauhti_km_h.label }}</div>
+                </div>
             </div>
 
             {% for form in tehot_formset %}
             <div id="tehot_{{forloop.counter0}}" class="collapse hide">
-                <div class="form-row">
-                    <div class="form-group col-md-1">
+                <div class="form-row pt-3">
+                    <div class="form-group col-md-1 ml-2">
+                        <label class="d-block d-md-none"><b>{{ tehot_formset.0.nro.label }}</b></label>
                         {{ form.nro|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
+                        <label class="d-block d-md-none"><b>{{ tehot_formset.0.teho.label }}</b></label>
                         {{ form.teho|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-2 ml-2">
+                        <label class="d-block d-md-none"><b>Kesto</b></label>
                         <div class="input-group">
                             {{ form.kesto_h|add_class:'form-control' }}
                             {{ form.kesto_min|add_class:'form-control' }}
@@ -170,15 +175,19 @@
                         {{ form.kesto|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
+                        <label class="d-block d-md-none"><b>{{ tehot_formset.0.keskisyke.label }}</b></label>
                         {{ form.keskisyke|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
+                        <label class="d-block d-md-none"><b>{{ tehot_formset.0.maksimisyke.label }}</b></label>
                         {{ form.maksimisyke|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
+                        <label class="d-block d-md-none"><b>{{ tehot_formset.0.matka.label }}</b></label>
                         {{ form.matka|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-3 ml-2">
+                        <label class="d-block d-md-none"><b>Vauhti</b></label>
                         <div class="input-group">
                                 {{ form.vauhti_min|add_class:'form-control' }}
                                 {{ form.vauhti_s|add_class:'form-control' }}
@@ -194,7 +203,7 @@
                         {{ form.vauhti_km_h|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
-                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#tehot_{{forloop.counter0}}" id="poista_tehot_{{forloop.counter0}}" name="poista_tehot_{{forloop.counter0}}" onclick="deleteTehot(this.id)"><i class="far fa-trash-alt"></i></button> 
+                        <button class="btn btn-link text-decoration-none" type="button" data-toggle="collapse" data-target="#tehot_{{forloop.counter0}}" id="poista_tehot_{{forloop.counter0}}" name="poista_tehot_{{forloop.counter0}}" onclick="deleteTehot(this.id)"><i class="far fa-trash-alt"></i> Poista</button> 
                     </div> 
                     {% if tehot_formset.can_delete %}
                     <div class="form-check mt-1">
