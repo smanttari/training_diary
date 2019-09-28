@@ -1,4 +1,17 @@
 {% extends "base_generic.html" %}
+
+{% load static %}
+{% block head %}
+  <style>
+    body {
+      background-image: url("{% static 'treenipaivakirja/images/logo-light-margin.svg' %}");
+      background-position: center; 
+      background-repeat: no-repeat;
+      background-size: contain;
+    }
+  </style>
+{% endblock %}
+
 {% block title %}Treenipäiväkirja | Logout{% endblock %}
 
 {% block content %}
