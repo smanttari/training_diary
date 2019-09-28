@@ -56,8 +56,8 @@ def index(request):
         trainings_df['Päivä'] = pd.to_datetime(trainings_df['Päivä'])
         trainings_df['Kesto'] = trainings_df['Kesto'].fillna(0).astype(float).round(1)
 
-        hours_current_year = trainings_df[(trainings_df['Vuosi'] == current_year) & (trainings_df['Viikko'] < int(current_week))]['Kesto'].sum()
-        hours_past_year = trainings_df[(trainings_df['Vuosi'] == (current_year-1)) & (trainings_df['Viikko'] < int(current_week))]['Kesto'].sum()
+        hours_current_year = trainings_df[(trainings_df['Vuosi'] == current_year) & (trainings_df['Päivä'] <= current_day_pd)]['Kesto'].sum()
+        hours_past_year = trainings_df[(trainings_df['Vuosi'] == (current_year-1)) & (trainings_df['Päivä'] <= pd.Timestamp(current_day_pd - timedelta(days=365)))]['Kesto'].sum()
         hours_change = hours_current_year - hours_past_year
 
         hours_per_week_current_year = hours_current_year / (int(current_week)-1)
