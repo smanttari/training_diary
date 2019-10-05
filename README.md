@@ -42,7 +42,11 @@ http://127.0.0.1:8000/treenipaivakirja/
 
 Log in or register a new user.
 
+![login](./img/login.png)
+
 ## Features ##
+
+![features](./img/features.png)
 
 ### Keep track of your trainings
 
@@ -52,21 +56,20 @@ Log in or register a new user.
 
 ![trainings](./img/trainings.png)
 
-### Analyze your trainings
+### Analyse your trainings
 
-* Analyze your training amounts with various graphical reports
+* Analyse your training amounts with various graphical reports
 
 ![report_amount](./img/report_amount.png)
 
 ### Track your progression
 
-* Analyze progression in each sport
+* Analyse progression in each sport
 
 ![report_sport](./img/report_sport.png)
 
-### Multiuser support and personalise settings
+### Personalise settings
 
-* Multiple users can use the same program
 * Sports and training zones can be customized to each user
 
 ![settings](./img/settings.png)

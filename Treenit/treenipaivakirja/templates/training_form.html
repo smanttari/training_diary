@@ -155,7 +155,7 @@
 
             {% for form in tehot_formset %}
             <div id="tehot_{{forloop.counter0}}" class="collapse hide">
-                <div class="form-row pt-3">
+                <div class="form-row pt-2">
                     <div class="form-group col-md-1 ml-2">
                         <label class="d-block d-md-none"><b>{{ tehot_formset.0.nro.label }}</b></label>
                         {{ form.nro|add_class:'form-control' }}
@@ -214,6 +214,7 @@
                 {% for field in form.hidden_fields %}
                 {{ field }}
                 {% endfor %}
+                <hr class="d-block d-md-none">
             </div>
             {% endfor %}
         </fieldset>
@@ -253,6 +254,7 @@ $('#id_pvm').datepicker({
     selectOtherMonths: true,
     weekStartDay: 1,
     width: 160,
+    maxDate: today
 })
 
 
