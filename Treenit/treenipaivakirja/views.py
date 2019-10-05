@@ -27,6 +27,9 @@ import pandas as pd
 import numpy as np
 import os
 import json
+import logging
+
+LOGGER_DEBUG = logging.getLogger('django')
 
 
 @login_required
