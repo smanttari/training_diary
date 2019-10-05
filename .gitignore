@@ -4,3 +4,5 @@ __pycache__
 TODO.txt
 env
 *.sqlite3
+*.log
+*.log.*

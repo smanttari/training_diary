@@ -136,3 +136,32 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8080'
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters':{
+		'file':{
+			'format':'{asctime} {levelname} {module} {process:d} {thread:d} {message}',
+            'datefmt' : '[%Y-%m-%d %H:%M:%S]',
+            'style': '{',
+		}
+	},
+    'handlers': {
+        'file_debug': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes' : 100000000,
+            'backupCount' : 3,
+            'filename': 'debug.log',
+            'formatter': 'file',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_debug'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
