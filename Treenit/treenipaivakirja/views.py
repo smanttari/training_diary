@@ -17,7 +17,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from datetime import datetime, timedelta
@@ -628,7 +628,7 @@ def trainings_data(request):
 
 
 @api_view(['GET', 'POST'])
-#@permission_classes((IsAuthenticated, ))
+@permission_classes((IsAdminUser, ))
 def trainings_api(request):
     """ 
     List all trainings or create a new training.
@@ -647,8 +647,8 @@ def trainings_api(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-#@permission_classes((IsAuthenticated, ))
-def training_api(request,pk):
+@permission_classes((IsAdminUser, ))
+def trainings_api_by_id(request,pk):
     """
     Retrieve, update or delete a training.
     """

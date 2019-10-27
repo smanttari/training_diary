@@ -1,5 +1,6 @@
 from django.urls import include,path
 from treenipaivakirja import views
+from rest_framework_simplejwt import views as jwt_views
 
 
 urlpatterns = [
@@ -19,6 +20,8 @@ urlpatterns = [
     path('zones/<int:pk>/delete', views.zone_delete, name='zone_delete'),
     path('settings/', views.settings_view, name='settings'),
     path('register', views.register, name='register'),
-    path('rest/trainings/', views.trainings_api),
-    path('rest/trainings/<int:pk>', views.training_api),
+    path('api/trainings', views.trainings_api),
+    path('api/trainings/<int:pk>', views.trainings_api_by_id),
+    path('api/token', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 ]
