@@ -12,7 +12,7 @@ HARJOITUKSET
 <div class="float-right form-inline">
     <button id="export_csv" name="export_csv" class="btn btn-sm btn-primary mr-2" type="submit" form="filter_form"><i class="fa fa-download mr-2"></i>CSV</button>
     <button id="export_xls" name="export_xls" class="btn btn-sm btn-primary mr-2" type="submit" form="filter_form"><i class="fa fa-download mr-2"></i>EXCEL</button>
-    <a id="add_new" href="{% url 'training_add' %}" class="btn btn-sm btn-success" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää uusi harjoitus</a>
+    <a id="add_new" href="{% url 'training_add' %}" class="btn btn-sm btn-success" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää uusi</a>
 </div>
 
 {% endblock %}
@@ -33,11 +33,11 @@ HARJOITUKSET
     <div class="bg-light border mb-2 p-2 pb-3">
         <form id="filter_form" class="form-inline mt-2" method="post">{% csrf_token %}
             <div class="form-group ml-2 mr-1">
-                <label class="text-muted mr-2" for="startdate">Aikaväli:</label>
+                <label class="text-muted mr-2" for="startdate">Alkupäivä:</label>
                 <input class="form-control form-control ml-2" id="startdate" name="startdate" pattern="\d{1,2}.\d{1,2}.\d{4}" placeholder="dd.mm.yyyy" required/>
             </div>
-            <div class="form-group ml-1 mr-3">
-                <label class="text-muted" for="enddate">-</label>
+            <div class="form-group ml-3 mr-3">
+                <label class="text-muted mr-2" for="startdate">Loppupäivä:</label>
                 <input class="form-control form-control ml-2" id="enddate" name="enddate" pattern="\d{1,2}.\d{1,2}.\d{4}" placeholder="dd.mm.yyyy" required/>
             </div>
             <div class="form-group ml-3 mr-3">
@@ -56,7 +56,7 @@ HARJOITUKSET
 
     <div class="mt-4">
         <div class="table-responsive">
-            <table id="treenit" class="table table-sm">
+            <table id="treenit" class="table table-sm table-bordered">
                 <thead class="thead-light">
                     <tr class="text-nowrap">
                     {% for header in table_headers %}
@@ -201,25 +201,25 @@ $("#enddate").keypress(function(event){
 })
 
 var treenitTable = $('#treenit').DataTable({
-    "deferRender": true,
-    "ajax": {
-        "url" :"{% url 'trainings_data' %}",
-        "type": "post",
-        "data": {
+    deferRender: true,
+    ajax: {
+        url :"{% url 'trainings_data' %}",
+        type: "post",
+        data: {
                 'columns':data_headers,
                 "csrfmiddlewaretoken": '{{ csrf_token }}'
             },
-        "dataType": "json",
-        "dataSrc": function (json) {return json}
+        dataType: "json",
+        dataSrc: function (json) {return json}
     },
-    "processing": true,
-    "searching": true,
-    "ordering":  true,
-    "lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "Kaikki"]],
-    "autoWidth": false,
-    "order": [],
-    "lengthChange": true,
-    "language": {
+    processing: true,
+    searching: true,
+    ordering:  true,
+    lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "Kaikki"]],
+    autoWidth: false,
+    order: [],
+    lengthChange: true,
+    language: {
         search: "Etsi:",
         lengthMenu: "Näytä _MENU_ per sivu",
         paginate: {
@@ -235,12 +235,12 @@ var treenitTable = $('#treenit').DataTable({
             zeroRecords:    "Ei harjoituksia",
         processing: "Ladataan..."
     },
-    "columnDefs": [
+    columnDefs: [
         { className: "text-nowrap", targets: "_all" },
         { 
-            "targets": [0],
-            "orderable": false,
-            "render": function(data, type, row, meta){
+            targets: [0],
+            orderable: false,
+            render: function(data, type, row, meta){
                 if (data !== ''){
                     let url = "{{ request.path }}" + data + "/modify"
                     data = "<a href=" + url + '><i class="far fa-edit"></i></a>'
@@ -252,9 +252,9 @@ var treenitTable = $('#treenit').DataTable({
                 },
         },
         { 
-            "targets": [1],
-            "orderable": false,
-            "render": function(data, type, row, meta){
+            targets: [1],
+            orderable: false,
+            render: function(data, type, row, meta){
                 if (data !== ''){
                     let url = "{{ request.path }}" + data + "/delete"
                     data = "<a href=" + url + '><i class="far fa-trash-alt"></i></a>'
@@ -266,7 +266,7 @@ var treenitTable = $('#treenit').DataTable({
                 },
         }
         ],
-    "fnDrawCallback": function( oSettings ) {
+    fnDrawCallback: function( oSettings ) {
         highlightLepoRows()
         $("select[name=treenit_length]").removeClass("custom-select");
         var api = this.api()
@@ -277,7 +277,7 @@ var treenitTable = $('#treenit').DataTable({
             api.page.len(10)
         }
     },
-    "footerCallback": function ( row, data, start, end, display ) {
+    footerCallback: function ( row, data, start, end, display ) {
         var api = this.api(), data;
 
         // Remove the formatting to get numeric data for summation
