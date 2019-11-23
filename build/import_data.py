@@ -32,7 +32,7 @@ datasets = {
         INSERT INTO treenipaivakirja_tehoalue (
             id,
             jarj_nro,
-            teho,
+            tehoalue,
             alaraja,
             ylaraja,
             user_id

@@ -1,4 +1,4 @@
-from .models import aika, laji, harjoitus, tehot, tehoalue
+from .models import aika, laji, harjoitus, teho, tehoalue
 from django.contrib import admin
 
 
@@ -13,16 +13,16 @@ class lajiAdmin(admin.ModelAdmin):
 class aikaAdmin(admin.ModelAdmin):
     list_display = ('pvm','viikonpaiva_lyh','kk','kk_nimi','vko')
 
-class tehotAdmin(admin.ModelAdmin):
-    list_display = ('harjoitus','teho','kesto')
+class tehoAdmin(admin.ModelAdmin):
+    list_display = ('harjoitus','tehoalue','kesto')
 
 class tehoalueAdmin(admin.ModelAdmin):
-    list_display = ('jarj_nro','teho','alaraja','ylaraja')
+    list_display = ('jarj_nro','tehoalue','alaraja','ylaraja')
 
 admin.site.register(harjoitus, harjoitusAdmin)
 admin.site.register(laji, lajiAdmin)
 admin.site.register(aika, aikaAdmin)
-admin.site.register(tehot, tehotAdmin)
+admin.site.register(teho, tehoAdmin)
 admin.site.register(tehoalue, tehoalueAdmin)
 
 admin.site.site_header = 'Treenipäiväkirja'

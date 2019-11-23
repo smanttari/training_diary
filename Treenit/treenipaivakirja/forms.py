@@ -1,5 +1,5 @@
 from django import forms
-from treenipaivakirja.models import harjoitus,tehot,laji,tehoalue
+from treenipaivakirja.models import harjoitus,teho,laji,tehoalue
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
@@ -54,7 +54,7 @@ class LajiForm(forms.ModelForm):
             ]
 
 
-class TehotForm(forms.ModelForm):
+class TehoForm(forms.ModelForm):
 
     nro = forms.IntegerField(min_value=0)
     kesto_h = forms.IntegerField(label='Kesto (h)',min_value=0,required=False,widget=forms.NumberInput({'placeholder': 'h'}))
@@ -63,10 +63,10 @@ class TehotForm(forms.ModelForm):
     vauhti_s = forms.IntegerField(label='Vauhti (s)',min_value=0,max_value=59,required=False,widget=forms.NumberInput({'placeholder': 's'}))
 
     class Meta:
-        model = tehot
+        model = teho
         fields = [
             'nro',
-            'teho',
+            'tehoalue',
             'kesto_h',
             'kesto_min',
             'kesto',
@@ -85,7 +85,7 @@ class TehoalueForm(forms.ModelForm):
         model = tehoalue
         fields = [
             'jarj_nro',
-            'teho',
+            'tehoalue',
             'alaraja',
             'ylaraja'
             ]

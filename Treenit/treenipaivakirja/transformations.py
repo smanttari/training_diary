@@ -1,4 +1,4 @@
-from treenipaivakirja.models import harjoitus,aika,laji,tehot,tehoalue
+from treenipaivakirja.models import harjoitus,aika,laji,teho,tehoalue
 from django.db.models import Sum,Max,Min
 
 from datetime import datetime
@@ -113,7 +113,7 @@ def trainings_datatable(user_id):
     trainings_df['Kesto'] = trainings_df.apply(lambda row: duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
 
     # calculate duration per zone
-    zones_duration = tehot.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','teho_id__teho','kesto_h','kesto_min')
+    zones_duration = teho.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','tehoalue_id__tehoalue','kesto_h','kesto_min')
     if zones_duration:
         zones_duration_df = pd.DataFrame(list(zones_duration),columns = ['id','teho','kesto_h','kesto_min'])
         zones_duration_df = zones_duration_df.fillna(np.nan)  #replace None with NaN
@@ -156,7 +156,7 @@ def sports_list(user_id):
 
 
 def zones(user_id):
-    zones = tehoalue.objects.filter(user=user_id).values_list('id','id','jarj_nro','teho','alaraja','ylaraja')
+    zones = tehoalue.objects.filter(user=user_id).values_list('id','id','jarj_nro','tehoalue','alaraja','ylaraja')
     zones_df = pd.DataFrame(list(zones), columns=['delete','edit','Järj.Nro', 'Teho', 'Alaraja', 'Yläraja']).sort_values(by='Järj.Nro')
     zones_df[['Alaraja','Yläraja']] = zones_df[['Alaraja','Yläraja']].fillna(-1).astype(int).astype(str).replace('-1', '')
     zones_df = zones_df.fillna('')
@@ -278,7 +278,7 @@ def trainings_per_sport(trainings_df):
 
 
 def hours_per_year_per_zone(trainings_df,user_id):
-    zones_duration = tehot.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','harjoitus_id__aika_id__vuosi','teho_id__teho','kesto')
+    zones_duration = teho.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','harjoitus_id__aika_id__vuosi','tehoalue_id__tehoalue','kesto')
     if not zones_duration:
         return []
     else:
@@ -297,6 +297,6 @@ def hours_per_year_per_zone(trainings_df,user_id):
         zones_duration_df.index = zones_duration_df.index.astype(str)
         zones_duration_df = zones_per_training.merge(zones_duration_df, how='left', left_index=True, right_on='vuosi')
         
-        zones = list(tehot.objects.filter(harjoitus_id__user=user_id).values_list('teho_id__teho',flat=True).distinct().order_by('teho_id__jarj_nro')) + ['Muu']
+        zones = list(teho.objects.filter(harjoitus_id__user=user_id).values_list('tehoalue_id__tehoalue',flat=True).distinct().order_by('tehoalue_id__jarj_nro')) + ['Muu']
         zones_duration_df = zones_duration_df[zones]  
         return dataframe_to_json(zones_duration_df)

@@ -1,5 +1,5 @@
-from treenipaivakirja.models import harjoitus,aika,laji,tehot,tehoalue
-from treenipaivakirja.forms import HarjoitusForm,LajiForm,TehotForm,TehoalueForm,UserForm,RegistrationForm
+from treenipaivakirja.models import harjoitus,aika,laji,teho,tehoalue
+from treenipaivakirja.forms import HarjoitusForm,LajiForm,TehoForm,TehoalueForm,UserForm,RegistrationForm
 import treenipaivakirja.transformations as transformations
 from django.db.models import Sum,Max,Min
 from django.shortcuts import render,redirect
@@ -90,7 +90,7 @@ def trainings_view(request):
     sports = transformations.sports_dict(current_user_id)
     sport = 'Kaikki'
 
-    zones = list(tehot.objects.filter(harjoitus_id__user=current_user_id).values_list('teho_id__teho',flat=True).distinct().order_by('teho_id__jarj_nro'))
+    zones = list(teho.objects.filter(harjoitus_id__user=current_user_id).values_list('tehoalue_id__tehoalue',flat=True).distinct().order_by('tehoalue_id__jarj_nro'))
     table_headers = ['edit','delete','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti']
     table_headers = table_headers[:-1] + zones + table_headers[-1:]
     
@@ -243,10 +243,10 @@ def training_add(request):
     Inserts new training 
     """
     max_count = 20
-    TehotFormset = inlineformset_factory(harjoitus,tehot,form=TehotForm,extra=max_count,max_num=max_count,can_delete=True)
+    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=max_count,max_num=max_count,can_delete=True)
     if request.method == "POST":
         harjoitus_form = HarjoitusForm(request.user,request.POST)
-        tehot_formset = TehotFormset(request.POST)
+        teho_formset = TehoFormset(request.POST)
         if harjoitus_form.is_valid() and harjoitus_form.has_changed():
             instance = harjoitus_form.save(commit=False)
             instance.aika_id = instance.pvm.strftime('%Y%m%d')
@@ -266,21 +266,21 @@ def training_add(request):
                 instance.vauhti_km_h = 60 / instance.vauhti_min_km
             instance.save()
             training = harjoitus.objects.get(id=instance.id)
-            tehot_formset = TehotFormset(request.POST, request.FILES,instance=training)
-            if tehot_formset.is_valid() and tehot_formset.has_changed():
-                tehot_formset.save()
+            teho_formset = TehoFormset(request.POST, request.FILES,instance=training)
+            if teho_formset.is_valid() and teho_formset.has_changed():
+                teho_formset.save()
             return redirect('trainings')
     else:
         harjoitus_form = HarjoitusForm(request.user,initial={'pvm': datetime.now()})
-        tehot_formset = TehotFormset(queryset=tehot.objects.none())
-        for form in tehot_formset:
-            form.fields['teho'].queryset = tehoalue.objects.filter(user=request.user).order_by('jarj_nro')
+        teho_formset = TehoFormset(queryset=teho.objects.none())
+        for form in teho_formset:
+            form.fields['tehoalue'].queryset = tehoalue.objects.filter(user=request.user).order_by('jarj_nro')
 
     return render(request, 'training_form.html',
         context = {
             'page_title': 'Treenipäiväkirja | Lisää harjoitus',
             'page_header': 'LISÄÄ HARJOITUS',
-            'tehot_formset': tehot_formset,
+            'teho_formset': teho_formset,
             'harjoitus_form': harjoitus_form,
             'max_count':max_count
             })
@@ -292,11 +292,11 @@ def training_modify(request,pk):
     Modifies training information 
     """
     max_count = 20
-    TehotFormset = inlineformset_factory(harjoitus,tehot,form=TehotForm,extra=max_count,max_num=max_count,can_delete=True)
+    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=max_count,max_num=max_count,can_delete=True)
     training = harjoitus.objects.get(id=pk,user_id=request.user.id)
     if request.method == "POST":
         harjoitus_form = HarjoitusForm(request.user,request.POST,instance=training)
-        tehot_formset = TehotFormset(request.POST,request.FILES,instance=training)
+        teho_formset = TehoFormset(request.POST,request.FILES,instance=training)
         if harjoitus_form.is_valid() and harjoitus_form.has_changed():
             post = harjoitus_form.save(commit=False)
             post.aika_id = post.pvm.strftime('%Y%m%d')
@@ -314,8 +314,8 @@ def training_modify(request,pk):
             elif post.vauhti_min_km is not None and vauhti_km_h is None:
                 post.vauhti_km_h = 60 / post.vauhti_min_km
             post.save()
-        if tehot_formset.is_valid() and tehot_formset.has_changed():
-            tehot_formset.save()
+        if teho_formset.is_valid() and teho_formset.has_changed():
+            teho_formset.save()
         return redirect('trainings')
     else:
         if training.vauhti_min_km is None:
@@ -325,15 +325,15 @@ def training_modify(request,pk):
             vauhti_m = int(training.vauhti_min_km)
             vauhti_s = round((training.vauhti_min_km*60) % 60,0)
         harjoitus_form = HarjoitusForm(request.user,instance=training,initial={'vauhti_min': vauhti_m, 'vauhti_s': vauhti_s })
-        tehot_formset = TehotFormset(instance=training)
-        for form in tehot_formset:
-            form.fields['teho'].queryset = tehoalue.objects.filter(user=request.user)
+        teho_formset = TehoFormset(instance=training)
+        for form in teho_formset:
+            form.fields['tehoalue'].queryset = tehoalue.objects.filter(user=request.user)
     
     return render(request, 'training_form.html',
         context = {
             'page_title': 'Treenipäiväkirja | Muokkaa harjoitusta',
             'page_header': 'MUOKKAA HARJOITUSTA',
-            'tehot_formset': tehot_formset,
+            'teho_formset': teho_formset,
             'harjoitus_form': harjoitus_form,
             'max_count':max_count
             })
@@ -466,7 +466,7 @@ def zone_add(request):
                 instance.save()
                 return redirect('settings')
             except IntegrityError as e:
-                error_message = "Tehoalue nimellä '{}' on jo olemassa".format(instance.teho)
+                error_message = "Tehoalue nimellä '{}' on jo olemassa".format(instance.tehoalue)
 
     return render(request, 'zone_form.html',
         context = {
@@ -493,7 +493,7 @@ def zone_modify(request,pk):
                 instance.save()
                 return redirect('settings')
             except IntegrityError as e:
-                error_message = "Tehoalue nimellä '{}' on jo olemassa".format(instance.teho)
+                error_message = "Tehoalue nimellä '{}' on jo olemassa".format(instance.tehoalue)
 
     return render(request, 'zone_form.html',
         context = {
@@ -510,7 +510,7 @@ def zone_delete(request,pk):
     Deletes training zone 
     """
     instance = tehoalue.objects.get(id=pk, user_id=request.user.id)
-    zone = instance.teho
+    zone = instance.tehoalue
     btn_status = ''
 
     if request.method == "POST":
