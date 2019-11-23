@@ -3,9 +3,9 @@ from django.contrib import admin
 
 
 class harjoitusAdmin(admin.ModelAdmin):
-    list_display = ('pvm','laji_fk','kesto','matka')
-    list_filter = ('pvm','laji_fk')
-    fields = ['pvm','laji_fk','kesto','matka',('vauhti_km_h','vauhti_min_km'),'keskisyke','kalorit','tuntuma','kommentti']
+    list_display = ('pvm','laji','kesto','matka')
+    list_filter = ('pvm','laji')
+    fields = ['pvm','laji','kesto','matka',('vauhti_km_h','vauhti_min_km'),'keskisyke','kalorit','tuntuma','kommentti']
     
 class lajiAdmin(admin.ModelAdmin):
     list_display = ('laji','laji_nimi','laji_ryhma')
@@ -14,7 +14,7 @@ class aikaAdmin(admin.ModelAdmin):
     list_display = ('pvm','viikonpaiva_lyh','kk','kk_nimi','vko')
 
 class tehotAdmin(admin.ModelAdmin):
-    list_display = ('harjoitus_fk','teho','kesto')
+    list_display = ('harjoitus','teho','kesto')
 
 class tehoalueAdmin(admin.ModelAdmin):
     list_display = ('jarj_nro','teho','alaraja','ylaraja')

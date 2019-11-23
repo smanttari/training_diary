@@ -22,7 +22,7 @@ class HarjoitusForm(forms.ModelForm):
         fields = [
             'pvm',
             'vuorokaudenaika',
-            'laji_fk',
+            'laji',
             'kesto_h',
             'kesto_min',
             'keskisyke',
@@ -41,7 +41,7 @@ class HarjoitusForm(forms.ModelForm):
     # https://simpleisbetterthancomplex.com/questions/2017/03/22/how-to-dynamically-filter-modelchoices-queryset-in-a-modelform.html
     def __init__(self, user, *args, **kwargs):
         super(HarjoitusForm, self).__init__(*args, **kwargs)
-        self.fields['laji_fk'].queryset = laji.objects.filter(user=user)
+        self.fields['laji'].queryset = laji.objects.filter(user=user)
 
 
 class LajiForm(forms.ModelForm):

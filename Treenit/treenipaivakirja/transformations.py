@@ -77,7 +77,7 @@ def trainings_datatable(user_id):
     """
     Fetch training data from database and return cleaned pandas dataframe of it
     """
-    startdate = harjoitus.objects.filter(user=user_id).aggregate(Min('pvm_fk_id'))['pvm_fk_id__min']
+    startdate = harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
     if startdate is None:
         return None
     enddate = datetime.now().date().strftime('%Y%m%d')
@@ -87,8 +87,8 @@ def trainings_datatable(user_id):
     days_df = pd.DataFrame(list(days), columns=['Pvm','vvvvkkpp','Viikonpäivä','Vko'])
 
     trainings = harjoitus.objects.filter(user=user_id).values_list(
-        'id','id','pvm_fk_id','kesto','kesto_h','kesto_min','laji_fk__laji_nimi',
-        'laji_fk__laji_ryhma','matka','vauhti_km_h','vauhti_min_km','keskisyke',
+        'id','id','aika_id','kesto','kesto_h','kesto_min','laji__laji_nimi',
+        'laji__laji_ryhma','matka','vauhti_km_h','vauhti_min_km','keskisyke',
         'tuntuma','kommentti','nousu')
 
     trainings_df = pd.DataFrame(list(trainings), 
@@ -113,7 +113,7 @@ def trainings_datatable(user_id):
     trainings_df['Kesto'] = trainings_df.apply(lambda row: duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
 
     # calculate duration per zone
-    zones_duration = tehot.objects.filter(harjoitus_fk_id__user=user_id).values_list('harjoitus_fk_id','teho_id__teho','kesto_h','kesto_min')
+    zones_duration = tehot.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','teho_id__teho','kesto_h','kesto_min')
     if zones_duration:
         zones_duration_df = pd.DataFrame(list(zones_duration),columns = ['id','teho','kesto_h','kesto_min'])
         zones_duration_df = zones_duration_df.fillna(np.nan)  #replace None with NaN
@@ -165,9 +165,9 @@ def zones(user_id):
 
 def trainings(user_id):
     trainings_objects = harjoitus.objects.filter(user=user_id).values_list(
-        'id','pvm','kesto','matka','pvm_fk_id__vuosi','pvm_fk_id__kk','pvm_fk_id__kk_nimi',
-        'pvm_fk_id__vko','pvm_fk_id__hiihtokausi','laji_fk_id__laji_nimi',
-        'laji_fk_id__laji','laji_fk_id__laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke')
+        'id','pvm','kesto','matka','aika_id__vuosi','aika_id__kk','aika_id__kk_nimi',
+        'aika_id__vko','aika_id__hiihtokausi','laji_id__laji_nimi',
+        'laji_id__laji','laji_id__laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke')
     trainings_df = pd.DataFrame(list(trainings_objects), 
         columns = [
             'id','pvm','kesto','matka','vuosi','kk','kk_nimi','vko','hiihtokausi',
@@ -188,7 +188,7 @@ def trainings_per_year(trainings_df):
 
 def trainings_per_month(trainings_df,user_id):
     current_day_yyyymmdd = datetime.now().date().strftime('%Y%m%d')
-    first_day_yyyymmdd = harjoitus.objects.filter(user=user_id).aggregate(Min('pvm_fk_id'))['pvm_fk_id__min']
+    first_day_yyyymmdd = harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
     years_months = aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_day_yyyymmdd).values_list('vuosi','kk').distinct()
     years_months = pd.DataFrame(list(years_months), columns=['vuosi','kk'])
     years_months['vuosi'] = years_months['vuosi'].astype(str)
@@ -203,7 +203,7 @@ def trainings_per_week(trainings_df,user_id):
     current_day_yyyymmdd = current_day.strftime('%Y%m%d')
     current_year = str(current_day.year)
     current_week = str(current_day.strftime("%V"))
-    first_day_yyyymmdd = harjoitus.objects.filter(user=user_id).aggregate(Min('pvm_fk_id'))['pvm_fk_id__min']
+    first_day_yyyymmdd = harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
     years_weeks = aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_day_yyyymmdd).values_list('vuosi','vko').distinct()
     years_weeks = pd.DataFrame(list(years_weeks), columns=['vuosi','vko'])
     years_weeks['vuosi'] = years_weeks['vuosi'].astype(str)
@@ -278,7 +278,7 @@ def trainings_per_sport(trainings_df):
 
 
 def hours_per_year_per_zone(trainings_df,user_id):
-    zones_duration = tehot.objects.filter(harjoitus_fk_id__user=user_id).values_list('harjoitus_fk_id','harjoitus_fk_id__pvm_fk__vuosi','teho_id__teho','kesto')
+    zones_duration = tehot.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','harjoitus_id__aika_id__vuosi','teho_id__teho','kesto')
     if not zones_duration:
         return []
     else:
@@ -297,6 +297,6 @@ def hours_per_year_per_zone(trainings_df,user_id):
         zones_duration_df.index = zones_duration_df.index.astype(str)
         zones_duration_df = zones_per_training.merge(zones_duration_df, how='left', left_index=True, right_on='vuosi')
         
-        zones = list(tehot.objects.filter(harjoitus_fk_id__user=user_id).values_list('teho_id__teho',flat=True).distinct().order_by('teho_id__jarj_nro')) + ['Muu']
+        zones = list(tehot.objects.filter(harjoitus_id__user=user_id).values_list('teho_id__teho',flat=True).distinct().order_by('teho_id__jarj_nro')) + ['Muu']
         zones_duration_df = zones_duration_df[zones]  
         return dataframe_to_json(zones_duration_df)

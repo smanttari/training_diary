@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 class harjoitus(models.Model):
 
     pvm = models.DateField(verbose_name='Päivä')
-    pvm_fk = models.ForeignKey('aika', on_delete=models.PROTECT, verbose_name='vvvvkkpp',blank=True)
-    laji_fk = models.ForeignKey('laji', on_delete=models.PROTECT, verbose_name='Laji')
+    aika = models.ForeignKey('aika', on_delete=models.PROTECT, verbose_name='vvvvkkpp',blank=True)
+    laji = models.ForeignKey('laji', on_delete=models.PROTECT, verbose_name='Laji')
     kesto = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     kesto_h = models.PositiveIntegerField(null=True, blank=True, verbose_name='h')
     kesto_min = models.PositiveIntegerField(null=True, blank=True, verbose_name='min')
@@ -29,7 +29,7 @@ class harjoitus(models.Model):
     nousu = models.IntegerField(null=True, blank=True, verbose_name='Nousu (m)')
 
     def __str__(self):
-        return '%s %s %s h' % (self.id ,self.laji_fk, self.kesto)
+        return '%s %s %s h' % (self.id ,self.laji, self.kesto)
         
     class Meta:
         verbose_name_plural = "Harjoitus"
@@ -45,8 +45,8 @@ class harjoitus(models.Model):
         return self.pvm.strftime('%Y%m%d')
     
     def save(self, *args, **kwargs):
-        if not self.pvm_fk_id:
-            self.pvm_fk_id = self.vvvvkkpp()
+        if not self.aika_id:
+            self.aika_id = self.vvvvkkpp()
         super(harjoitus, self).save(*args, **kwargs)
     
     
@@ -88,7 +88,7 @@ class aika(models.Model):
 
 class tehot(models.Model):
 
-    harjoitus_fk = models.ForeignKey('harjoitus', on_delete=models.CASCADE)
+    harjoitus = models.ForeignKey('harjoitus', on_delete=models.CASCADE)
     nro = models.IntegerField(blank=False)
     kesto = models.DecimalField(max_digits=5, decimal_places=2, null=True,blank=True)
     kesto_h = models.PositiveIntegerField(null=True, blank=True,verbose_name='h')

@@ -3,7 +3,7 @@ from treenipaivakirja.models import harjoitus
 
 
 class HarjoitusSerializer(serializers.ModelSerializer):
-    laji_fk = serializers.StringRelatedField(many=False)
+    laji = serializers.StringRelatedField(many=False)
     user = serializers.StringRelatedField(many=False)
 
     class Meta:
@@ -12,7 +12,7 @@ class HarjoitusSerializer(serializers.ModelSerializer):
             'id',
             'pvm',
             'vuorokaudenaika',
-            'laji_fk',
+            'laji',
             'kesto_h',
             'kesto_min',
             'keskisyke',
