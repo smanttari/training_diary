@@ -1,15 +1,13 @@
 from django import forms
-from treenipaivakirja.models import harjoitus,teho,laji,tehoalue
+from treenipaivakirja.models import harjoitus, teho, laji, tehoalue, kausi
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
 
 
 class HarjoitusForm(forms.ModelForm):
-
     kesto_h = forms.IntegerField(label='h',min_value=0,required=False,widget=forms.NumberInput({'placeholder': 'h'}))
     kesto_min = forms.IntegerField(label='min',min_value=0,max_value=59,required=False,widget=forms.NumberInput({'placeholder': 'min'}))
-
     vauhti_min = forms.IntegerField(label='min',min_value=0,required=False,widget=forms.NumberInput({'placeholder': 'min'}))
     vauhti_s = forms.IntegerField(label='s',min_value=0,max_value=59,required=False,widget=forms.NumberInput({'placeholder': 's'}))
 
@@ -55,7 +53,6 @@ class LajiForm(forms.ModelForm):
 
 
 class TehoForm(forms.ModelForm):
-
     nro = forms.IntegerField(min_value=0)
     kesto_h = forms.IntegerField(label='Kesto (h)',min_value=0,required=False,widget=forms.NumberInput({'placeholder': 'h'}))
     kesto_min = forms.IntegerField(label='Kesto (min)',min_value=0,max_value=59,required=False,widget=forms.NumberInput({'placeholder': 'min'}))
@@ -116,4 +113,14 @@ class RegistrationForm(UserCreationForm):
             'email', 
             'password1', 
             'password2'
-        ]
+            ]
+
+
+class KausiForm(forms.ModelForm):
+    class Meta:
+        model = kausi
+        fields = [
+            'kausi',
+            'alkupvm',
+            'loppupvm'
+            ]

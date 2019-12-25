@@ -223,29 +223,10 @@
   // activate nav item
   document.getElementById("reports").classList.add('active')
 
-  // function for showing/hiding elements
-  function showDiv(id) {
-    buttons = document.getElementsByName("nav_btn")
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].classList.remove("active")
-    }
-    document.getElementById("btn_" + id).classList.add("active")
-
-    var pages = document.getElementsByName("page")
-    for (var i = 0; i < pages.length; i++) {
-      if (pages[i].id == id) {
-        pages[i].style.display = 'block'
-      }
-      else {
-        pages[i].style.display = 'none'
-      }
-    }
-  }
-
   // enable Bootstrap tooltips
   $(function () {$('[data-toggle="tooltip"]').tooltip()})
 
-
+  
   // load data
   let hoursPerYear = {{ hours_per_year_json|safe }}
   let hoursPerMonth = {{ hours_per_month_json|safe }}

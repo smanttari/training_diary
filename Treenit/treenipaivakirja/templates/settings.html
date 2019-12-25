@@ -20,15 +20,14 @@
     <button id="btn_profile" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('profile')">PROFIILI</button>
     <button id="btn_sports" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('sports')">LAJIT</button>
     <button id="btn_zones" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('zones')">TEHOALUEET</button>
+    <button id="btn_seasons" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('seasons')">HARJOITUSKAUDET</button>
     <button id="btn_pw_reset" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('pw_reset')">VAIHDA SALASANA</button>
   </div>
 
+
 <div class="mt-4" name="page" id="profile" style="display: block">
-
   <div class="border p-4 bg-light">
-
     <h5 class="mb-4">PROFIILI</h5>
-
     <form method="post">{% csrf_token %}
       <fieldset>
         <div class="form-group row">
@@ -45,95 +44,179 @@
         </div>
       </fieldset>
       <div class="form-actions col-md-6 mt-3">
-        <button type="submit" class="btn btn-success mr-3" name="profile_save" id="profile_save">Tallenna</button>
+        <button type="submit" class="btn btn-success mr-3" name="profile_save" id="profile_save">TALLENNA</button>
       </div>
     </form>
-
   </div>
-
 </div>
 
+
 <div class="mt-4" name="page" id="sports">
-
-  <div class="border p-4 bg-light">
+  <div class="border p-3 bg-light">
   <h5 class="mb-4">LAJIT</h5>
-
-  <div class="col-lg-6">
-    <table class="table table-sm mb-4">
-      <thead class="thead-light">
-        <tr>
-          {% for header in sports_headers %}
-          <th>{{ header }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for id,row in sports_values.items %}
-        <tr class="table-light">
-          {% for column,value in row.items %}
-          {% if column == 'edit' %}
-          <td><a href="{% url 'sport_modify' value  %}"><i class="far fa-edit"></i></a></td>
-          {% elif column == 'delete' %}
-          <td><a href="{% url 'sport_delete' value  %}"><i class="far fa-trash-alt"></i></a></td>
-          {% else %}
-          <td>{{ value }}</td>
-          {% endif %}
-          {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <div class="row">
-      <a href="{% url 'sport_add' %}" class="btn btn-success mr-3 ml-4" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää</a>  
+    <div class="col-xl-6">
+    <form method="post">{% csrf_token %}
+      {{ sports_formset.management_form }}
+      <div class="table-responsive-lg">
+        <table class="table table-sm table-light">
+          <thead class="thead-light">
+            <tr>
+              <th class="pl-3 pr-3">{{ sports_formset.0.laji.label }}</th>
+              <th class="pl-3 pr-3">{{ sports_formset.0.laji_nimi.label }}</th>
+              <th class="pl-3 pr-3">{{ sports_formset.0.laji_ryhma.label }}</th>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in sports_formset %}
+              <tr id="id_{{sports_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+                <td>{{ form.laji|add_class:'form-control' }}</td>
+                <td>{{ form.laji_nimi|add_class:'form-control' }}</td>
+                <td>{{ form.laji_ryhma|add_class:'form-control' }}</td>
+                <td>
+                  <button class="btn btn-link text-decoration-none" 
+                  type="button" 
+                  data-toggle="collapse" 
+                  data-target="#id_{{sports_formset.prefix}}-{{forloop.counter0}}" 
+                  id="id_{{sports_formset.prefix}}-del-{{forloop.counter0}}"
+                  name="sports_delete">
+                  <i class="far fa-trash-alt"></i>
+                 </button>
+                </td>
+                <td style="display: none">{{ form.DELETE }}</td>
+                {% for field in form.hidden_fields %}
+                <td>{{ field }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button id="sports_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>LISÄÄ</button>
+      <div class="form-actions mt-3">
+        <button type="submit" class="btn btn-success mr-3" name="sports_save" id="sports_save">TALLENNA</button>
+      </div>
+    </form>
     </div>
   </div>
 </div>
 
 
 <div class="mt-4" name="page" id="zones">
-
-  <div class="border p-4 bg-light">
+  <div class="border p-3 bg-light">
   <h5 class="mb-4">TEHOALUEET</h5>
+    <div class="col-xl-5">
+    <form method="post">{% csrf_token %}
+      {{ zones_formset.management_form }}
+      <div class="table-responsive-lg">
+        <table class="table table-sm table-light">
+          <thead class="thead-light">
+            <tr>
+              <th class="pl-3 pr-3">{{ zones_formset.0.jarj_nro.label }}</th>
+              <th class="pl-3 pr-3">{{ zones_formset.0.tehoalue.label }}</th>
+              <th class="pl-3 pr-3">{{ zones_formset.0.alaraja.label }}</th>
+              <th class="pl-3 pr-3">{{ zones_formset.0.ylaraja.label }}</th>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in zones_formset %}
+              <tr id="id_{{zones_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+                <td>{{ form.jarj_nro|add_class:'form-control' }}</td>
+                <td>{{ form.tehoalue|add_class:'form-control' }}</td>
+                <td>{{ form.alaraja|add_class:'form-control'}}</td>
+                <td>{{ form.ylaraja|add_class:'form-control' }}</td>
+                <td>
+                  <button class="btn btn-link text-decoration-none" 
+                    type="button" 
+                    data-toggle="collapse" 
+                    data-target="#id_{{zones_formset.prefix}}-{{forloop.counter0}}" 
+                    id="id_{{zones_formset.prefix}}-del-{{forloop.counter0}}"
+                    name="zones_delete">
+                  <i class="far fa-trash-alt"></i>
+                 </button>
+                </td>
+                <td style="display: none">{{ form.DELETE }}</td>
+                {% for field in form.hidden_fields %}
+                <td>{{ field }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button id="zones_add" type="button" class="btn btn-link text-decoration-none mb-1">
+        <i class="fas fa-plus-circle mr-1"></i>LISÄÄ
+      </button>
+      <div class="form-actions mt-3">
+        <button type="submit" class="btn btn-success mr-3" name="zones_save" id="zones_save">TALLENNA</button>
+      </div>
+    </form>
+    </div>
+  </div>
+</div>
 
-  <div class="col-lg-4">
-    <table class="table table-sm mb-4">
-      <thead class="thead-light">
-        <tr>
-          {% for header in zones_headers %}
-          <th>{{ header }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for id,row in zones_values.items %}
-        <tr class="table-light">
-          {% for column,value in row.items %}
-          {% if column == 'edit' %}
-          <td class="pr-2 pl-2"><a href="{% url 'zone_modify' value  %}"><i class="far fa-edit"></i></a></td>
-          {% elif column == 'delete' %}
-          <td class="pr-2 pl-2"><a href="{% url 'zone_delete' value  %}"><i class="far fa-trash-alt"></i></a></td>
-          {% else %}
-          <td>{{ value }}</td>
-          {% endif %}
-          {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <div class="row">
-    <a href="{% url 'zone_add' %}" class="btn btn-success mr-3 ml-4" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää</a>  
-  </div>
+
+<div class="mt-4" name="page" id="seasons">
+  <div class="border p-3 bg-light">
+  <h5 class="mb-4">HARJOITUSKAUDET</h5>
+    <div class="col-xl-4">
+    <form method="post">{% csrf_token %}
+      {{ seasons_formset.management_form }}
+      <div class="table-responsive-lg">
+        <table class="table table-sm table-light">
+          <thead class="thead-light">
+            <tr>
+              <th class="pl-3 pr-3">{{ seasons_formset.0.kausi.label }}</th>
+              <th class="pl-3 pr-3">{{ seasons_formset.0.alkupvm.label }}</th>
+              <th class="pl-3 pr-3">{{ seasons_formset.0.loppupvm.label }}</th>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in seasons_formset %}
+              <tr id="id_{{seasons_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+                <td>{{ form.kausi|add_class:'form-control' }}</td>
+                <td>{{ form.alkupvm|add_class:'form-control date-picker picker-start' }}</td>
+                <td>{{ form.loppupvm|add_class:'form-control date-picker picker-end' }}</td>
+                <td>
+                  <button class="btn btn-link text-decoration-none" 
+                  type="button" 
+                  data-toggle="collapse" 
+                  data-target="#id_{{seasons_formset.prefix}}-{{forloop.counter0}}" 
+                  id="id_{{seasons_formset.prefix}}-del-{{forloop.counter0}}"
+                  name="seasons_delete">
+                  <i class="far fa-trash-alt"></i>
+                 </button>
+                </td>
+                <td style="display: none">{{ form.DELETE }}</td>
+                {% for field in form.hidden_fields %}
+                <td>{{ field }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button id="seasons_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>LISÄÄ</button>
+      <div class="form-actions mt-3">
+        <button type="submit" class="btn btn-success mr-3" name="seasons_save" id="seasons_save">TALLENNA</button>
+      </div>
+    </form>
+    </div>
   </div>
 </div>
 
 
 <div class="mt-4" name="page" id="pw_reset">
-
   <div class="border p-4 bg-light">
       <h5 class="mb-4">VAIHDA SALASANA</h5>
-  
       <form method="post">{% csrf_token %}
         <fieldset>
           {% for field in pw_form %}
@@ -149,37 +232,116 @@
           {% endfor %}
         </fieldset>
         <div class="form-actions col-md-6 mt-3">
-          <button type="submit" class="btn btn-success mr-3" name="pw_save" id="pw_save">Tallenna</button>
+          <button type="submit" class="btn btn-success mr-3" name="pw_save" id="pw_save">TALLENNA</button>
         </div>
       </form>
-  
     </div>
-
 </div>
 
-<script>
 
-function showDiv(id) {
-  buttons = document.getElementsByName("nav_btn")
-  for (var i = 0; i < buttons.length; i++) {
-    buttons[i].classList.remove("active")
-  }
-  document.getElementById("btn_" + id).classList.add("active")
 
-  var pages = document.getElementsByName("page")
-  for (var i = 0; i < pages.length; i++) {
-    if (pages[i].id == id) {
-      pages[i].style.display = 'block'
-    }
-    else {
-      pages[i].style.display = 'none'
-    }
-  }
+<script type="text/javascript">
+
+// Datepickers
+function initStartDatePickers(){
+  $('.picker-start').each(function(){
+    let loppupvm_id = this.id.replace('alkupvm','loppupvm')
+    $(this).datepicker({
+      uiLibrary: 'bootstrap4',
+      calendarWeeks: true,
+      format: 'dd.mm.yyyy',
+      header: true,
+      iconsLibrary: 'fontawesome',
+      showOtherMonths: true,
+      selectOtherMonths: true,
+      weekStartDay: 1,
+      width: 160,
+      maxDate: function () {
+        return $(`#${loppupvm_id}`).val();
+      }
+    })
+  })
 }
 
+function initEndDatePickers(){
+  $('.picker-end').each(function(){
+    let alkupvm_id = this.id.replace('loppupvm','alkupvm')
+    $(this).datepicker({
+      uiLibrary: 'bootstrap4',
+      calendarWeeks: true,
+      format: 'dd.mm.yyyy',
+      header: true,
+      iconsLibrary: 'fontawesome',
+      showOtherMonths: true,
+      selectOtherMonths: true,
+      weekStartDay: 1,
+      width: 160,
+      minDate: function () {
+        return $(`#${alkupvm_id}`).val();
+      }
+    })
+  })
+}
+
+
 // activate div
-let button = 'btn_{{active_div}}'
+let button = 'btn_{{page}}'
 document.getElementById(button).click()
+
+
+// sports formset
+let sports_prefix = '{{sports_formset.prefix}}'
+let sports_initial_count = $(`#id_${sports_prefix}-INITIAL_FORMS`).val()
+let sports_required_fields = '{{sports_required_fields}}'
+
+showForms(sports_prefix, sports_initial_count, sports_required_fields)
+
+$("#sports_add").click(function() {
+  addForm(sports_prefix, sports_initial_count, sports_required_fields)
+})
+
+$("button[name='sports_delete']").click(function() {
+  let id = this.id.split('-').pop()
+  deleteForm(sports_prefix, id, sports_required_fields)
+})
+
+
+// zones formset
+let zones_prefix = '{{zones_formset.prefix}}'
+let zones_initial_count = $(`#id_${zones_prefix}-INITIAL_FORMS`).val()
+let zones_required_fields = '{{zones_required_fields}}'
+
+showForms(zones_prefix, zones_initial_count, zones_required_fields)
+
+$("#zones_add").click(function() {
+  addForm(zones_prefix, zones_initial_count, zones_required_fields)
+})
+
+$("button[name='zones_delete']").click(function() {
+  let id = this.id.split('-').pop()
+  deleteForm(zones_prefix, id, zones_required_fields)
+})
+
+
+// seasons formset
+let seasons_prefix = '{{seasons_formset.prefix}}'
+let seasons_initial_count = $(`#id_${seasons_prefix}-INITIAL_FORMS`).val()
+let seasons_required_fields = '{{seasons_required_fields}}'
+
+showForms(seasons_prefix, seasons_initial_count, seasons_required_fields)
+initStartDatePickers()
+initEndDatePickers()
+
+$("#seasons_add").click(function() {
+  addForm(seasons_prefix, seasons_initial_count, seasons_required_fields)
+  initStartDatePickers()
+  initEndDatePickers()
+})
+
+$("button[name='seasons_delete']").click(function() {
+  let id = this.id.split('-').pop()
+  deleteForm(seasons_prefix, id, seasons_required_fields)
+})
 
 </script>
 

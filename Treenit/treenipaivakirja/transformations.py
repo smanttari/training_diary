@@ -1,5 +1,5 @@
-from treenipaivakirja.models import harjoitus,aika,laji,teho,tehoalue
-from django.db.models import Sum,Max,Min
+from treenipaivakirja.models import harjoitus, aika, laji, teho, tehoalue, kausi
+from django.db.models import Sum, Max, Min
 
 from datetime import datetime
 import pandas as pd
@@ -126,13 +126,6 @@ def trainings_datatable(user_id):
     return trainings_df
 
 
-def sports(user_id):
-    sports = laji.objects.filter(user=user_id).values_list('id','id','laji','laji_nimi','laji_ryhma')
-    sports_df = pd.DataFrame(list(sports), columns=['delete','edit','Lyhenne','Laji','Lajiryhmä']).sort_values(by='Laji')
-    sports_df = sports_df.fillna('')
-    return sports_df
-
-
 def sports_dict(user_id):
     sports = {}
     sports['Kaikki'] = []
@@ -153,14 +146,6 @@ def sports_dict(user_id):
 def sports_list(user_id):
     sports = laji.objects.filter(user=user_id).values_list('laji_nimi',flat=True).order_by('laji_nimi')
     return list(sports)
-
-
-def zones(user_id):
-    zones = tehoalue.objects.filter(user=user_id).values_list('id','id','jarj_nro','tehoalue','alaraja','ylaraja')
-    zones_df = pd.DataFrame(list(zones), columns=['delete','edit','Järj.Nro', 'Teho', 'Alaraja', 'Yläraja']).sort_values(by='Järj.Nro')
-    zones_df[['Alaraja','Yläraja']] = zones_df[['Alaraja','Yläraja']].fillna(-1).astype(int).astype(str).replace('-1', '')
-    zones_df = zones_df.fillna('')
-    return zones_df
 
 
 def trainings(user_id):

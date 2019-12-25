@@ -1,9 +1,9 @@
-from treenipaivakirja.models import harjoitus,aika,laji,teho,tehoalue
-from treenipaivakirja.forms import HarjoitusForm,LajiForm,TehoForm,TehoalueForm,UserForm,RegistrationForm
+from treenipaivakirja.models import harjoitus, aika, laji, teho, tehoalue, kausi
+from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm
 import treenipaivakirja.transformations as transformations
-from django.db.models import Sum,Max,Min
+from django.db.models import Sum, Max, Min
 from django.shortcuts import render,redirect
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, modelformset_factory, formset_factory
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
@@ -23,7 +23,7 @@ import os
 import json
 import logging
 
-LOGGER_DEBUG = logging.getLogger('django')
+LOGGER_DEBUG = logging.getLogger(__name__)
 
 
 @login_required
@@ -366,191 +366,28 @@ def training_delete(request,pk):
 
 
 @login_required
-def sport_modify(request,pk):
-    """ 
-    Modifies sport 
-    """
-    error_message = None
-    sport = laji.objects.get(id=pk, user_id=request.user.id)
-    form = LajiForm(instance=sport)
-
-    if request.method == "POST":
-        form = LajiForm(request.POST, instance=sport)
-        if form.is_valid() and form.has_changed():
-            try:
-                sport.save()
-                return redirect('settings')
-            except IntegrityError as e:
-                error_message = "Laji nimellä '{}' on jo olemassa".format(sport.laji_nimi)
-
-    return render(request, 'sport_form.html',
-        context = {
-            'page_title': 'Treenipäiväkirja | Muokkaa lajia',
-            'page_header': 'MUOKKAA LAJIA',
-            'form': form,
-            'error_message': error_message
-            })
-
-
-@login_required
-def sport_add(request):
-    """ 
-    Adds new sport 
-    """
-    error_message = None
-    form = LajiForm()
-
-    if request.method == "POST":
-        prev_url = request.POST['prevURL']
-        form = LajiForm(request.POST)
-        if form.is_valid() and form.has_changed():
-            instance = form.save(commit=False)
-            instance.user = request.user
-            try:
-                instance.save()
-                return redirect(prev_url)
-            except IntegrityError as e:
-                error_message = "Laji nimellä '{}' on jo olemassa".format(instance.laji_nimi)
-
-    return render(request, 'sport_form.html',
-        context = {
-            'page_title': 'Treenipäiväkirja | Lisää laji',
-            'page_header': 'LISÄÄ LAJI',
-            'form': form,
-            'error_message': error_message
-            })
-
-
-@login_required
-def sport_delete(request,pk):
-    """ 
-    Deletes sport 
-    """
-    sport = laji.objects.get(id=pk,user_id=request.user.id)
-    sport_name = sport.laji_nimi
-    btn_status = ''
-
-    if request.method == "POST":
-        response = request.POST['confirm']
-        if response == 'no':
-            return redirect('settings')
-        if response == 'yes':
-            try:
-                sport.delete()
-                return redirect('settings')
-            except ProtectedError:
-                btn_status = 'disabled'
-                messages.add_message(request, messages.INFO, 'Lajia "{}" ei voida poistaa, koska siihen on liitetty harjoituksia.'.format(sport_name))
-
-    return render(request,'sport_delete.html',
-        context = {
-            'sport_name': sport_name,
-            'btn_status': btn_status
-            })
-
-
-@login_required
-def zone_add(request):
-    """ 
-    Adds new training zone 
-    """
-    error_message = None
-    form = TehoalueForm()
-
-    if request.method == "POST":
-        form = TehoalueForm(request.POST)
-        if form.is_valid() and form.has_changed():
-            instance = form.save(commit=False)
-            instance.user = request.user
-            try:
-                instance.save()
-                return redirect('settings')
-            except IntegrityError as e:
-                error_message = "Tehoalue nimellä '{}' on jo olemassa".format(instance.tehoalue)
-
-    return render(request, 'zone_form.html',
-        context = {
-            'page_title': 'Treenipäiväkirja | Lisää tehoalue',
-            'page_header': 'LISÄÄ TEHOALUE',
-            'form': form,
-            'error_message': error_message
-            })
-
-
-@login_required
-def zone_modify(request,pk):
-    """ 
-    Modifies training zone 
-    """
-    instance = tehoalue.objects.get(id=pk,user_id=request.user.id)
-    form = TehoalueForm(instance=instance)
-    error_message = None
-
-    if request.method == "POST":
-        form = TehoalueForm(request.POST,instance=instance)
-        if form.is_valid() and form.has_changed():
-            try:
-                instance.save()
-                return redirect('settings')
-            except IntegrityError as e:
-                error_message = "Tehoalue nimellä '{}' on jo olemassa".format(instance.tehoalue)
-
-    return render(request, 'zone_form.html',
-        context = {
-            'page_title': 'Treenipäiväkirja | Muokkaa tehoaluetta',
-            'page_header': 'MUOKKAA TEHOALUETTA',
-            'form': form,
-            'error_message': error_message
-            })
-
-
-@login_required
-def zone_delete(request,pk):
-    """ 
-    Deletes training zone 
-    """
-    instance = tehoalue.objects.get(id=pk, user_id=request.user.id)
-    zone = instance.tehoalue
-    btn_status = ''
-
-    if request.method == "POST":
-        response = request.POST['confirm']
-        if response == 'no':
-            return redirect('settings')
-        if response == 'yes':
-            try:
-                instance.delete()
-                return redirect('settings')
-            except ProtectedError:
-                btn_status = 'disabled'
-                messages.add_message(request, messages.INFO, 'Tehoaluetta "{}" ei voida poistaa, koska siihen on liitetty harjoituksia.'.format(zone))
-
-    return render(request,'zone_delete.html',
-        context = {
-            'zone': zone,
-            'btn_status': btn_status
-            })
-
-
-@login_required
 def settings_view(request):
     """ 
     Settings page 
     """
     current_user = request.user
-    current_user_id = current_user.id
 
-    prev_url = request.META.get('HTTP_REFERER','')
-    if 'zone' in prev_url:
-        active_div = 'zones'
-    elif 'sport' in prev_url:
-        active_div = 'sports'
-    else:
-        active_div = 'profile'
+    SeasonsFormset = inlineformset_factory(User, kausi, form=KausiForm, extra=1, can_delete=True)
+    ZonesFormset = inlineformset_factory(User, tehoalue, form=TehoalueForm, extra=1, can_delete=True)
+    SportsFormset = inlineformset_factory(User, laji, form=LajiForm, extra=1, can_delete=True)
 
+    zones_required_fields = [f.name for f in tehoalue._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    seasons_required_fields = [f.name for f in kausi._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    sports_required_fields = [f.name for f in laji._meta.get_fields() if not getattr(f, 'blank', False) is True]
+
+    if request.method == 'GET':
+        page = request.GET.get('page','')
+        if page not in ['profile','pw_reset','seasons','sports','zones']:
+            page = 'profile'
+    
     if request.method == 'POST':
         if 'profile_save' in request.POST:
-            active_div = 'profiili'
+            page = 'profile'
             user_form = UserForm(request.POST, instance=current_user)
             if user_form.is_valid():
                 user_form.save()
@@ -559,38 +396,57 @@ def settings_view(request):
                 pw_form = PasswordChangeForm(user=current_user)
 
         if 'pw_save' in request.POST:
-            active_div = 'pw_reset'
+            page = 'pw_reset'
             pw_form = PasswordChangeForm(data=request.POST, user=current_user)
             if pw_form.is_valid():
                 pw_form.save()
-                update_session_auth_hash(request,pw_form.user)
+                update_session_auth_hash(request, pw_form.user)
                 messages.add_message(request, messages.SUCCESS, 'Salasana vaihdettu.')
                 return redirect('settings')
             else:
                 user_form = UserForm(instance=current_user)
-    else:
-        user_form = UserForm(instance=current_user)
-        pw_form = PasswordChangeForm(user=current_user)
 
-    sports_df = transformations.sports(current_user_id)
-    sports_values = sports_df.to_dict(orient='index')
-    sports_headers = list(sports_df)
-    sports_headers[0:2] = ['','']
+        if 'sports_save' in request.POST:
+            page = 'sports'
+            sports_formset = SportsFormset(request.POST, request.FILES, instance=current_user)
+            if sports_formset.is_valid() and sports_formset.has_changed():
+                try:
+                    sports_formset.save()
+                except ProtectedError:
+                    messages.add_message(request, messages.ERROR, 'Lajia ei voida poistaa, koska siihen on liitetty harjoituksia.')
 
-    zones_df = transformations.zones(current_user_id)
-    zones_values = zones_df.to_dict(orient='index')
-    zones_headers = list(zones_df)
-    zones_headers[0:2] = ['','']
+        if 'zones_save' in request.POST:
+            page = 'zones'
+            zones_formset = ZonesFormset(request.POST, request.FILES, instance=current_user)
+            if zones_formset.is_valid() and zones_formset.has_changed():
+                try:
+                    zones_formset.save()
+                except ProtectedError:
+                    messages.add_message(request, messages.ERROR, 'Tehoaluetta ei voida poistaa, koska siihen on liitetty harjoituksia.')
+
+        if 'seasons_save' in request.POST:
+            page = 'seasons'
+            seasons_formset = SeasonsFormset(request.POST, request.FILES, instance=current_user)
+            if seasons_formset.is_valid() and seasons_formset.has_changed():
+                seasons_formset.save()
+
+    user_form = UserForm(instance=current_user)
+    pw_form = PasswordChangeForm(user=current_user)
+    seasons_formset = SeasonsFormset(instance=current_user)
+    zones_formset = ZonesFormset(instance=current_user)
+    sports_formset = SportsFormset(instance=current_user)
 
     return render(request,'settings.html',
         context = {
             'user_form': user_form,
             'pw_form': pw_form,
-            'sports_values': sports_values,
-            'sports_headers': sports_headers,
-            'zones_values': zones_values,
-            'zones_headers': zones_headers,
-            'active_div': active_div
+            'sports_formset': sports_formset,
+            'sports_required_fields': sports_required_fields,
+            'seasons_formset': seasons_formset,
+            'seasons_required_fields': seasons_required_fields,
+            'zones_formset': zones_formset,
+            'zones_required_fields': zones_required_fields,
+            'page': page
             })
 
 

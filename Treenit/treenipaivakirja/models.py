@@ -46,7 +46,7 @@ class laji(models.Model):
 
     class Meta:
         verbose_name_plural = "Laji"
-        unique_together = (("laji_nimi","user"))
+        ordering = ['laji_nimi']
 
     def __str__(self):
         return self.laji_nimi
@@ -97,7 +97,7 @@ class tehoalue(models.Model):
 
     class Meta:
         verbose_name_plural = "Tehoalue"
-        unique_together = (("tehoalue", "user"),)
+        ordering = ['jarj_nro']
 
     def __str__(self):
         return self.tehoalue
@@ -111,7 +111,7 @@ class kausi(models.Model):
 
     class Meta:
         verbose_name_plural = "Kausi"
-        unique_together = (("kausi", "user"),)
+        ordering = ['kausi']
 
     def __str__(self):
         return self.kausi

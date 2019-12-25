@@ -37,3 +37,100 @@ function extractMinAndSecFromSpeed(speedMinPerKm){
     let seconds = Math.round((speed - minutes) * 60.0)
     return {minutes,seconds}
 }
+
+
+// show selected element and activate corresbonding nav-button
+function showDiv(id) {
+    buttons = document.getElementsByName("nav_btn")
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove("active")
+    }
+    document.getElementById("btn_" + id).classList.add("active")
+    let pages = document.getElementsByName("page")
+    for (let i = 0; i < pages.length; i++) {
+        if (pages[i].id == id) {
+        pages[i].style.display = 'block'
+        }
+        else {
+        pages[i].style.display = 'none'
+        }
+    }
+}
+
+
+// show all initialized forms in formset
+function showForms(prefix, initial_count, required_fields){
+    let id = 0
+    while (id < initial_count) {
+        let form = $(`#id_${prefix}-${id}`)
+        form.find('input').each (function() {
+            let field_name = $(this).attr('name').split('-')[2]
+            if (required_fields.includes(field_name)){
+                $(this).prop('required', true)
+            }
+            if (field_name == 'DELETE'){
+                $(this).prop('checked', false)
+            }
+        })
+        form.collapse('show')
+        id++ 
+    }
+}
+
+
+// add new form to formset
+function addForm(prefix, initial_count, required_fields){
+    // current total number of forms
+    let totalElement = $(`#id_${prefix}-TOTAL_FORMS`)
+    let total = totalElement.val()
+    // clone new form
+    let initialForm = $(`#id_${prefix}-${initial_count}`)
+    let newForm = initialForm.clone(true)
+    // update id, name and value of the new form. Tag required fields.
+    newForm.attr('id', `id_${prefix}-${total}`)
+    newForm.find('input').each (function() {
+        let name = $(this).attr('name').replace(`-${initial_count}-`, `-${total}-`)
+        let id = 'id_' + name
+        let field_name = name.split('-')[2]
+        $(this).attr({'name': name, 'id': id, 'value':'', 'data-guid':'', 'disabled':false})
+        if (required_fields.includes(field_name)){
+            $(this).prop('required', true)
+        }
+    }) 
+    // destroy datepickers and add classes for datepicker re-initialization
+    newForm.find('.date-picker').each (function() {
+        $(this).datepicker().destroy()
+    })
+    newForm.find("input[name$='loppupvm']").each(function() {
+        $(this).addClass('date-picker picker-end')
+    })
+    newForm.find("input[name$='alkupvm']").each(function() {
+        $(this).addClass('date-picker picker-start')
+    })
+    // update delete button id and data-target
+    let deleteButton = newForm.find(`#id_${prefix}-del-${initial_count}`)
+    deleteButton.attr('id', `id_${prefix}-del-${total}`)
+    deleteButton.attr('data-target', `#id_${prefix}-${total}`)
+    // add new form to DOM
+    newForm.collapse('show')
+    let lastForm = $(`#id_${prefix}-${total-1}`)
+    lastForm.after(newForm)
+    // update total amount of forms
+    total++
+    totalElement.val(total)
+}
+
+
+// delete form from formset
+function deleteForm(prefix, id, required_fields){
+    let form = $(`#id_${prefix}-${id}`)
+    form.find('input').each (function() {
+        let field_name = $(this).attr('name').split('-')[2]
+        if (required_fields.includes(field_name)){
+            $(this).prop('required', false)
+        }
+        if (field_name == 'DELETE'){
+            $(this).prop('checked', true)
+        }
+    })
+}

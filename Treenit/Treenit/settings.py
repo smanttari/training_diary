@@ -164,6 +164,9 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'django.utils.autoreload': {
+            'level': 'INFO',
+        }
     },
 }
 
