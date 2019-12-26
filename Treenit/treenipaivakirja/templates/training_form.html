@@ -124,7 +124,7 @@
             </div>
 
             {% for form in teho_formset %}
-            <div id="tehot_{{forloop.counter0}}" class="collapse hide">
+            <div id="id_{{teho_formset.prefix}}-{{forloop.counter0}}" class="collapse">
                 <div class="form-row pt-1">
                     <div class="form-group col-md-1 ml-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.nro.label }}</b></label>
@@ -173,22 +173,26 @@
                         {{ form.vauhti_km_h|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
-                        <button class="btn btn-link text-decoration-none" type="button" data-toggle="collapse" data-target="#tehot_{{forloop.counter0}}" id="poista_tehot_{{forloop.counter0}}" name="poista_tehot_{{forloop.counter0}}" onclick="deleteTehot(this.id)"><i class="far fa-trash-alt"></i> Poista</button> 
+                        <button 
+                            class="btn btn-link text-decoration-none" 
+                            type="button"
+                            id="id_{{teho_formset.prefix}}-{{forloop.counter0}}-del" 
+                            name="{{teho_formset.prefix}}-{{forloop.counter0}}-del">
+                            <i class="far fa-trash-alt"></i> Poista
+                        </button> 
                     </div> 
-                    {% if teho_formset.can_delete %}
-                    <div class="form-check mt-1">
+                    <div style="display: none">
                         {{ form.DELETE }}  
                     </div>
-                    {% endif %} 
+                    {% for field in form.hidden_fields %}
+                    {{ field }}
+                    {% endfor %}
                 </div>
-                {% for field in form.hidden_fields %}
-                {{ field }}
-                {% endfor %}
                 <hr class="d-block d-md-none">
             </div>
             {% endfor %}
         </fieldset>
-        <button type="button" class="btn btn-link text-decoration-none mb-1" onclick="addTehot()"><i class="fas fa-plus-circle mr-1"></i>Lisää tehot</button>
+        <button id="teho_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>Lisää tehot</button>
         <div class="form-actions mt-5 col-6">
             <button type="submit" id="save" name="save" class="btn btn-success mr-3" onclick="calculateKesto();calculateVauhtiMinKm();calculateVauhtiKmH();">Tallenna</button>
             <a class="btn btn-danger" href="{% url 'trainings' %}" role="button">Peruuta</a>
@@ -204,12 +208,9 @@
 <script type="text/javascript">
 
 $(window).on('load',function(){
-    showTehot()
     splitVauhtiMinKm()
     document.getElementById("trainings").classList.add('active')
 })
-
-const max_count = {{max_count}}
 
 let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
 $('#id_pvm').datepicker({
@@ -226,56 +227,32 @@ $('#id_pvm').datepicker({
 })
 
 
-function deleteTehot(id){
-    let number = id.split('_').pop()
-    let checkbox = document.getElementById("id_teho_set-" + number + "-DELETE")
-    if (checkbox){
-        checkbox.checked = true
-        document.getElementById("id_teho_set-" + number + "-nro").required = false
-    }
-}
+// teho formset
+let prefix = '{{teho_formset.prefix}}'
+let initial_count = $(`#id_${prefix}-INITIAL_FORMS`).val()
+let required_fields = '{{required_fields}}'
 
-function addTehot(){
-    let id = 0
-    while (id < max_count) {
-        let tehot = document.getElementById("tehot_" + id)
-        let deleteCheckbox = document.getElementById("id_teho_set-" + id + "-DELETE")
-        let isDeleted = false
-        if (deleteCheckbox){
-            isDeleted = deleteCheckbox.checked
-        }
-        let isHidden = $("#tehot_" + id).is(":hidden")
-        if (isHidden && !(isDeleted)){
-            $('#tehot_' + id).collapse('show')
-            $('#id_teho_set-' + id + '-nro').prop('required',true)
-            break
-        }
-        id++
-    }
-}
+showForms(prefix, initial_count, required_fields)
 
-function showTehot(){
-    let id = 0
-    while (id < max_count) {
-        let nro = document.getElementById("id_teho_set-" + id + "-nro").value
-        let deleteCheckbox = document.getElementById("id_teho_set-" + id + "-DELETE")
-        deleteCheckbox.style.display = "none"
-        if (nro){ 
-            $('#tehot_' + id).collapse('show')
-            $('#id_teho_set-' + id + '-nro').prop('required',true)
-            }
-        id++
-    }
-}
+$("#teho_add").click(function() {
+  addForm(prefix, initial_count, required_fields)
+})
+
+$("button[name$='-del']").click(function() {
+  let id = $(this).attr('name').split('-')[1]
+  deleteForm(prefix, id, required_fields)
+})
+
 
 function calculateKesto(){
     let id = 0
-    while (id < max_count) {
-        let kesto_h = document.getElementById("id_teho_set-" + id + "-kesto_h").value
-        let kesto_min = document.getElementById("id_teho_set-" + id + "-kesto_min").value
+    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
+    while (id < total) {
+        let kesto_h = $(`#id_${prefix}-${id}-kesto_h`).val()
+        let kesto_min = $(`#id_${prefix}-${id}-kesto_min`).val()
         if (kesto_h || kesto_min){
             let kesto = calculateDuration(kesto_h, kesto_min)
-            document.getElementById("id_teho_set-" + id + "-kesto").value = kesto
+            $(`#id_${prefix}-${id}-kesto`).val(kesto)
         }
         id++
     }
@@ -283,12 +260,13 @@ function calculateKesto(){
 
 function calculateVauhtiMinKm(){
     let id = 0
-    while (id < max_count) {
-        let vauhti_min = document.getElementById("id_teho_set-" + id + "-vauhti_min").value
-        let vauhti_s = document.getElementById("id_teho_set-" + id + "-vauhti_s").value
+    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
+    while (id < total) {
+        let vauhti_min = $(`#id_${prefix}-${id}-vauhti_min`).val()
+        let vauhti_s = $(`#id_${prefix}-${id}-vauhti_s`).val()
         if (vauhti_min || vauhti_s){
             let vauhti_min_km = calculateSpeedMinPerKm(vauhti_min, vauhti_s)
-            document.getElementById("id_teho_set-" + id + "-vauhti_min_km").value = vauhti_min_km
+            $(`#id_${prefix}-${id}-vauhti_min_km`).val(vauhti_min_km)
         }
         id++
     }
@@ -296,12 +274,13 @@ function calculateVauhtiMinKm(){
 
 function splitVauhtiMinKm(){
     let id = 0
-    while (id < max_count) {
-        let vauhti_min_km = document.getElementById("id_teho_set-" + id + "-vauhti_min_km").value
+    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
+    while (id < total) {
+        let vauhti_min_km = $(`#id_${prefix}-${id}-vauhti_min_km`).val()
         if (vauhti_min_km){
             let {minutes, seconds} = extractMinAndSecFromSpeed(vauhti_min_km)
-            document.getElementById("id_teho_set-" + id + "-vauhti_min").value = minutes
-            document.getElementById("id_teho_set-" + id + "-vauhti_s").value = seconds
+            $(`#id_${prefix}-${id}-vauhti_min`).val(minutes)
+            $(`#id_${prefix}-${id}-vauhti_s`).val(seconds)
         }
         id++
     }
@@ -309,11 +288,12 @@ function splitVauhtiMinKm(){
 
 function calculateVauhtiKmH(){
     let id = 0
-    while (id < max_count) {
-        let vauhti_min_km = document.getElementById("id_teho_set-" + id + "-vauhti_min_km").value
+    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
+    while (id < total) {
+        let vauhti_min_km = $(`#id_${prefix}-${id}-vauhti_min_km`).val()
         if (vauhti_min_km){
             let vauhti_km_h = convertMinPerKmToKmPerH(vauhti_min_km)
-            document.getElementById("id_teho_set-" + id + "-vauhti_km_h").value = vauhti_km_h
+            $(`#id_${prefix}-${id}-vauhti_km_h`).val(vauhti_km_h)
         }
         id++
     }

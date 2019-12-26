@@ -13,6 +13,7 @@ from django.db.models.deletion import ProtectedError
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
+from django.urls import reverse
 
 from datetime import datetime, timedelta
 from openpyxl import Workbook
@@ -242,8 +243,8 @@ def training_add(request):
     """ 
     Inserts new training 
     """
-    max_count = 20
-    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=max_count,max_num=max_count,can_delete=True)
+    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=1,can_delete=True)
+    required_fields = [f.name for f in teho._meta.get_fields() if not getattr(f, 'blank', False) is True]
     if request.method == "POST":
         harjoitus_form = HarjoitusForm(request.user,request.POST)
         teho_formset = TehoFormset(request.POST)
@@ -282,7 +283,7 @@ def training_add(request):
             'page_header': 'LISÄÄ HARJOITUS',
             'teho_formset': teho_formset,
             'harjoitus_form': harjoitus_form,
-            'max_count':max_count
+            'required_fields': required_fields
             })
 
 
@@ -291,8 +292,8 @@ def training_modify(request,pk):
     """ 
     Modifies training information 
     """
-    max_count = 20
-    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=max_count,max_num=max_count,can_delete=True)
+    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=1,can_delete=True)
+    required_fields = [f.name for f in teho._meta.get_fields() if not getattr(f, 'blank', False) is True]
     training = harjoitus.objects.get(id=pk,user_id=request.user.id)
     if request.method == "POST":
         harjoitus_form = HarjoitusForm(request.user,request.POST,instance=training)
@@ -335,7 +336,7 @@ def training_modify(request,pk):
             'page_header': 'MUOKKAA HARJOITUSTA',
             'teho_formset': teho_formset,
             'harjoitus_form': harjoitus_form,
-            'max_count':max_count
+            'required_fields': required_fields
             })
 
 
@@ -379,6 +380,12 @@ def settings_view(request):
     zones_required_fields = [f.name for f in tehoalue._meta.get_fields() if not getattr(f, 'blank', False) is True]
     seasons_required_fields = [f.name for f in kausi._meta.get_fields() if not getattr(f, 'blank', False) is True]
     sports_required_fields = [f.name for f in laji._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    
+    user_form = UserForm(instance=current_user)
+    pw_form = PasswordChangeForm(user=current_user)
+    seasons_formset = SeasonsFormset(instance=current_user)
+    zones_formset = ZonesFormset(instance=current_user)
+    sports_formset = SportsFormset(instance=current_user)
 
     if request.method == 'GET':
         page = request.GET.get('page','')
@@ -392,8 +399,6 @@ def settings_view(request):
             if user_form.is_valid():
                 user_form.save()
                 return redirect('settings')
-            else:
-                pw_form = PasswordChangeForm(user=current_user)
 
         if 'pw_save' in request.POST:
             page = 'pw_reset'
@@ -403,8 +408,6 @@ def settings_view(request):
                 update_session_auth_hash(request, pw_form.user)
                 messages.add_message(request, messages.SUCCESS, 'Salasana vaihdettu.')
                 return redirect('settings')
-            else:
-                user_form = UserForm(instance=current_user)
 
         if 'sports_save' in request.POST:
             page = 'sports'
@@ -412,6 +415,7 @@ def settings_view(request):
             if sports_formset.is_valid() and sports_formset.has_changed():
                 try:
                     sports_formset.save()
+                    return redirect(reverse('settings') + '?page=' + page)
                 except ProtectedError:
                     messages.add_message(request, messages.ERROR, 'Lajia ei voida poistaa, koska siihen on liitetty harjoituksia.')
 
@@ -421,6 +425,7 @@ def settings_view(request):
             if zones_formset.is_valid() and zones_formset.has_changed():
                 try:
                     zones_formset.save()
+                    return redirect(reverse('settings') + '?page=' + page)
                 except ProtectedError:
                     messages.add_message(request, messages.ERROR, 'Tehoaluetta ei voida poistaa, koska siihen on liitetty harjoituksia.')
 
@@ -429,12 +434,7 @@ def settings_view(request):
             seasons_formset = SeasonsFormset(request.POST, request.FILES, instance=current_user)
             if seasons_formset.is_valid() and seasons_formset.has_changed():
                 seasons_formset.save()
-
-    user_form = UserForm(instance=current_user)
-    pw_form = PasswordChangeForm(user=current_user)
-    seasons_formset = SeasonsFormset(instance=current_user)
-    zones_formset = ZonesFormset(instance=current_user)
-    sports_formset = SportsFormset(instance=current_user)
+                return redirect(reverse('settings') + '?page=' + page)
 
     return render(request,'settings.html',
         context = {

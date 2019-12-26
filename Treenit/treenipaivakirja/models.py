@@ -82,7 +82,7 @@ class teho(models.Model):
     matka = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     vauhti_km_h = models.DecimalField(max_digits=5, decimal_places=2, null=True, verbose_name='Vauhti (km/h)', blank=True)
     vauhti_min_km = models.DecimalField(max_digits=5, decimal_places=2, null=True, verbose_name='Vauhti (min/km)', blank=True)
-    tehoalue = models.ForeignKey('tehoalue', on_delete=models.PROTECT, null=True, blank=True)
+    tehoalue = models.ForeignKey('tehoalue', on_delete=models.PROTECT, blank=False)
 
     class Meta:
         verbose_name_plural = "Teho"

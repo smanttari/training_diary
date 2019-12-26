@@ -77,11 +77,9 @@
                 <td>{{ form.laji_ryhma|add_class:'form-control' }}</td>
                 <td>
                   <button class="btn btn-link text-decoration-none" 
-                  type="button" 
-                  data-toggle="collapse" 
-                  data-target="#id_{{sports_formset.prefix}}-{{forloop.counter0}}" 
-                  id="id_{{sports_formset.prefix}}-del-{{forloop.counter0}}"
-                  name="sports_delete">
+                  type="button"
+                  id="id_{{sports_formset.prefix}}-{{forloop.counter0}}-del"
+                  name="{{sports_formset.prefix}}-{{forloop.counter0}}-del">
                   <i class="far fa-trash-alt"></i>
                  </button>
                 </td>
@@ -133,10 +131,8 @@
                 <td>
                   <button class="btn btn-link text-decoration-none" 
                     type="button" 
-                    data-toggle="collapse" 
-                    data-target="#id_{{zones_formset.prefix}}-{{forloop.counter0}}" 
-                    id="id_{{zones_formset.prefix}}-del-{{forloop.counter0}}"
-                    name="zones_delete">
+                    id="id_{{zones_formset.prefix}}-{{forloop.counter0}}-del"
+                    name="{{zones_formset.prefix}}-{{forloop.counter0}}-del">
                   <i class="far fa-trash-alt"></i>
                  </button>
                 </td>
@@ -188,10 +184,8 @@
                 <td>
                   <button class="btn btn-link text-decoration-none" 
                   type="button" 
-                  data-toggle="collapse" 
-                  data-target="#id_{{seasons_formset.prefix}}-{{forloop.counter0}}" 
-                  id="id_{{seasons_formset.prefix}}-del-{{forloop.counter0}}"
-                  name="seasons_delete">
+                  id="id_{{seasons_formset.prefix}}-{{forloop.counter0}}-del"
+                  name="{{seasons_formset.prefix}}-{{forloop.counter0}}-del">
                   <i class="far fa-trash-alt"></i>
                  </button>
                 </td>
@@ -290,57 +284,57 @@ document.getElementById(button).click()
 
 
 // sports formset
-let sports_prefix = '{{sports_formset.prefix}}'
-let sports_initial_count = $(`#id_${sports_prefix}-INITIAL_FORMS`).val()
-let sports_required_fields = '{{sports_required_fields}}'
+let sportsPrefix = '{{sports_formset.prefix}}'
+let sportsInitialCount = $(`#id_${sportsPrefix}-INITIAL_FORMS`).val()
+let sportsRequiredFields = '{{sports_required_fields}}'
 
-showForms(sports_prefix, sports_initial_count, sports_required_fields)
+showForms(sportsPrefix, sportsInitialCount, sportsRequiredFields)
 
 $("#sports_add").click(function() {
-  addForm(sports_prefix, sports_initial_count, sports_required_fields)
+  addForm(sportsPrefix, sportsInitialCount, sportsRequiredFields)
 })
 
-$("button[name='sports_delete']").click(function() {
-  let id = this.id.split('-').pop()
-  deleteForm(sports_prefix, id, sports_required_fields)
+$("button[name^=" + sportsPrefix + "][name$='-del']").click(function() {
+  let id = $(this).attr('name').split('-')[1]
+  deleteForm(sportsPrefix, id, sportsRequiredFields)
 })
 
 
 // zones formset
-let zones_prefix = '{{zones_formset.prefix}}'
-let zones_initial_count = $(`#id_${zones_prefix}-INITIAL_FORMS`).val()
-let zones_required_fields = '{{zones_required_fields}}'
+let zonesPrefix = '{{zones_formset.prefix}}'
+let zonesInitialCount = $(`#id_${zonesPrefix}-INITIAL_FORMS`).val()
+let zonesRequiredFields = '{{zones_required_fields}}'
 
-showForms(zones_prefix, zones_initial_count, zones_required_fields)
+showForms(zonesPrefix, zonesInitialCount, zonesRequiredFields)
 
 $("#zones_add").click(function() {
-  addForm(zones_prefix, zones_initial_count, zones_required_fields)
+  addForm(zonesPrefix, zonesInitialCount, zonesRequiredFields)
 })
 
-$("button[name='zones_delete']").click(function() {
-  let id = this.id.split('-').pop()
-  deleteForm(zones_prefix, id, zones_required_fields)
+$("button[name^=" + zonesPrefix + "][name$='-del']").click(function() {
+  let id = $(this).attr('name').split('-')[1]
+  deleteForm(zonesPrefix, id, zonesRequiredFields)
 })
 
 
 // seasons formset
-let seasons_prefix = '{{seasons_formset.prefix}}'
-let seasons_initial_count = $(`#id_${seasons_prefix}-INITIAL_FORMS`).val()
-let seasons_required_fields = '{{seasons_required_fields}}'
+let seasonsPrefix = '{{seasons_formset.prefix}}'
+let seasonsInitialCount = $(`#id_${seasonsPrefix}-INITIAL_FORMS`).val()
+let seasonsRequiredFields = '{{seasons_required_fields}}'
 
-showForms(seasons_prefix, seasons_initial_count, seasons_required_fields)
+showForms(seasonsPrefix, seasonsInitialCount, seasonsRequiredFields)
 initStartDatePickers()
 initEndDatePickers()
 
 $("#seasons_add").click(function() {
-  addForm(seasons_prefix, seasons_initial_count, seasons_required_fields)
+  addForm(seasonsPrefix, seasonsInitialCount, seasonsRequiredFields)
   initStartDatePickers()
   initEndDatePickers()
 })
 
-$("button[name='seasons_delete']").click(function() {
-  let id = this.id.split('-').pop()
-  deleteForm(seasons_prefix, id, seasons_required_fields)
+$("button[name^=" + seasonsPrefix + "][name$='-del']").click(function() {
+  let id = $(this).attr('name').split('-')[1]
+  deleteForm(seasonsPrefix, id, seasonsRequiredFields)
 })
 
 </script>
