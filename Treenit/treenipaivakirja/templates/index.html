@@ -12,12 +12,10 @@
 
 {% block content %}
 
-<div class="container mb-5">
-
-  <h5>Yhteenveto</h5>
+<div class="container mb-5 mt-3">
   
   <div class="card-deck">
-    <div class="card text-center bg-light">
+    <div class="card text-center bg-light border-info rounded-pill">
       <div class="card-body">
         <h6 class="card-title">Kuluvana vuonna yhteensä</h6>
         <ul class="list-inline">
@@ -37,7 +35,7 @@
         </p>
       </div>
     </div>
-    <div class="card text-center bg-light">
+    <div class="card text-center bg-light border-info rounded-pill">
       <div class="card-body">
         <h6 class="card-title">Keskimäärin</h6>
         <ul class="list-inline">
@@ -57,7 +55,7 @@
         </p>
       </div>
     </div>
-    <div class="card text-center bg-light">
+    <div class="card text-center bg-light border-info rounded-pill">
       <div class="card-body">
         <h6 class="card-title">Treenifiilis keskimäärin</h6>
         <ul class="list-inline">
@@ -83,10 +81,10 @@
 
 <div class="container mt-3">
 
-  <h5>Toiminnot</h5>
+  <h4 class="mb-3">Toiminnot</h4>
 
   <div class="card-deck">
-    <div class="card text-center bg-light p-5">
+    <div class="card text-center bg-light p-5 border-info">
       <a id="calendar_icon" href="{% url 'trainings' %}">
         <i class="far fa-calendar-alt fa-10x"></i>
       </a>
@@ -96,7 +94,7 @@
         <p class="card-text"><small class="text-muted"></small></p>
       </div>
     </div>
-    <div class="card text-center bg-light p-5">
+    <div class="card text-center bg-light p-5 border-info">
       <a id="chart_icon" href="{% url 'reports' %}">
         <i class="fas fa-chart-line fa-10x"></i>
       </a>
@@ -106,13 +104,13 @@
         <p class="card-text"><small class="text-muted"></small></p>
       </div>
     </div>
-    <div class="card text-center bg-light p-5">
+    <div class="card text-center bg-light p-5 border-info">
       <a id="settings_icon" href="{% url 'settings' %}">
         <i class="fas fa-cog fa-10x"></i>
       </a>
       <div class="card-body">
         <h5 class="card-title">Asetukset</h5>
-        <p class="card-text">Määrittele lajit ja lajiryhmät. Aseta yksilölliset tehoalueesi.</p>
+        <p class="card-text">Määrittele lajit ja harjoituskaudet. Aseta yksilölliset tehoalueesi.</p>
         <p class="card-text"><small class="text-muted"></small></p>
       </div>
     </div>
