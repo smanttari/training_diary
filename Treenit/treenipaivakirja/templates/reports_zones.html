@@ -1,0 +1,151 @@
+{% extends "base_generic.html" %}
+{% block title %}Treenipäiväkirja | Raportit | Tehot{% endblock %}
+
+{% load l10n %}
+
+{% block head %}
+
+{% endblock %}
+
+
+{% block header %}RAPORTIT - TEHOT{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Harjoitusmäärät tehoalueittain
+      </h6>
+      <div class="card-body">
+        <div id="chart_amount_per_zone_per_year"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Jakauma tehoalueittain
+          <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_amount_per_zone">
+            <li class="nav-item dropdown">
+              <a class="nav-link active dropdown-toggle" id="dropdown_amount_per_zone" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{current_year}}</a>
+              <div class="dropdown-menu">
+                {% for v in years %}
+                <button class="dropdown-item" type="button" value="{{ v }}" onclick="drawPercentagePerZone(this.value)">{{ v }}</button>
+                {% endfor %}
+              </div>
+            </li>
+          </ul>
+      </h6>
+      <div class="card-body">
+        <div id="chart_amount_per_zone"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<script type="text/javascript">
+
+  // activate nav item
+  document.getElementById("reports").classList.add('active')
+
+  // enable Bootstrap tooltips
+  $(function () {$('[data-toggle="tooltip"]').tooltip()})
+
+  
+  // load data
+  let amountPerZonePerYear = {{hours_per_year_per_zone_json|safe}}
+  let year = {{ current_year }}
+
+
+  // draw charts
+  drawAmountPerZonePerYear()
+  drawAmountPerZone()
+
+
+  // function for drawing selected year by training zone
+  function drawPercentagePerZone(year){
+    document.getElementById("dropdown_amount_per_zone").innerHTML = year
+    drawAmountPerZone()
+  }
+
+
+function drawAmountPerZonePerYear(){
+  let div = 'chart_amount_per_zone_per_year'
+  let data = amountPerZonePerYear.filter(d => d['category'] > year-4)
+  let options = {
+    type:'bar',
+    bar: {labels:{size: 12, color: '#fff'}},
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 40, left: 40, right: 100},
+    xaxis: {font: {size:11}},
+    yaxis: {font: {size:11}, min:0},
+    colors: [
+      '#536be2',
+      '#7a86ea',
+      '#9ca2f2',
+      '#9ea2cb',
+      '#8187b2',
+      '#646c9a',
+    ],
+    padding: 0.15,
+    grid: true,
+    tooltip: {suffix:" h"},
+    animation: {duration: 500, delay: 20},
+    legend: {coord: {x: 730, y: 50}, font: {size: 11}},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+
+    // add click event to bars
+    let bars = d3.select('#' + div).selectAll('rect')
+      .on('click', function(d){
+        year = d3.select(this).attr('category')
+        drawPercentagePerZone(year)
+      })
+      .on('mouseover', function(d){
+        d3.select(this).style("cursor", "pointer")
+      })
+}
+
+
+function drawAmountPerZone(){
+  let year = document.getElementById('dropdown_amount_per_zone').innerHTML
+  let div = 'chart_amount_per_zone'
+  let data = amountPerZonePerYear.filter(d => d['category'] == year)[0]
+  let piedata = []
+  if (data){
+    for (d in data['series']){piedata.push({'category': d, 'series':data['series'][d]})}
+  } 
+  let options = {
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 40, left: 40, right: 100},
+    colors: [
+      '#536be2',
+      '#7a86ea',
+      '#9ca2f2',
+      '#bbbff9',
+      '#dadcff',
+      '#bcbfe5',
+      '#9ea2cb',
+      '#8187b2',
+      '#646c9a',
+    ],
+    tooltip: {prefix:"", suffix:"h"},
+    radius: {inner: 30, outer: 150},
+    slicelabel: {size:12, color: '#FFF', threshold: 0.07},
+    legend: {coord: {x: 600, y: 50}, font: {size: 11}},
+    maxSliceCount: 8,
+    responsiveness: true
+    }
+  drawPieChart(div,piedata,options)
+}
+
+</script>
+
+{% endblock %}

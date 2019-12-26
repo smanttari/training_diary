@@ -1,0 +1,229 @@
+{% extends "base_generic.html" %}
+{% block title %}Treenipäiväkirja | Raportit | Lajit{% endblock %}
+
+{% load l10n %}
+
+{% block head %}
+
+{% endblock %}
+
+
+{% block header %}RAPORTIT - LAJIT{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Harjoitusmäärät lajeittain
+          <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_amount_per_sport">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" data-toggle="tab" id="sport_hours" onclick="drawHoursPerYearPerSport()">Tunnit</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-toggle="tab" id="sport_kilometers" onclick="drawKilometersPerYearPerSport()">Kilometrit</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link active dropdown-toggle" id="dropdown_amount_per_sport" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{sport}}</a>
+              <div class="dropdown-menu">
+                {% for s in sports %}
+                <button class="dropdown-item" type="button" value="{{ s }}" onclick="drawSportTimeserie(this.value)">{{ s }}</button>
+                {% endfor %}
+              </div>
+            </li>
+          </ul>
+      </h6>
+      <div class="card-body">
+        <div id="chart_amount_per_year_per_sport"></div>
+        <div class="mt-4 ml-4 mr-4" id="table_amount_per_year_per_sport"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Keskisyke ja -vauhti lajeittain
+          <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_avg_per_sport">
+            <li class="nav-item dropdown">
+              <a class="nav-link active dropdown-toggle" id="dropdown_avg_per_sport" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{sport}}</a>
+              <div class="dropdown-menu">
+                {% for s in sports %}
+                <button class="dropdown-item" type="button" value="{{ s }}" onclick="drawAvgPerYearPerSport(this.value)">{{ s }}</button>
+                {% endfor %}
+              </div>
+            </li>
+          </ul>
+      </h6>
+      <div class="card-body">
+        <div id="chart_avg_per_sport"></div>
+        <div class="mt-4 ml-4 mr-4" id="table_avg_per_sport"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<script type="text/javascript">
+
+  // activate nav item
+  document.getElementById("reports").classList.add('active')
+
+  // enable Bootstrap tooltips
+  $(function () {$('[data-toggle="tooltip"]').tooltip()})
+
+  
+  // load data
+  let hoursPerYearPerSport = {{ hours_per_year_per_sport_json|safe }}
+  let kilometersPerYearPerSport = {{ kilometers_per_year_per_sport_json|safe }}
+  let avgPerYearPerSport = {{ avg_per_year_per_sport|safe }}
+  let amountsPerYearPerSport = {{amounts_per_year_per_sport|safe}}
+  let avgPerYearPerSportTable = {{avg_per_year_per_sport_table|safe}}
+  let year = {{ current_year }}
+
+
+  // draw charts
+  drawHoursPerYearPerSport()
+  drawAvgPerSport()
+  tableAmountPerYearPerSport()
+  tableAvgPerYearPerSport()
+
+
+  // function for drawing timeserie for selected sport
+  function drawSportTimeserie(sport){
+    document.getElementById("dropdown_amount_per_sport").innerHTML = sport
+    let measure = document.getElementById("nav_amount_per_sport").getElementsByClassName("nav-link active")[0].id
+    if (measure == 'sport_hours'){
+      drawHoursPerYearPerSport()
+    }
+    else if (measure == 'sport_kilometers'){
+      drawKilometersPerYearPerSport()
+    }
+    tableAmountPerYearPerSport()
+  }
+
+
+  // function for drawing averages of selected sport
+  function drawAvgPerYearPerSport(sport){
+    document.getElementById("dropdown_avg_per_sport").innerHTML = sport
+    drawAvgPerSport()
+    tableAvgPerYearPerSport()
+  }
+
+
+function drawHoursPerYearPerSport(){
+  let sport = document.getElementById('dropdown_amount_per_sport').innerHTML
+  let div = 'chart_amount_per_year_per_sport'
+  let data = hoursPerYearPerSport[sport]
+  if (data){
+    data = data.filter(d => d['category'].substring(0,4) > year-10)
+  }
+  let options = {
+    type:'bar',
+    bar: {labels:{size: 12, color: '#fff'}},
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 40, right: 40},
+    xaxis: {font: {size:11}, orientation: 'skew'},
+    yaxis: {font: {size:11}, min:0},
+    colors: ['#536be2'],
+    padding: 0.15,
+    grid: true,
+    tooltip: {suffix:""},
+    animation: {duration: 500, delay: 20},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+
+function drawKilometersPerYearPerSport(){
+  let sport = document.getElementById('dropdown_amount_per_sport').innerHTML
+  let div = 'chart_amount_per_year_per_sport'
+  let data = kilometersPerYearPerSport[sport]
+  if (data){
+    data = data.filter(d => d['category'].substring(0,4) > year-10)
+  }
+  let options = {
+    type:'bar',
+    bar: {labels:{size: 12, color: '#fff'}},
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 40, right: 40},
+    xaxis: {font: {size:11}, orientation: 'skew'},
+    yaxis: {font: {size:11}, min:0},
+    colors: ['#536be2'],
+    padding: 0.15,
+    grid: true,
+    tooltip: {suffix:""},
+    animation: {duration: 500, delay: 20},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+
+function drawAvgPerSport(){
+  let sport = document.getElementById('dropdown_avg_per_sport').innerHTML
+  let div = 'chart_avg_per_sport'
+  let data = avgPerYearPerSport[sport]
+  if (data){
+    data = data.filter(d => d['category'].substring(0,4) > year-10)
+  }
+  let options = {
+    type:'line',
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 60, right: 150},
+    xaxis: {font: {size: 11}, orientation: 'skew'},
+    yaxis: {font: {size: 11}},
+    y2axis: {font: {size: 11}, serieIndex: [0]},
+    ylabel: {label: 'keskisyke', size: 12},
+    y2label: {label: 'vauhti', size: 12},
+    colors: ['#536be2','#8187b2'],
+    grid: true,
+    tooltip: true,
+    line: {labels:{size:12}},
+    circle: {radius: 4, display: true},
+    legend: {coord: {x: 715, y: 50}, font: {size: 11}},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+function tableAmountPerYearPerSport(){
+  let sport = document.getElementById('dropdown_amount_per_sport').innerHTML
+  let div = 'table_amount_per_year_per_sport'
+  let data = amountsPerYearPerSport[sport]
+  let options = {
+    border: true,
+    sort: true,
+    hover: true,
+    textAlign: 'left',
+    header: {color:'#495057', backgroudColor: '#e9ecef'},
+    footer: {color:'#495057', backgroudColor: '#e9ecef', columns: {1: 'sum', 2: 'sum', 3: 'sum'}}
+  }
+  createTable(div,data,options)
+}
+
+
+function tableAvgPerYearPerSport(){
+  let sport = document.getElementById('dropdown_avg_per_sport').innerHTML
+  let div = 'table_avg_per_sport'
+  let data = avgPerYearPerSportTable[sport]
+  let options = {
+    border: true,
+    sort: true,
+    hover: true,
+    textAlign: 'left',
+    header: {color:'#495057', backgroudColor: '#e9ecef'},
+    footer: {color:'#495057', backgroudColor: '#e9ecef', columns: {1: 'mean', 2: 'mean', 3: 'mean', 4:'mean'}}
+  }
+  createTable(div,data,options)
+}
+
+
+</script>
+
+{% endblock %}

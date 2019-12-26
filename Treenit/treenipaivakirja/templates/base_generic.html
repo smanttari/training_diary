@@ -46,8 +46,13 @@
 				<li class="nav-item ml-3">
 					<a class="nav-link" id="trainings" href="{% url 'trainings' %}">HARJOITUKSET</a>
 				</li>
-				<li class="nav-item ml-3">
-					<a class="nav-link" id="reports" href="{% url 'reports' %}">RAPORTIT</a>
+				<li class="nav-item dropdown ml-3">
+					<a class="nav-link dropdown-toggle" id="reports" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">RAPORTIT</a>
+					<div class="dropdown-menu" aria-labelledby="reports">
+						<a class="dropdown-item" href="{% url 'reports_amounts' %}">HARJOITUSMÄÄRÄT</a>
+						<a class="dropdown-item" href="{% url 'reports_sports' %}">LAJIT</a>
+						<a class="dropdown-item" href="{% url 'reports_zones' %}">TEHOT</a>
+					</div>
 				</li>
 			</ul>
 			<ul class="navbar-nav ml-auto">
