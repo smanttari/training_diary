@@ -16,201 +16,201 @@
 </div>
 {% endfor %}
 
-  <div class="btn-group btn-group-sm" role="group" aria-label="">
-    <button id="btn_profile" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('profile')">PROFIILI</button>
-    <button id="btn_sports" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('sports')">LAJIT</button>
-    <button id="btn_zones" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('zones')">TEHOALUEET</button>
-    <button id="btn_seasons" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('seasons')">HARJOITUSKAUDET</button>
-    <button id="btn_pw_reset" name="nav_btn" type="button" class="btn btn-primary pr-3 pl-3" onclick="showDiv('pw_reset')">VAIHDA SALASANA</button>
-  </div>
-
-
-<div class="mt-4" name="page" id="profile" style="display: block">
-  <div class="border p-4 bg-light">
-    <h5 class="mb-4">PROFIILI</h5>
-    <form method="post">{% csrf_token %}
-      <fieldset>
-        <div class="form-group row">
-          <label class="col-md-2 col-form-label"><b>{{ user_form.first_name.label }}</b></label>
-          <div class="col-md-2">{{ user_form.first_name|add_class:'form-control' }}</div>
+<div class="card">
+  <h6 class="card-header text-muted">
+      <ul class="nav nav-tabs card-header-tabs" role="tablist">
+        <li class="nav-item">
+          <a id="btn_profile" class="nav-link active" href="#" name="nav_btn" data-toggle="tab" id="hours" onclick="showDiv('profile')">PROFIILI</a>
+        </li>
+        <li class="nav-item">
+          <a id="btn_sports" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('sports')">LAJIT</a>
+        </li>
+        <li class="nav-item">
+          <a id="btn_zones" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('zones')">TEHOALUEET</a>
+        </li>
+        <li class="nav-item">
+          <a id="btn_seasons" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('seasons')">HARJOITUSKAUDET</a>
+        </li>
+        <li class="nav-item">
+          <a id="btn_pw_reset" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('pw_reset')">VAIHDA SALASANA</a>
+        </li>
+      </ul>
+  </h6>
+  <div class="card-body">
+    
+    <div name="page" id="profile" style="display: block">
+      <h5 class="card-title mb-4">PROFIILI</h5>
+      <form method="post">{% csrf_token %}
+        <fieldset>
+          <div class="form-group row">
+            <label class="col-md-2 col-form-label"><b>{{ user_form.first_name.label }}</b></label>
+            <div class="col-md-2">{{ user_form.first_name|add_class:'form-control' }}</div>
+          </div>
+          <div class="form-group row">
+            <label class="col-md-2 col-form-label"><b>{{ user_form.last_name.label }}</b></label>
+            <div class="col-md-2">{{ user_form.last_name|add_class:'form-control' }}</div>
+          </div>
+          <div class="form-group row">
+            <label class="col-md-2 col-form-label"><b>{{ user_form.email.label }}</b></label>
+            <div class="col-md-2">{{ user_form.email|add_class:'form-control' }}</div>
+          </div>
+        </fieldset>
+        <div class="form-actions col-md-6 mt-3">
+          <button type="submit" class="btn btn-success mr-3" name="profile_save" id="profile_save">TALLENNA</button>
         </div>
-        <div class="form-group row">
-          <label class="col-md-2 col-form-label"><b>{{ user_form.last_name.label }}</b></label>
-          <div class="col-md-2">{{ user_form.last_name|add_class:'form-control' }}</div>
-        </div>
-        <div class="form-group row">
-          <label class="col-md-2 col-form-label"><b>{{ user_form.email.label }}</b></label>
-          <div class="col-md-2">{{ user_form.email|add_class:'form-control' }}</div>
-        </div>
-      </fieldset>
-      <div class="form-actions col-md-6 mt-3">
-        <button type="submit" class="btn btn-success mr-3" name="profile_save" id="profile_save">TALLENNA</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-
-<div class="mt-4" name="page" id="sports">
-  <div class="border p-3 bg-light">
-  <h5 class="mb-4">LAJIT</h5>
-    <div class="col-xl-6">
-    <form method="post">{% csrf_token %}
-      {{ sports_formset.management_form }}
-      <div class="table-responsive-lg">
-        <table class="table table-sm table-light">
-          <thead class="thead-light">
-            <tr>
-              <th class="pl-3 pr-3">{{ sports_formset.0.laji.label }}</th>
-              <th class="pl-3 pr-3">{{ sports_formset.0.laji_nimi.label }}</th>
-              <th class="pl-3 pr-3">{{ sports_formset.0.laji_ryhma.label }}</th>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for form in sports_formset %}
-              <tr id="id_{{sports_formset.prefix}}-{{forloop.counter0}}" class="collapse">
-                <td>{{ form.laji|add_class:'form-control' }}</td>
-                <td>{{ form.laji_nimi|add_class:'form-control' }}</td>
-                <td>{{ form.laji_ryhma|add_class:'form-control' }}</td>
-                <td>
-                  <button class="btn btn-link text-decoration-none" 
-                  type="button"
-                  id="id_{{sports_formset.prefix}}-{{forloop.counter0}}-del"
-                  name="{{sports_formset.prefix}}-{{forloop.counter0}}-del">
-                  <i class="far fa-trash-alt"></i>
-                 </button>
-                </td>
-                <td style="display: none">{{ form.DELETE }}</td>
-                {% for field in form.hidden_fields %}
-                <td>{{ field }}</td>
-                {% endfor %}
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <button id="sports_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>LISÄÄ</button>
-      <div class="form-actions mt-3">
-        <button type="submit" class="btn btn-success mr-3" name="sports_save" id="sports_save">TALLENNA</button>
-      </div>
-    </form>
+      </form>
     </div>
-  </div>
-</div>
 
+    <div name="page" id="sports">
+      <h5 class="card-title mb-4">LAJIT</h5>
+      <div class="col-xl-6">
+      <form method="post">{% csrf_token %}
+        {{ sports_formset.management_form }}
+        <div class="table-responsive-lg">
+          <table class="table table-sm table-light">
+            <thead class="thead-light">
+              <tr>
+                <th class="pl-3 pr-3">{{ sports_formset.0.laji.label }}</th>
+                <th class="pl-3 pr-3">{{ sports_formset.0.laji_nimi.label }}</th>
+                <th class="pl-3 pr-3">{{ sports_formset.0.laji_ryhma.label }}</th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for form in sports_formset %}
+                <tr id="id_{{sports_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+                  <td>{{ form.laji|add_class:'form-control' }}</td>
+                  <td>{{ form.laji_nimi|add_class:'form-control' }}</td>
+                  <td>{{ form.laji_ryhma|add_class:'form-control' }}</td>
+                  <td>
+                    <button class="btn btn-link text-decoration-none" 
+                    type="button"
+                    id="id_{{sports_formset.prefix}}-{{forloop.counter0}}-del"
+                    name="{{sports_formset.prefix}}-{{forloop.counter0}}-del">
+                    <i class="far fa-trash-alt"></i>
+                    </button>
+                  </td>
+                  <td style="display: none">{{ form.DELETE }}</td>
+                  {% for field in form.hidden_fields %}
+                  <td>{{ field }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button id="sports_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>LISÄÄ</button>
+        <div class="form-actions mt-3">
+          <button type="submit" class="btn btn-success mr-3" name="sports_save" id="sports_save">TALLENNA</button>
+        </div>
+      </form>
+      </div>
+    </div>
 
-<div class="mt-4" name="page" id="zones">
-  <div class="border p-3 bg-light">
-  <h5 class="mb-4">TEHOALUEET</h5>
-    <div class="col-xl-5">
-    <form method="post">{% csrf_token %}
-      {{ zones_formset.management_form }}
-      <div class="table-responsive-lg">
-        <table class="table table-sm table-light">
-          <thead class="thead-light">
-            <tr>
-              <th class="pl-3 pr-3">{{ zones_formset.0.jarj_nro.label }}</th>
-              <th class="pl-3 pr-3">{{ zones_formset.0.tehoalue.label }}</th>
-              <th class="pl-3 pr-3">{{ zones_formset.0.alaraja.label }}</th>
-              <th class="pl-3 pr-3">{{ zones_formset.0.ylaraja.label }}</th>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for form in zones_formset %}
-              <tr id="id_{{zones_formset.prefix}}-{{forloop.counter0}}" class="collapse">
-                <td>{{ form.jarj_nro|add_class:'form-control' }}</td>
-                <td>{{ form.tehoalue|add_class:'form-control' }}</td>
-                <td>{{ form.alaraja|add_class:'form-control'}}</td>
-                <td>{{ form.ylaraja|add_class:'form-control' }}</td>
-                <td>
-                  <button class="btn btn-link text-decoration-none" 
+    <div name="page" id="zones">
+      <h5 class="card-title mb-4">TEHOALUEET</h5>
+      <div class="col-xl-5">
+      <form method="post">{% csrf_token %}
+        {{ zones_formset.management_form }}
+        <div class="table-responsive-lg">
+          <table class="table table-sm table-light">
+            <thead class="thead-light">
+              <tr>
+                <th class="pl-3 pr-3">{{ zones_formset.0.jarj_nro.label }}</th>
+                <th class="pl-3 pr-3">{{ zones_formset.0.tehoalue.label }}</th>
+                <th class="pl-3 pr-3">{{ zones_formset.0.alaraja.label }}</th>
+                <th class="pl-3 pr-3">{{ zones_formset.0.ylaraja.label }}</th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for form in zones_formset %}
+                <tr id="id_{{zones_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+                  <td>{{ form.jarj_nro|add_class:'form-control' }}</td>
+                  <td>{{ form.tehoalue|add_class:'form-control' }}</td>
+                  <td>{{ form.alaraja|add_class:'form-control'}}</td>
+                  <td>{{ form.ylaraja|add_class:'form-control' }}</td>
+                  <td>
+                    <button class="btn btn-link text-decoration-none" 
+                      type="button" 
+                      id="id_{{zones_formset.prefix}}-{{forloop.counter0}}-del"
+                      name="{{zones_formset.prefix}}-{{forloop.counter0}}-del">
+                    <i class="far fa-trash-alt"></i>
+                    </button>
+                  </td>
+                  <td style="display: none">{{ form.DELETE }}</td>
+                  {% for field in form.hidden_fields %}
+                  <td>{{ field }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button id="zones_add" type="button" class="btn btn-link text-decoration-none mb-1">
+          <i class="fas fa-plus-circle mr-1"></i>LISÄÄ
+        </button>
+        <div class="form-actions mt-3">
+          <button type="submit" class="btn btn-success mr-3" name="zones_save" id="zones_save">TALLENNA</button>
+        </div>
+      </form>
+      </div>
+    </div>
+
+    <div name="page" id="seasons">
+      <h5 class="card-title mb-4">HARJOITUSKAUDET</h5>
+      <div class="col-xl-4">
+      <form method="post">{% csrf_token %}
+        {{ seasons_formset.management_form }}
+        <div class="table-responsive-lg">
+          <table class="table table-sm table-light">
+            <thead class="thead-light">
+              <tr>
+                <th class="pl-3 pr-3">{{ seasons_formset.0.kausi.label }}</th>
+                <th class="pl-3 pr-3">{{ seasons_formset.0.alkupvm.label }}</th>
+                <th class="pl-3 pr-3">{{ seasons_formset.0.loppupvm.label }}</th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for form in seasons_formset %}
+                <tr id="id_{{seasons_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+                  <td>{{ form.kausi|add_class:'form-control' }}</td>
+                  <td>{{ form.alkupvm|add_class:'form-control date-picker picker-start' }}</td>
+                  <td>{{ form.loppupvm|add_class:'form-control date-picker picker-end' }}</td>
+                  <td>
+                    <button class="btn btn-link text-decoration-none" 
                     type="button" 
-                    id="id_{{zones_formset.prefix}}-{{forloop.counter0}}-del"
-                    name="{{zones_formset.prefix}}-{{forloop.counter0}}-del">
-                  <i class="far fa-trash-alt"></i>
-                 </button>
-                </td>
-                <td style="display: none">{{ form.DELETE }}</td>
-                {% for field in form.hidden_fields %}
-                <td>{{ field }}</td>
-                {% endfor %}
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                    id="id_{{seasons_formset.prefix}}-{{forloop.counter0}}-del"
+                    name="{{seasons_formset.prefix}}-{{forloop.counter0}}-del">
+                    <i class="far fa-trash-alt"></i>
+                    </button>
+                  </td>
+                  <td style="display: none">{{ form.DELETE }}</td>
+                  {% for field in form.hidden_fields %}
+                  <td>{{ field }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button id="seasons_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>LISÄÄ</button>
+        <div class="form-actions mt-3">
+          <button type="submit" class="btn btn-success mr-3" name="seasons_save" id="seasons_save">TALLENNA</button>
+        </div>
+      </form>
       </div>
-      <button id="zones_add" type="button" class="btn btn-link text-decoration-none mb-1">
-        <i class="fas fa-plus-circle mr-1"></i>LISÄÄ
-      </button>
-      <div class="form-actions mt-3">
-        <button type="submit" class="btn btn-success mr-3" name="zones_save" id="zones_save">TALLENNA</button>
-      </div>
-    </form>
     </div>
-  </div>
-</div>
 
-
-<div class="mt-4" name="page" id="seasons">
-  <div class="border p-3 bg-light">
-  <h5 class="mb-4">HARJOITUSKAUDET</h5>
-    <div class="col-xl-4">
-    <form method="post">{% csrf_token %}
-      {{ seasons_formset.management_form }}
-      <div class="table-responsive-lg">
-        <table class="table table-sm table-light">
-          <thead class="thead-light">
-            <tr>
-              <th class="pl-3 pr-3">{{ seasons_formset.0.kausi.label }}</th>
-              <th class="pl-3 pr-3">{{ seasons_formset.0.alkupvm.label }}</th>
-              <th class="pl-3 pr-3">{{ seasons_formset.0.loppupvm.label }}</th>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for form in seasons_formset %}
-              <tr id="id_{{seasons_formset.prefix}}-{{forloop.counter0}}" class="collapse">
-                <td>{{ form.kausi|add_class:'form-control' }}</td>
-                <td>{{ form.alkupvm|add_class:'form-control date-picker picker-start' }}</td>
-                <td>{{ form.loppupvm|add_class:'form-control date-picker picker-end' }}</td>
-                <td>
-                  <button class="btn btn-link text-decoration-none" 
-                  type="button" 
-                  id="id_{{seasons_formset.prefix}}-{{forloop.counter0}}-del"
-                  name="{{seasons_formset.prefix}}-{{forloop.counter0}}-del">
-                  <i class="far fa-trash-alt"></i>
-                 </button>
-                </td>
-                <td style="display: none">{{ form.DELETE }}</td>
-                {% for field in form.hidden_fields %}
-                <td>{{ field }}</td>
-                {% endfor %}
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <button id="seasons_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>LISÄÄ</button>
-      <div class="form-actions mt-3">
-        <button type="submit" class="btn btn-success mr-3" name="seasons_save" id="seasons_save">TALLENNA</button>
-      </div>
-    </form>
-    </div>
-  </div>
-</div>
-
-
-<div class="mt-4" name="page" id="pw_reset">
-  <div class="border p-4 bg-light">
-      <h5 class="mb-4">VAIHDA SALASANA</h5>
+    <div name="page" id="pw_reset">
+      <h5 class="card-title mb-4">VAIHDA SALASANA</h5>
       <form method="post">{% csrf_token %}
         <fieldset>
           {% for field in pw_form %}
@@ -230,8 +230,9 @@
         </div>
       </form>
     </div>
-</div>
 
+  </div>
+</div>
 
 
 <script type="text/javascript">
