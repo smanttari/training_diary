@@ -161,13 +161,14 @@ def reports_amounts(request):
     Training amount reports 
     """
     current_user_id = request.user.id
-    current_year = str(datetime.now().year)
 
     if not harjoitus.objects.filter(user=current_user_id):
         years = [current_year]
         sport = ''
         sports = []
+        hours_per_season_json = []
         hours_per_year_json = []
+        kilometers_per_season_json = []
         kilometers_per_year_json = []
         hours_per_month_json = []
         hours_per_week_json = []
@@ -177,31 +178,36 @@ def reports_amounts(request):
         trainings_df = transformations.trainings(current_user_id)
         sports = transformations.sports_list(current_user_id) 
         sport = sports[0]
-        years = trainings_df.sort_values('vuosi')['vuosi'].unique()
+        years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique()
 
+        trainings_per_season = transformations.trainings_per_season(trainings_df)
         trainings_per_year = transformations.trainings_per_year(trainings_df)
         trainings_per_month = transformations.trainings_per_month(trainings_df,current_user_id)
         trainings_per_week = transformations.trainings_per_week(trainings_df,current_user_id)
 
+        hours_per_season_json = transformations.hours_per_season(trainings_per_season)
         hours_per_year_json = transformations.hours_per_year(trainings_per_year)
         hours_per_month_json = transformations.hours_per_month(trainings_per_month)
         hours_per_week_json = transformations.hours_per_week(trainings_per_week)
         hours_per_sport_json = transformations.hours_per_sport(trainings_df)
         hours_per_sport_group_json = transformations.hours_per_sport_group(trainings_df)
+
+        kilometers_per_season_json = transformations.kilometers_per_season(trainings_per_season)
         kilometers_per_year_json = transformations.kilometers_per_year(trainings_per_year)
 
     return render(request, 'reports_amounts.html',
         context = {
-            'current_year': current_year,
             'years': years,
             'sport': sport,
             'sports': sports,
+            'hours_per_season_json': hours_per_season_json,
             'hours_per_year_json': hours_per_year_json,
-            'kilometers_per_year_json': kilometers_per_year_json,
             'hours_per_month_json': hours_per_month_json,
             'hours_per_week_json': hours_per_week_json,
             'hours_per_sport_json': hours_per_sport_json,
-            'hours_per_sport_group_json': hours_per_sport_group_json
+            'hours_per_sport_group_json': hours_per_sport_group_json,
+            'kilometers_per_season_json': kilometers_per_season_json,
+            'kilometers_per_year_json': kilometers_per_year_json
             })
 
 
@@ -211,52 +217,55 @@ def reports_sports(request):
     Trainings reports per sport
     """
     current_user_id = request.user.id
-    current_year = str(datetime.now().year)
 
     if not harjoitus.objects.filter(user=current_user_id):
-        years = [current_year]
         sport = ''
         sports = []
-        hours_per_year_per_sport_json = []
-        kilometers_per_year_per_sport_json = []
-        avg_per_year_per_sport = []
-        amounts_per_year_per_sport = []
-        avg_per_year_per_sport_table = []
-    else:
-        trainings_df = transformations.trainings(current_user_id)
+        avg_per_sport = []
+        amounts_per_sport = []
+        avg_per_sport_table = []
+        hours_per_sport = []
+        kilometers_per_sport = []
+    else:    
         sports = transformations.sports_list(current_user_id) 
         sport = sports[0]
-        trainings_per_sport = transformations.trainings_per_sport(trainings_df)
+        trainings_df = transformations.trainings(current_user_id)
+        trainings_per_sport_per_year = transformations.trainings_per_sport(trainings_df, 'vuosi')
+        trainings_per_sport_per_season = transformations.trainings_per_sport(trainings_df, 'kausi')
 
-        hours_per_year_per_sport = {}
-        kilometers_per_year_per_sport = {}
-        avg_per_year_per_sport = {}
-        avg_per_year_per_sport_table = {}
-        amounts_per_year_per_sport = {}
+        hours_per_sport = {'year':{}, 'season':{}}
+        kilometers_per_sport = {'year':{}, 'season':{}}
+        avg_per_sport = {'year':{}, 'season':{}}
+        avg_per_sport_table = {'year':{}, 'season':{}}
+        amounts_per_sport = {'year':{}, 'season':{}}
 
         for s in sports:
-            data = trainings_per_sport[trainings_per_sport['laji_nimi'] == s]
-            if not data.empty:
-                amounts_per_year_per_sport[s] = data[['vuosi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
-                avg_per_year_per_sport_table[s] = data[['vuosi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
-                data = data.set_index('vuosi')
-                hours_per_year_per_sport[s] = json.loads(transformations.dataframe_to_json(data[['kesto (h)']]))
-                kilometers_per_year_per_sport[s] = json.loads(transformations.dataframe_to_json(data[['matka (km)']]))
-                avg_per_year_per_sport[s] = json.loads(transformations.dataframe_to_json(data[['vauhti (km/h)','keskisyke']]))
-        
-        hours_per_year_per_sport_json = json.dumps(hours_per_year_per_sport)
-        kilometers_per_year_per_sport_json = json.dumps(kilometers_per_year_per_sport)
+            data_per_year = trainings_per_sport_per_year[trainings_per_sport_per_year['laji_nimi'] == s]
+            data_per_season = trainings_per_sport_per_season[trainings_per_sport_per_season['laji_nimi'] == s]
+            if not data_per_year.empty:
+                amounts_per_sport['year'][s] = data_per_year[['vuosi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
+                avg_per_sport_table['year'][s] = data_per_year[['vuosi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
+                data_per_year = data_per_year.set_index('vuosi')
+                hours_per_sport['year'][s] = json.loads(transformations.dataframe_to_json(data_per_year[['kesto (h)']]))
+                kilometers_per_sport['year'][s] = json.loads(transformations.dataframe_to_json(data_per_year[['matka (km)']]))
+                avg_per_sport['year'][s] = json.loads(transformations.dataframe_to_json(data_per_year[['vauhti (km/h)','keskisyke']]))
+            if not data_per_season.empty:
+                amounts_per_sport['season'][s] = data_per_season[['kausi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
+                avg_per_sport_table['season'][s] = data_per_season[['kausi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
+                data_per_season = data_per_season.set_index('kausi')
+                hours_per_sport['season'][s] = json.loads(transformations.dataframe_to_json(data_per_season[['kesto (h)']]))
+                kilometers_per_sport['season'][s] = json.loads(transformations.dataframe_to_json(data_per_season[['matka (km)']]))
+                avg_per_sport['season'][s] = json.loads(transformations.dataframe_to_json(data_per_season[['vauhti (km/h)','keskisyke']]))
 
     return render(request, 'reports_sports.html',
         context = {
-            'current_year': current_year,
             'sport': sport,
             'sports': sports,
-            'avg_per_year_per_sport': avg_per_year_per_sport,
-            'amounts_per_year_per_sport': amounts_per_year_per_sport,
-            'avg_per_year_per_sport_table': avg_per_year_per_sport_table,
-            'hours_per_year_per_sport_json': hours_per_year_per_sport_json,
-            'kilometers_per_year_per_sport_json': kilometers_per_year_per_sport_json
+            'avg_per_sport': avg_per_sport,
+            'amounts_per_sport': amounts_per_sport,
+            'avg_per_sport_table': avg_per_sport_table,
+            'hours_per_sport': hours_per_sport,
+            'kilometers_per_sport': kilometers_per_sport
             })
 
 
@@ -267,21 +276,21 @@ def reports_zones(request):
     Trainings reports per zone
     """
     current_user_id = request.user.id
-    current_year = str(datetime.now().year)
-
+    seasons = list(kausi.objects.filter(user=current_user_id).values_list('kausi',flat=True).order_by('-alkupvm'))
+    
     if not harjoitus.objects.filter(user=current_user_id):
         years = [current_year]
-        hours_per_year_per_zone_json = []
+        hours_per_zone_json = []
     else:
         trainings_df = transformations.trainings(current_user_id)
-        years = trainings_df.sort_values('vuosi')['vuosi'].unique()
-        hours_per_year_per_zone_json = transformations.hours_per_year_per_zone(trainings_df,current_user_id)
+        years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique()
+        hours_per_zone_json = transformations.hours_per_zone(trainings_df,current_user_id)
 
     return render(request, 'reports_zones.html',
         context = {
-            'current_year': current_year,
             'years': years,
-            'hours_per_year_per_zone_json': hours_per_year_per_zone_json
+            'seasons': seasons,
+            'hours_per_zone_json': hours_per_zone_json
             })
 
 

@@ -12,38 +12,65 @@
 
 {% block content %}
 
-<div class="row">
-
-  <div class="col-lg-6 mb-3">
-    <div class="card">
-      <h6 class="card-header text-muted">Harjoitusmäärät tehoalueittain
-      </h6>
-      <div class="card-body">
-        <div id="chart_amount_per_zone_per_year"></div>
+<div class="row mb-2">
+  <div class="col">
+    <div class="float-right">
+      <div class="custom-control custom-radio custom-control-inline">
+        <input 
+          type="radio" 
+          id="year" 
+          name="groupBy" 
+          value="year" 
+          class="custom-control-input" 
+          checked>
+        <label class="custom-control-label" for="year">Vuosittain</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input 
+          type="radio" 
+          id="season" 
+          name="groupBy" 
+          value="season" 
+          class="custom-control-input"
+          >
+        <label class="custom-control-label" for="season">Harjoituskausittain</label>
       </div>
     </div>
   </div>
+</div>
 
+<div class="row">
   <div class="col-lg-6 mb-3">
     <div class="card">
-      <h6 class="card-header text-muted">Jakauma tehoalueittain
-          <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_amount_per_zone">
-            <li class="nav-item dropdown">
-              <a class="nav-link active dropdown-toggle" id="dropdown_amount_per_zone" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{current_year}}</a>
-              <div class="dropdown-menu">
-                {% for v in years %}
-                <button class="dropdown-item" type="button" value="{{ v }}" onclick="drawPercentagePerZone(this.value)">{{ v }}</button>
-                {% endfor %}
-              </div>
-            </li>
-          </ul>
+      <h6 class="card-header text-muted">Harjoitustunnit tehoalueittain
       </h6>
       <div class="card-body">
         <div id="chart_amount_per_zone"></div>
       </div>
     </div>
   </div>
-
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Jakauma tehoalueittain
+          <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_amount_per_zone">
+            <li class="nav-item dropdown">
+              <a id="dropdown_period" class="nav-link active dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{years.0}}</a>
+              <div class="dropdown-menu dropdown-menu-right">
+                {% for v in years %}
+                <button name="period_year" class="dropdown-item" type="button" value="{{ v }}">{{ v }}</button>
+                {% endfor %}
+                {% for s in seasons %}
+                <button name="period_season" class="dropdown-item" type="button" value="{{ s }}" hidden>{{ s }}</button>
+                {% endfor %}
+              </div>
+            </li>
+          </ul>
+      </h6>
+      <div class="card-body">
+        <div id="chart_percentage_per_zone"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -57,42 +84,73 @@
 
   
   // load data
-  let amountPerZonePerYear = {{hours_per_year_per_zone_json|safe}}
-  let year = {{ current_year }}
+  let amountPerZone = {{hours_per_zone_json|safe}}
+  let period = '{{ years.0 }}'
+  let groupBy = 'year'
 
 
   // draw charts
-  drawAmountPerZonePerYear()
   drawAmountPerZone()
+  drawPercentagePerZone()
 
-
-  // function for drawing selected year by training zone
-  function drawPercentagePerZone(year){
-    document.getElementById("dropdown_amount_per_zone").innerHTML = year
+  
+  // click events
+  $('#year').click(function() {
+    groupBy = 'year'
+    $('[name="period_year"]').each (function() {
+      $(this).prop('hidden', false)
+    })
+    $('[name="period_season"]').each (function() {
+      $(this).prop('hidden', true)
+    })
+    period = '{{ years.0 }}'
+    $("#dropdown_period").text(period)
     drawAmountPerZone()
-  }
+    drawPercentagePerZone()
+  })
+
+  $('#season').click(function() {
+    groupBy = 'season'
+    $('[name="period_year"]').each (function() {
+      $(this).prop('hidden', true)
+    })
+    $('[name="period_season"]').each (function() {
+      $(this).prop('hidden', false)
+    })
+    period = '{{ seasons.0 }}'
+    $("#dropdown_period").text(period)
+    drawAmountPerZone()
+    drawPercentagePerZone()
+  })
+
+  $('[name="period_year"],[name="period_season"]').click(function() {
+    period = $(this).text()
+    $("#dropdown_period").text(period)
+    drawPercentagePerZone()
+  })
 
 
-function drawAmountPerZonePerYear(){
-  let div = 'chart_amount_per_zone_per_year'
-  let data = amountPerZonePerYear.filter(d => d['category'] > year-4)
+function drawAmountPerZone(){
+  let div = 'chart_amount_per_zone'
+  let data = amountPerZone[groupBy]
   let options = {
-    type:'bar',
-    bar: {labels:{size: 12, color: '#fff'}},
+    type:'line',
+    line: {width: 2, labels:{size:12}},
+    circle: {radius: 5, display: true},
     width: 800,
     height: 400,
-    margin: {top: 40, bottom: 40, left: 40, right: 100},
-    xaxis: {font: {size:11}},
+    margin: {top: 40, bottom: 60, left: 40, right: 100},
+    xaxis: {font: {size:11}, orientation: 'skew'},
     yaxis: {font: {size:11}, min:0},
     colors: [
-      '#536be2',
-      '#7a86ea',
-      '#9ca2f2',
-      '#9ea2cb',
-      '#8187b2',
       '#646c9a',
+      '#536be2',
+      '#9ca2f2',
+      '#dadcff',
+      '#9ea2cb',
+      '#8187b2'
     ],
-    padding: 0.15,
+    padding: 0.2,
     grid: true,
     tooltip: {suffix:" h"},
     animation: {duration: 500, delay: 20},
@@ -100,23 +158,12 @@ function drawAmountPerZonePerYear(){
     responsiveness: true
     }
     drawComboChart(div,data,options)
-
-    // add click event to bars
-    let bars = d3.select('#' + div).selectAll('rect')
-      .on('click', function(d){
-        year = d3.select(this).attr('category')
-        drawPercentagePerZone(year)
-      })
-      .on('mouseover', function(d){
-        d3.select(this).style("cursor", "pointer")
-      })
 }
 
 
-function drawAmountPerZone(){
-  let year = document.getElementById('dropdown_amount_per_zone').innerHTML
-  let div = 'chart_amount_per_zone'
-  let data = amountPerZonePerYear.filter(d => d['category'] == year)[0]
+function drawPercentagePerZone(){
+  let div = 'chart_percentage_per_zone'
+  let data = amountPerZone.length == 0 ? [] : amountPerZone[groupBy].filter(d => d['category'] == period)[0]
   let piedata = []
   if (data){
     for (d in data['series']){piedata.push({'category': d, 'series':data['series'][d]})}
@@ -138,7 +185,7 @@ function drawAmountPerZone(){
     ],
     tooltip: {prefix:"", suffix:"h"},
     radius: {inner: 30, outer: 150},
-    slicelabel: {size:12, color: '#FFF', threshold: 0.07},
+    slicelabel: {size:12, color: '#242939', threshold: 0.07},
     legend: {coord: {x: 600, y: 50}, font: {size: 11}},
     maxSliceCount: 8,
     responsiveness: true
