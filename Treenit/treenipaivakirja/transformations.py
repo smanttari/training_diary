@@ -190,24 +190,26 @@ def trainings_per_year(trainings_df):
 
 
 def trainings_per_month(trainings_df,user_id):
-    current_day_yyyymmdd = datetime.now().date().strftime('%Y%m%d')
+    current_day = datetime.now().date()
+    current_year = str(current_day.year)
+    current_month = str(current_day.strftime("%m"))
     first_day_yyyymmdd = harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
-    years_months = aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_day_yyyymmdd).values_list('vuosi','kk').distinct()
+    years_months = aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_year + '1231').values_list('vuosi','kk').distinct()
     years_months = pd.DataFrame(list(years_months), columns=['vuosi','kk'])
     years_months['vuosi'] = years_months['vuosi'].astype(str)
     trainings_per_month = trainings_df.groupby(['vuosi','kk']).sum().reset_index()[['vuosi','kk','kesto','matka']]
     trainings_per_month = years_months.merge(trainings_per_month,how='left',right_on=['vuosi','kk'],left_on=['vuosi','kk'])
     trainings_per_month[['kesto','matka']] = trainings_per_month[['kesto','matka']].round(0)
+    trainings_per_month[(trainings_per_month['vuosi'] < current_year) | (trainings_per_month['kk'] <= int(current_month))] = trainings_per_month[(trainings_per_month['vuosi'] < current_year) | (trainings_per_month['kk'] <= int(current_month))].fillna(0)
     return trainings_per_month
 
 
 def trainings_per_week(trainings_df,user_id):
     current_day = datetime.now().date()
-    current_day_yyyymmdd = current_day.strftime('%Y%m%d')
     current_year = str(current_day.year)
     current_week = str(current_day.strftime("%V"))
     first_day_yyyymmdd = harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
-    years_weeks = aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_day_yyyymmdd).values_list('vuosi','vko').distinct()
+    years_weeks = aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_year + '1231').values_list('vuosi','vko').distinct()
     years_weeks = pd.DataFrame(list(years_weeks), columns=['vuosi','vko'])
     years_weeks['vuosi'] = years_weeks['vuosi'].astype(str)
     trainings_per_week = trainings_df.groupby(['vuosi','vko']).sum().reset_index()[['vuosi','vko','kesto','matka']]

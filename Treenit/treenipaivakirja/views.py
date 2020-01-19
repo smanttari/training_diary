@@ -1,6 +1,6 @@
 from treenipaivakirja.models import harjoitus, aika, laji, teho, tehoalue, kausi
 from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm
-import treenipaivakirja.transformations as transformations
+import treenipaivakirja.transformations as tr
 from django.db.models import Sum, Max, Min
 from django.shortcuts import render,redirect
 from django.forms import inlineformset_factory, modelformset_factory, formset_factory
@@ -35,7 +35,8 @@ def index(request):
     current_user_id = request.user.id
     current_day = datetime.now().date()
     current_year = current_day.year
-    current_week = current_day.strftime("%V")
+    current_week = int(current_day.strftime("%V"))
+    current_month = int(current_day.strftime("%m"))
     current_day_pd = pd.Timestamp(current_day)
     current_day_minus_14 = pd.Timestamp(current_day_pd - timedelta(days=14))
     current_day_minus_28 = pd.Timestamp(current_day_pd - timedelta(days=28))
@@ -58,12 +59,16 @@ def index(request):
         hours_past_year = trainings_df[(trainings_df['Vuosi'] == (current_year-1)) & (trainings_df['Päivä'] <= pd.Timestamp(current_day_pd - timedelta(days=365)))]['Kesto'].sum()
         hours_change = hours_current_year - hours_past_year
 
-        hours_per_week_current_year = hours_current_year / (int(current_week)-1)
+        if current_week in [52,53] and current_month == 1:
+            current_week = 1
+        elif current_week == 1 and current_month == 12:
+            current_week = 52
+        hours_per_week_current_year = hours_current_year / current_week
         hours_per_week_past_year = trainings_df[trainings_df['Vuosi'] == (current_year-1)]['Kesto'].sum() / 52
         hours_per_week_change = hours_per_week_current_year - hours_per_week_past_year
 
-        feeling_current_period = transformations.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_14) & (trainings_df['Päivä'] <= current_day_pd)]['Tuntuma'].mean(),0)
-        feeling_last_period = transformations.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_28) & (trainings_df['Päivä'] <= current_day_minus_14)]['Tuntuma'].mean(),0)
+        feeling_current_period = tr.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_14) & (trainings_df['Päivä'] <= current_day_pd)]['Tuntuma'].mean(),0)
+        feeling_last_period = tr.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_28) & (trainings_df['Päivä'] <= current_day_minus_14)]['Tuntuma'].mean(),0)
         feeling_change = feeling_current_period - feeling_last_period
 
     return render(request,'index.html',
@@ -86,9 +91,9 @@ def trainings_view(request):
     current_user_id = request.user.id
     current_day = datetime.now().date()
     first_day = harjoitus.objects.filter(user=current_user_id).aggregate(Min('aika__pvm'))['aika__pvm__min']
-    startdate = transformations.coalesce(first_day,current_day).strftime('%d.%m.%Y')
+    startdate = tr.coalesce(first_day,current_day).strftime('%d.%m.%Y')
     enddate = current_day.strftime('%d.%m.%Y') 
-    sports = transformations.sports_dict(current_user_id)
+    sports = tr.sports_dict(current_user_id)
     sport = 'Kaikki'
 
     zones = list(teho.objects.filter(harjoitus_id__user=current_user_id).values_list('tehoalue_id__tehoalue',flat=True).distinct().order_by('tehoalue_id__jarj_nro'))
@@ -104,7 +109,7 @@ def trainings_view(request):
         enddate_dt = datetime.strptime(enddate,'%d.%m.%Y')
         enddate_yyyymmdd = enddate_dt.strftime('%Y%m%d')
 
-        trainings_df = transformations.trainings_datatable(current_user_id)
+        trainings_df = tr.trainings_datatable(current_user_id)
 
         if trainings_df is None:
             messages.add_message(request, messages.ERROR, 'Ei harjoituksia')
@@ -163,7 +168,7 @@ def reports_amounts(request):
     current_user_id = request.user.id
 
     if not harjoitus.objects.filter(user=current_user_id):
-        years = [current_year]
+        years = []
         sport = ''
         sports = []
         hours_per_season_json = []
@@ -175,25 +180,25 @@ def reports_amounts(request):
         hours_per_sport_json = []
         hours_per_sport_group_json = []
     else:
-        trainings_df = transformations.trainings(current_user_id)
-        sports = transformations.sports_list(current_user_id) 
+        trainings_df = tr.trainings(current_user_id)
+        sports = tr.sports_list(current_user_id) 
         sport = sports[0]
         years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique()
 
-        trainings_per_season = transformations.trainings_per_season(trainings_df)
-        trainings_per_year = transformations.trainings_per_year(trainings_df)
-        trainings_per_month = transformations.trainings_per_month(trainings_df,current_user_id)
-        trainings_per_week = transformations.trainings_per_week(trainings_df,current_user_id)
+        trainings_per_season = tr.trainings_per_season(trainings_df)
+        trainings_per_year = tr.trainings_per_year(trainings_df)
+        trainings_per_month = tr.trainings_per_month(trainings_df,current_user_id)
+        trainings_per_week = tr.trainings_per_week(trainings_df,current_user_id)
 
-        hours_per_season_json = transformations.hours_per_season(trainings_per_season)
-        hours_per_year_json = transformations.hours_per_year(trainings_per_year)
-        hours_per_month_json = transformations.hours_per_month(trainings_per_month)
-        hours_per_week_json = transformations.hours_per_week(trainings_per_week)
-        hours_per_sport_json = transformations.hours_per_sport(trainings_df)
-        hours_per_sport_group_json = transformations.hours_per_sport_group(trainings_df)
+        hours_per_season_json = tr.hours_per_season(trainings_per_season)
+        hours_per_year_json = tr.hours_per_year(trainings_per_year)
+        hours_per_month_json = tr.hours_per_month(trainings_per_month)
+        hours_per_week_json = tr.hours_per_week(trainings_per_week)
+        hours_per_sport_json = tr.hours_per_sport(trainings_df)
+        hours_per_sport_group_json = tr.hours_per_sport_group(trainings_df)
 
-        kilometers_per_season_json = transformations.kilometers_per_season(trainings_per_season)
-        kilometers_per_year_json = transformations.kilometers_per_year(trainings_per_year)
+        kilometers_per_season_json = tr.kilometers_per_season(trainings_per_season)
+        kilometers_per_year_json = tr.kilometers_per_year(trainings_per_year)
 
     return render(request, 'reports_amounts.html',
         context = {
@@ -227,11 +232,11 @@ def reports_sports(request):
         hours_per_sport = []
         kilometers_per_sport = []
     else:    
-        sports = transformations.sports_list(current_user_id) 
+        sports = tr.sports_list(current_user_id) 
         sport = sports[0]
-        trainings_df = transformations.trainings(current_user_id)
-        trainings_per_sport_per_year = transformations.trainings_per_sport(trainings_df, 'vuosi')
-        trainings_per_sport_per_season = transformations.trainings_per_sport(trainings_df, 'kausi')
+        trainings_df = tr.trainings(current_user_id)
+        trainings_per_sport_per_year = tr.trainings_per_sport(trainings_df, 'vuosi')
+        trainings_per_sport_per_season = tr.trainings_per_sport(trainings_df, 'kausi')
 
         hours_per_sport = {'year':{}, 'season':{}}
         kilometers_per_sport = {'year':{}, 'season':{}}
@@ -246,16 +251,16 @@ def reports_sports(request):
                 amounts_per_sport['year'][s] = data_per_year[['vuosi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
                 avg_per_sport_table['year'][s] = data_per_year[['vuosi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
                 data_per_year = data_per_year.set_index('vuosi')
-                hours_per_sport['year'][s] = json.loads(transformations.dataframe_to_json(data_per_year[['kesto (h)']]))
-                kilometers_per_sport['year'][s] = json.loads(transformations.dataframe_to_json(data_per_year[['matka (km)']]))
-                avg_per_sport['year'][s] = json.loads(transformations.dataframe_to_json(data_per_year[['vauhti (km/h)','keskisyke']]))
+                hours_per_sport['year'][s] = json.loads(tr.dataframe_to_json(data_per_year[['kesto (h)']]))
+                kilometers_per_sport['year'][s] = json.loads(tr.dataframe_to_json(data_per_year[['matka (km)']]))
+                avg_per_sport['year'][s] = json.loads(tr.dataframe_to_json(data_per_year[['vauhti (km/h)','keskisyke']]))
             if not data_per_season.empty:
                 amounts_per_sport['season'][s] = data_per_season[['kausi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
                 avg_per_sport_table['season'][s] = data_per_season[['kausi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
                 data_per_season = data_per_season.set_index('kausi')
-                hours_per_sport['season'][s] = json.loads(transformations.dataframe_to_json(data_per_season[['kesto (h)']]))
-                kilometers_per_sport['season'][s] = json.loads(transformations.dataframe_to_json(data_per_season[['matka (km)']]))
-                avg_per_sport['season'][s] = json.loads(transformations.dataframe_to_json(data_per_season[['vauhti (km/h)','keskisyke']]))
+                hours_per_sport['season'][s] = json.loads(tr.dataframe_to_json(data_per_season[['kesto (h)']]))
+                kilometers_per_sport['season'][s] = json.loads(tr.dataframe_to_json(data_per_season[['matka (km)']]))
+                avg_per_sport['season'][s] = json.loads(tr.dataframe_to_json(data_per_season[['vauhti (km/h)','keskisyke']]))
 
     return render(request, 'reports_sports.html',
         context = {
@@ -279,12 +284,12 @@ def reports_zones(request):
     seasons = list(kausi.objects.filter(user=current_user_id).values_list('kausi',flat=True).order_by('-alkupvm'))
     
     if not harjoitus.objects.filter(user=current_user_id):
-        years = [current_year]
+        years = []
         hours_per_zone_json = []
     else:
-        trainings_df = transformations.trainings(current_user_id)
+        trainings_df = tr.trainings(current_user_id)
         years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique()
-        hours_per_zone_json = transformations.hours_per_zone(trainings_df,current_user_id)
+        hours_per_zone_json = tr.hours_per_zone(trainings_df,current_user_id)
 
     return render(request, 'reports_zones.html',
         context = {
@@ -308,14 +313,14 @@ def training_add(request):
             instance = harjoitus_form.save(commit=False)
             instance.aika_id = instance.pvm.strftime('%Y%m%d')
             instance.user = request.user
-            kesto_h = transformations.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
-            kesto_min = transformations.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
+            kesto_h = tr.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
+            kesto_min = tr.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
             instance.kesto_h = kesto_h
             instance.kesto_min = kesto_min
-            instance.kesto = transformations.h_min_to_hours(kesto_h,kesto_min)
+            instance.kesto = tr.h_min_to_hours(kesto_h,kesto_min)
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
-            instance.vauhti_min_km = transformations.vauhti_min_km(vauhti_m,vauhti_s)
+            instance.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
             vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
             if instance.vauhti_min_km is None and vauhti_km_h is not None:
                 instance.vauhti_min_km = 60 / vauhti_km_h
@@ -357,15 +362,15 @@ def training_modify(request,pk):
         if harjoitus_form.is_valid() and harjoitus_form.has_changed():
             post = harjoitus_form.save(commit=False)
             post.aika_id = post.pvm.strftime('%Y%m%d')
-            kesto_h = transformations.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
-            kesto_min = transformations.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
+            kesto_h = tr.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
+            kesto_min = tr.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
             post.kesto_h = kesto_h
             post.kesto_min = kesto_min
-            post.kesto = transformations.h_min_to_hours(kesto_h,kesto_min)
+            post.kesto = tr.h_min_to_hours(kesto_h,kesto_min)
             vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
-            post.vauhti_min_km = transformations.vauhti_min_km(vauhti_m,vauhti_s)
+            post.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
             if post.vauhti_min_km is None and vauhti_km_h is not None:
                 post.vauhti_min_km = 60 / vauhti_km_h
             elif post.vauhti_min_km is not None and vauhti_km_h is None:
@@ -523,7 +528,7 @@ def register(request):
 def trainings_data(request):
     current_user_id = request.user.id
     table_columns = request.POST.getlist('columns[]')
-    trainings_df = transformations.trainings_datatable(current_user_id)
+    trainings_df = tr.trainings_datatable(current_user_id)
     if trainings_df is None:
         trainings_list = []
     else:
