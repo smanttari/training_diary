@@ -194,7 +194,7 @@
         </fieldset>
         <button id="teho_add" type="button" class="btn btn-link text-decoration-none mb-1"><i class="fas fa-plus-circle mr-1"></i>Lisää tehot</button>
         <div class="form-actions mt-5 col-6">
-            <button type="submit" id="save" name="save" class="btn btn-success mr-3" onclick="calculateKesto();calculateVauhtiMinKm();calculateVauhtiKmH();">Tallenna</button>
+            <button type="submit" id="save" name="save" class="btn btn-success mr-3">Tallenna</button>
             <a class="btn btn-danger" href="{% url 'trainings' %}" role="button">Peruuta</a>
         </div>
         <br><br>
@@ -226,6 +226,12 @@ $('#id_pvm').datepicker({
     maxDate: today
 })
 
+$("#save").click(function() {
+    calculateKesto()
+    calculateVauhtiMinKm()
+    calculateVauhtiKmH()
+  })
+
 
 // teho formset
 let prefix = '{{teho_formset.prefix}}'
@@ -254,6 +260,9 @@ function calculateKesto(){
             let kesto = calculateDuration(kesto_h, kesto_min)
             $(`#id_${prefix}-${id}-kesto`).val(kesto)
         }
+        else {
+            $(`#id_${prefix}-${id}-kesto`).val(null)
+        }
         id++
     }
 }
@@ -267,6 +276,9 @@ function calculateVauhtiMinKm(){
         if (vauhti_min || vauhti_s){
             let vauhti_min_km = calculateSpeedMinPerKm(vauhti_min, vauhti_s)
             $(`#id_${prefix}-${id}-vauhti_min_km`).val(vauhti_min_km)
+        }
+        else {
+            $(`#id_${prefix}-${id}-vauhti_min_km`).val(null)
         }
         id++
     }
@@ -282,6 +294,10 @@ function splitVauhtiMinKm(){
             $(`#id_${prefix}-${id}-vauhti_min`).val(minutes)
             $(`#id_${prefix}-${id}-vauhti_s`).val(seconds)
         }
+        else {
+            $(`#id_${prefix}-${id}-vauhti_min`).val(null)
+            $(`#id_${prefix}-${id}-vauhti_s`).val(null)
+        }
         id++
     }
 }
@@ -294,6 +310,9 @@ function calculateVauhtiKmH(){
         if (vauhti_min_km){
             let vauhti_km_h = convertMinPerKmToKmPerH(vauhti_min_km)
             $(`#id_${prefix}-${id}-vauhti_km_h`).val(vauhti_km_h)
+        }
+        else {
+            $(`#id_${prefix}-${id}-vauhti_km_h`).val(null)
         }
         id++
     }

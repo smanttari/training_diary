@@ -20,19 +20,19 @@
   <h6 class="card-header text-muted">
       <ul class="nav nav-tabs card-header-tabs" role="tablist">
         <li class="nav-item">
-          <a id="btn_profile" class="nav-link active" href="#" name="nav_btn" data-toggle="tab" id="hours" onclick="showDiv('profile')">Profiili</a>
+          <a id="btn_profile" class="nav-link active" href="#" name="nav_btn" data-toggle="tab" id="hours">Profiili</a>
         </li>
         <li class="nav-item">
-          <a id="btn_sports" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('sports')">Lajit</a>
+          <a id="btn_sports" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Lajit</a>
         </li>
         <li class="nav-item">
-          <a id="btn_zones" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('zones')">Tehoalueet</a>
+          <a id="btn_zones" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Tehoalueet</a>
         </li>
         <li class="nav-item">
-          <a id="btn_seasons" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('seasons')">Harjoituskaudet</a>
+          <a id="btn_seasons" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Harjoituskaudet</a>
         </li>
         <li class="nav-item">
-          <a id="btn_pw_reset" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers" onclick="showDiv('pw_reset')">Vaihda salasana</a>
+          <a id="btn_pw_reset" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Vaihda salasana</a>
         </li>
       </ul>
   </h6>
@@ -286,9 +286,29 @@ function initEndDatePickers(){
 }
 
 
-// activate div
-let button = 'btn_{{page}}'
-document.getElementById(button).click()
+// activate sheet
+showDiv('{{page}}')
+
+// sheet navigation
+$("#btn_profile").click(function() {
+  showDiv('profile')
+})
+
+$("#btn_sports").click(function() {
+  showDiv('sports')
+})
+
+$("#btn_zones").click(function() {
+  showDiv('zones')
+})
+
+$("#btn_seasons").click(function() {
+  showDiv('seasons')
+})
+
+$("#btn_pw_reset").click(function() {
+  showDiv('pw_reset')
+})
 
 
 // sports formset

@@ -19,10 +19,10 @@
       <h6 class="card-header text-muted">Harjoitusmäärät vuosittain
           <ul class="nav nav-tabs card-header-tabs float-right" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" href="#" data-toggle="tab" id="hours" onclick="drawHoursPerYear()">Tunnit</a>
+              <a class="nav-link active" href="#" data-toggle="tab" id="hours_per_year">Tunnit</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#" data-toggle="tab" id="kilometers" onclick="drawKilometritVuosittain()">Kilometrit</a>
+              <a class="nav-link" href="#" data-toggle="tab" id="kilometers_per_year">Kilometrit</a>
             </li>
           </ul>
       </h6>
@@ -37,10 +37,10 @@
       <h6 class="card-header text-muted">Harjoitusmäärät kausittain
           <ul class="nav nav-tabs card-header-tabs float-right" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" href="#" data-toggle="tab" id="hours" onclick="drawHoursPerSeason()">Tunnit</a>
+              <a class="nav-link active" href="#" data-toggle="tab" id="hours_per_season">Tunnit</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#" data-toggle="tab" id="kilometers" onclick="drawKilometersPerSeason()">Kilometrit</a>
+              <a class="nav-link" href="#" data-toggle="tab" id="kilometers_per_season">Kilometrit</a>
             </li>
           </ul>
       </h6>
@@ -60,16 +60,16 @@
         <span id="header_hours_per_year">Harjoitusmäärät kuukausittain</span>
         <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_hours_per_year">
           <li class="nav-item">
-            <a class="nav-link active" href="#" data-toggle="tab" id="month" onclick="drawHoursPerMonth()">Kuukausi</a>
+            <a class="nav-link active" href="#" data-toggle="tab" id="month">Kuukausi</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" data-toggle="tab" id="week" onclick="drawHoursPerWeek()">Viikko</a>
+            <a class="nav-link" href="#" data-toggle="tab" id="week">Viikko</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link active dropdown-toggle" id="dropdown_hours_per_year" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{years.0}}</a>
             <div class="dropdown-menu dropdown-menu-right">
               {% for v in years %}
-              <button class="dropdown-item" type="button" value="{{ v }}" onclick="drawHours(this.value)">{{ v }}</button>
+              <button name="years" class="dropdown-item" type="button" value="{{ v }}">{{ v }}</button>
               {% endfor %}
             </div>
           </li>
@@ -87,16 +87,16 @@
         <span id="header_hours_per_sport">Harjoitusmäärät lajeittain</span>
         <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_hours_per_sport">
           <li class="nav-item">
-            <a class="nav-link active" href="#" data-toggle="tab" id="nav_sport" onclick="drawHoursPerSport()">Lajit</a>
+            <a class="nav-link active" href="#" data-toggle="tab" id="nav_sport">Lajit</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" data-toggle="tab" id="nav_sport_group" onclick="drawHoursPerSportGroup()">Lajiryhmät</a>
+            <a class="nav-link" href="#" data-toggle="tab" id="nav_sport_group">Lajiryhmät</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link active dropdown-toggle" id="dropdown_hours_per_sport" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{years.0}}</a>
             <div class="dropdown-menu dropdown-menu-right">
               {% for v in years %}
-              <button class="dropdown-item" type="button" value="{{ v }}" onclick="drawSport(this.value)">{{ v }}</button>
+              <button name="sport_years" class="dropdown-item" type="button" value="{{ v }}">{{ v }}</button>
               {% endfor %}
             </div>
           </li>
@@ -138,6 +138,53 @@
   drawHoursPerSport()
   drawHoursPerMonth()
 
+
+  // click events
+  $('#hours_per_year').click(function() {
+    drawHoursPerYear()
+  })
+
+  $('#kilometers_per_year').click(function() {
+    drawKilometersPerYear()
+  })
+
+  $('#hours_per_season').click(function() {
+    drawHoursPerSeason()
+  })
+
+  $('#kilometers_per_season').click(function() {
+    drawKilometersPerSeason()
+  })
+
+  $('#month').click(function() {
+    drawHoursPerMonth()
+  })
+
+  $('#week').click(function() {
+    drawHoursPerWeek()
+  })
+
+  $('#nav_sport').click(function() {
+    drawHoursPerSport()
+  })
+
+  $('#nav_sport_group').click(function() {
+    drawHoursPerSportGroup()
+  })
+
+  $('[name="years"]').click(function() {
+    year = $(this).text()
+    $("#dropdown_hours_per_year").text(year)
+    drawHours()
+  })
+
+  $('[name="sport_years"]').click(function() {
+    year = $(this).text()
+    $("#dropdown_hours_per_sport").text(year)
+    drawSport()
+  })
+
+
   // function for filtering data by given years
   function filterByYear(data,year){
     filtered_data = []
@@ -160,8 +207,7 @@
 
 
   // function for drawing selected year by amount
-  function drawHours(year){
-    document.getElementById("dropdown_hours_per_year").innerHTML = year
+  function drawHours(){
     let span = document.getElementById("nav_hours_per_year").getElementsByClassName("nav-link active")[0].id
     if (span == 'month'){
       drawHoursPerMonth()
@@ -174,7 +220,6 @@
 
   // function for drawing selected year by sport
   function drawSport(year){
-    document.getElementById("dropdown_hours_per_sport").innerHTML = year
     let level = document.getElementById("nav_hours_per_sport").getElementsByClassName("nav-link active")[0].id
     if (level == 'nav_sport'){
       drawHoursPerSport()
@@ -190,8 +235,10 @@
     let bars = d3.select('#' + div).selectAll('rect')
       .on('click', function(d){
         year = d3.select(this).attr('category')
-        drawHours(year)
-        drawSport(year)
+        $("#dropdown_hours_per_year").text(year)
+        $("#dropdown_hours_per_sport").text(year)
+        drawHours()
+        drawSport()
       })
       .on('mouseover', function(d){
         d3.select(this).style("cursor", "pointer")
@@ -223,7 +270,7 @@
   }
 
 
-  function drawKilometritVuosittain(){
+  function drawKilometersPerYear(){
     let div = 'chart_amount_per_year'
     let data = kilometersPerYear
     let options = {
