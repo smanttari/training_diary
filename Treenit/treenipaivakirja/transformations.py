@@ -306,7 +306,7 @@ def hours_per_zone(trainings_df,user_id):
             zones_per_season = zones_per_season.pivot(index='kausi', columns='teho', values='kesto').round(1)
             zones_per_season.index = zones_per_season.index.astype(str)
             zones_per_season = zone_not_defined_per_season.merge(zones_per_season, how='left', left_index=True, right_on='kausi')
-            zones_per_season = zones_per_season.loc[:,zones_per_season.columns.isin(zones)] 
+            zones_per_season = zones_per_season.loc[:,[z for z in zones if z in list(zones_per_season)]]
         
         hours_per_zone = {}
         hours_per_zone['year'] = json.loads(dataframe_to_json(zones_per_year))
