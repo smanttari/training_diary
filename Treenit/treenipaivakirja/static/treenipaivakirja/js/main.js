@@ -35,7 +35,37 @@ function extractMinAndSecFromSpeed(speedMinPerKm){
     let speed = speedMinPerKm || 0
     let minutes = Math.floor(speed)
     let seconds = Math.round((speed - minutes) * 60.0)
-    return {minutes,seconds}
+    return {'m': minutes, 's': seconds}
+}
+
+
+// Convert "{}h {}min" to decimal
+function timeStringToDecimal(time){
+    if (typeof time === 'string' ) {
+        hIndex = time.indexOf('h')
+        minIndex = time.indexOf('min')
+        var h = 0
+        var min = 0
+        if (hIndex != -1){
+            h = time.slice(0,hIndex).trim()
+        }
+        if (minIndex != -1){
+            min = time.slice(hIndex+1,minIndex).trim()
+        }
+        return parseInt(h) + parseInt(min)/60.0
+    }
+    else if (typeof time === 'number' ) {
+        return time
+    }
+    else {
+        return 0
+    }
+}
+
+
+// Round number
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 }
 
 
@@ -131,4 +161,14 @@ function deleteForm(prefix, id, requiredFields){
             $(this).prop('checked', true)
         }
     })
+}
+
+
+// Create a list of all integers between start and end
+function range(start, end) {
+    let ans = []
+    for (let i = start; i <= end; i++) {
+        ans.push(i)
+    }
+    return ans
 }

@@ -20,6 +20,8 @@ def duration_to_string(h,mins):
         return ''
     elif mins == '0':
         return h + 'h'
+    elif h == '0':
+        return mins + 'min'
     else:
         return '{}h {}min'.format(h,mins)
 
@@ -313,3 +315,10 @@ def hours_per_zone(trainings_df,user_id):
         hours_per_zone['season']  = json.loads(dataframe_to_json(zones_per_season))
 
         return hours_per_zone
+
+
+def zones_per_training(training_id):
+    zones = list(teho.objects.filter(harjoitus=training_id).values(
+        'nro', 'tehoalue_id__tehoalue', 'kesto_h', 'kesto_min', 'keskisyke', 
+        'maksimisyke', 'matka', 'vauhti_min_km').order_by('nro'))
+    return zones

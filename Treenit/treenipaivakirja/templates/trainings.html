@@ -21,10 +21,16 @@ HARJOITUKSET
 
 {% for message in messages %}
 <div class="alert alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% else %}info{%endif%} alert-dismissible fade show" role="alert">
-    <strong class="text-uppercase mr-1">{{ message.tags }}</strong>{{ message|safe }}
+    <strong class="text-uppercase mr-1">
+        {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>
+        {% elif message.tags == 'error' %}<i class="fas fa-times-circle"></i>
+        {% else %}<i class="fas fa-info-circle"></i>
+        {%endif%}
+    </strong>
+        {{ message|safe }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
-        </button>
+    </button>
 </div>
 {% endfor %}
 
@@ -66,6 +72,7 @@ HARJOITUKSET
                         <th class="pl-3 pr-3">{{ header }}</th>
                         {% endif %}
                     {% endfor %}
+                    <th></th>
                     </tr>
                 </thead>
                 <tfoot class="thead-light">
@@ -73,6 +80,7 @@ HARJOITUKSET
                         {% for header in table_headers %}
                         <th></th>
                         {% endfor %}
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>
@@ -91,7 +99,8 @@ HARJOITUKSET
 <script type="text/javascript">
 
 let sports = {{ sports|safe }}
-let data_headers = {{ table_headers|safe }}
+let dataHeaders = {{ table_headers|safe }}
+let columnsCount = dataHeaders.length
 
 // activate nav item
 document.getElementById("trainings").classList.add('active')
@@ -212,7 +221,7 @@ var treenitTable = $('#treenit').DataTable({
         url :"{% url 'trainings_data' %}",
         type: "post",
         data: {
-                'columns':data_headers,
+                'columns': dataHeaders,
                 "csrfmiddlewaretoken": '{{ csrf_token }}'
             },
         dataType: "json",
@@ -238,11 +247,10 @@ var treenitTable = $('#treenit').DataTable({
         emptyTable: "Ei harjoituksia",
         infoEmpty:      "0 - 0 / 0",
         infoFiltered:   "",
-            zeroRecords:    "Ei harjoituksia",
+        zeroRecords:    "Ei harjoituksia",
         processing: "Ladataan..."
     },
     columnDefs: [
-        { className: "text-nowrap", targets: "_all" },
         { 
             targets: [0],
             orderable: false,
@@ -270,6 +278,21 @@ var treenitTable = $('#treenit').DataTable({
                     return ''
                 }
                 },
+        },
+        {
+            targets: [columnsCount],
+            className: "details-control",
+            data: null,
+            defaultContent: "",
+            orderable: false,
+            searchable: false,
+            render: function () {
+                return '<i class="text-success fas fa-plus-circle"></i>'
+            }
+        },
+        { 
+            targets: '_all', 
+            className: "text-nowrap" 
         }
         ],
     fnDrawCallback: function( oSettings ) {
@@ -300,39 +323,12 @@ var treenitTable = $('#treenit').DataTable({
             return x
         };
 
-        function round(value, decimals) {
-            return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
-        }
-
-        // convert "{}h {}min" to decimal
-        function timeToDecimal(time){
-            if (typeof time === 'string' ) {
-                hIndex = time.indexOf('h')
-                minIndex = time.indexOf('min')
-                var h = 0
-                var min = 0
-                if (hIndex != -1){
-                    h = time.slice(0,hIndex).trim()
-                }
-                if (minIndex != -1){
-                    min = time.slice(hIndex+1,minIndex).trim()
-                }
-                return parseInt(h) + parseInt(min)/60.0
-            }
-            else if (typeof time === 'number' ) {
-                return time
-            }
-            else {
-                return 0
-            }
-        }
-
         // Total over all pages
         kesto_total = api
             .column(5, {filter: 'applied'})
             .data()
             .reduce( function (a, b) {
-                return timeToDecimal(a) + timeToDecimal(b);
+                return timeStringToDecimal(a) + timeStringToDecimal(b);
             }, 0 );
 
         matka_total = api
@@ -347,7 +343,7 @@ var treenitTable = $('#treenit').DataTable({
             .column(5, {page: 'current'})
             .data()
             .reduce( function (a, b) {
-                return timeToDecimal(a) + timeToDecimal(b);
+                return timeStringToDecimal(a) + timeStringToDecimal(b);
             }, 0 );
 
         matka_page_total = api
@@ -364,6 +360,82 @@ var treenitTable = $('#treenit').DataTable({
     }); 
 
 
+// Create details row
+$('#treenit tbody').on('click', 'td.details-control', function () {
+    var tr = $(this).closest('tr')
+    var row = treenitTable.row(tr)
+    if (row.child.isShown()) {
+        row.child.hide()
+        tr.removeClass('shown bg-light')
+        $(this).find('i').toggleClass('text-danger fas fa-minus-circle text-success fas fa-plus-circle')
+    }
+    else {
+        row.child(rowDetails(row.data())).show()
+        tr.addClass('shown bg-light')
+        $(this).find('i').toggleClass('text-success fas fa-plus-circle text-danger fas fa-minus-circle')
+    }
+})
+
+
+// Fetch training details
+function rowDetails(rowData){
+    let id = rowData[0]
+    let div = $('<div/>').addClass('col-md-6 p-3')
+    $.ajax({
+        url : "{% url 'training_details' pk=12345 %}".replace(/12345/, id.toString()),
+        dataType: "json",
+        dataSrc: '',
+        success: function (response){
+            div.html(formatDetails(response))
+        }
+    })
+    return div
+}
+
+
+// Format training details to html-table
+function formatDetails(details){
+    let html = ''
+    if (details.length == 0) {
+        html += '<span class="text-danger font-italic">Tarkempia tietoja ei saatavilla.</span>'
+    }
+    else {
+        html += 
+            '<h6>Tehot</h6>' +
+            '<table class="table table-bordered table-sm">' +
+                '<thead class="thead-light">' +
+                '<tr>' +
+                    '<th>Nro</th>' +
+                    '<th>Teho</th>' +
+                    '<th>Kesto</th>' +
+                    '<th>Keskisyke</th>' +
+                    '<th>Maksimisyke</th>' +
+                    '<th>Matka (km)</th>' +
+                    '<th>Vauhti (min/km)</th>' +
+                '</tr>' +
+                '</thead>' 
+        let rows = ''
+        details.forEach(
+            d => {
+                let min_sek = extractMinAndSecFromSpeed(d.vauhti_min_km)
+                rows += 
+                '<tr>' +
+                    '<td>' + (d.nro || '-') + '</td>' +
+                    '<td>' + (d.tehoalue_id__tehoalue || '-') + '</td>' +
+                    '<td>' + (d.kesto_h ? d.kesto_h + 'h ' : '') + (d.kesto_min || '0') + 'min' + '</td>' +
+                    '<td>' + (d.keskisyke || '-') + '</td>' +
+                    '<td>' + (d.maksimisyke || '-')+ '</td>' +
+                    '<td>' + (d.matka || '-') + '</td>' +
+                    '<td>' + (min_sek.m == 0 ? '-' : min_sek.m + ':') + (min_sek.s == 0 ? '' : min_sek.s) + '</td>' +
+                '</tr>'
+            }
+        )
+        html += rows 
+        html += '</table>'
+    }
+    return html
+}
+
 
 
 // Background color for 'Lepo' rows
@@ -373,9 +445,12 @@ function highlightLepoRows(){
     let rows = table.rows
     for(i = 0; i < rows.length; i++){  
         let sportCell = rows[i].cells[4] 
+        let detailsCell = rows[i].cells[columnsCount] 
         if (typeof sportCell !== 'undefined'){
             if (sportCell.innerHTML == 'Lepo'){
                 lepoRows.push(i)
+                detailsCell.classList.remove("details-control")
+                detailsCell.innerHTML = ''
             }
         }
     }

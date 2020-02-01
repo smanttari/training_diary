@@ -290,9 +290,9 @@ function splitVauhtiMinKm(){
     while (id < total) {
         let vauhti_min_km = $(`#id_${prefix}-${id}-vauhti_min_km`).val()
         if (vauhti_min_km){
-            let {minutes, seconds} = extractMinAndSecFromSpeed(vauhti_min_km)
-            $(`#id_${prefix}-${id}-vauhti_min`).val(minutes)
-            $(`#id_${prefix}-${id}-vauhti_s`).val(seconds)
+            let min_sek = extractMinAndSecFromSpeed(vauhti_min_km)
+            $(`#id_${prefix}-${id}-vauhti_min`).val(min_sek.m)
+            $(`#id_${prefix}-${id}-vauhti_s`).val(min_sek.s)
         }
         else {
             $(`#id_${prefix}-${id}-vauhti_min`).val(null)

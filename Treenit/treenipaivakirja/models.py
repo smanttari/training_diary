@@ -78,7 +78,7 @@ class teho(models.Model):
     kesto_h = models.PositiveIntegerField(null=True, blank=True, verbose_name='h')
     kesto_min = models.PositiveIntegerField(null=True, blank=True, verbose_name='min')
     keskisyke = models.IntegerField(null=True, blank=True)
-    maksimisyke = models.IntegerField(null=True, blank=True, verbose_name='Max.syke')
+    maksimisyke = models.IntegerField(null=True, blank=True, verbose_name='Maksimisyke')
     matka = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     vauhti_km_h = models.DecimalField(max_digits=5, decimal_places=2, null=True, verbose_name='Vauhti (km/h)', blank=True)
     vauhti_min_km = models.DecimalField(max_digits=5, decimal_places=2, null=True, verbose_name='Vauhti (min/km)', blank=True)
