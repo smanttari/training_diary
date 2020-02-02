@@ -97,8 +97,8 @@ def trainings_view(request):
     sport = 'Kaikki'
 
     zones = list(teho.objects.filter(harjoitus_id__user=current_user_id).values_list('tehoalue_id__tehoalue',flat=True).distinct().order_by('tehoalue_id__jarj_nro'))
-    table_headers = ['edit','delete','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti']
-    table_headers = table_headers[:-1] + zones + table_headers[-1:]
+    table_headers = ['details','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti','edit','delete']
+    table_headers = table_headers[:-3] + zones + table_headers[-3:]
     
     if request.method == "POST":
         sport = request.POST['sport']

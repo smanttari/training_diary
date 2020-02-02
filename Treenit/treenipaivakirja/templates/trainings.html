@@ -66,13 +66,12 @@ HARJOITUKSET
                 <thead class="thead-light">
                     <tr class="text-nowrap">
                     {% for header in table_headers %}
-                        {% if header == 'edit' or header == 'delete' %}
+                        {% if header == 'details' or header == 'edit' or header == 'delete' %}
                         <th></th>
                         {% else %}
                         <th class="pl-3 pr-3">{{ header }}</th>
                         {% endif %}
                     {% endfor %}
-                    <th></th>
                     </tr>
                 </thead>
                 <tfoot class="thead-light">
@@ -80,7 +79,7 @@ HARJOITUKSET
                         {% for header in table_headers %}
                         <th></th>
                         {% endfor %}
-                        <th></th>
+                        
                     </tr>
                 </tfoot>
             </table>
@@ -143,7 +142,7 @@ $('#enddate').datepicker({
 
 // Filter functions for datatables
 var filterBySport = function (settings, data, dataIndex){
-    var sportCol = data[4]
+    var sportCol = data[3]
     var selectedSport = $('#sport').val()
     if (selectedSport in sports){
         var sportsArray = sports[selectedSport] 
@@ -159,7 +158,7 @@ var filterBySport = function (settings, data, dataIndex){
 
 var filterByDateRange = function (settings, data, dataIndex){
     try {
-        var col = data[3].substring(0,11).split('-')
+        var col = data[2].substring(0,11).split('-')
         var dateCol = new Date(col[0], col[1] - 1, col[2],0,0,0,0)
         var start = $('#startdate').val().split('.')
         var startdate = new Date(start[2], start[1] - 1, start[0],0,0,0,0)
@@ -237,22 +236,19 @@ var treenitTable = $('#treenit').DataTable({
     language: {
         search: "Etsi:",
         lengthMenu: "Näytä _MENU_ per sivu",
-        paginate: {
-            previous: "Edellinen",
-            next: "Seuraava",
-        },
+        paginate: {previous: "Edellinen", next: "Seuraava",},
         info: "_START_ - _END_ / _TOTAL_",
         thousands: " ",
         decimal: ",",
         emptyTable: "Ei harjoituksia",
-        infoEmpty:      "0 - 0 / 0",
-        infoFiltered:   "",
-        zeroRecords:    "Ei harjoituksia",
+        infoEmpty: "0 - 0 / 0",
+        infoFiltered: "",
+        zeroRecords: "Ei harjoituksia",
         processing: "Ladataan..."
     },
     columnDefs: [
         { 
-            targets: [0],
+            targets: [-2],
             orderable: false,
             render: function(data, type, row, meta){
                 if (data !== ''){
@@ -266,7 +262,7 @@ var treenitTable = $('#treenit').DataTable({
                 },
         },
         { 
-            targets: [1],
+            targets: [-1],
             orderable: false,
             render: function(data, type, row, meta){
                 if (data !== ''){
@@ -280,14 +276,14 @@ var treenitTable = $('#treenit').DataTable({
                 },
         },
         {
-            targets: [columnsCount],
+            targets: [0],
             className: "details-control",
             data: null,
             defaultContent: "",
             orderable: false,
             searchable: false,
             render: function () {
-                return '<i class="text-success fas fa-plus-circle"></i>'
+                return '<i class="text-success fas fa-plus-circle" style="cursor: pointer"></i>'
             }
         },
         { 
@@ -325,37 +321,30 @@ var treenitTable = $('#treenit').DataTable({
 
         // Total over all pages
         kesto_total = api
-            .column(5, {filter: 'applied'})
+            .column(4, {filter: 'applied'})
             .data()
-            .reduce( function (a, b) {
-                return timeStringToDecimal(a) + timeStringToDecimal(b);
-            }, 0 );
+            .reduce( function (a, b) {return timeStringToDecimal(a) + timeStringToDecimal(b)}, 0)
 
         matka_total = api
-            .column(7, {filter: 'applied'})
+            .column(6, {filter: 'applied'})
             .data()
-            .reduce( function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0 );
+            .reduce( function (a, b) {return intVal(a) + intVal(b)}, 0)
 
         // Total over this page
         kesto_page_total = api
-            .column(5, {page: 'current'})
+            .column(4, {page: 'current'})
             .data()
             .reduce( function (a, b) {
-                return timeStringToDecimal(a) + timeStringToDecimal(b);
-            }, 0 );
+                return timeStringToDecimal(a) + timeStringToDecimal(b)}, 0)
 
         matka_page_total = api
-            .column(7, { page: 'current'} )
+            .column(6, { page: 'current'} )
             .data()
-            .reduce( function (a, b) {
-                return intVal(a) + intVal(b);
-            }, 0 );
+            .reduce( function (a, b) {return intVal(a) + intVal(b)}, 0)
 
-        $( api.column(0).footer() ).html('Yht.');
-        $( api.column(5).footer() ).html(round(kesto_page_total,1) + ' / '+  round(kesto_total,1) + 'h');
-        $( api.column(7).footer() ).html(round(matka_page_total,1) + ' / '+  round(matka_total,1) + 'km');
+        $( api.column(0).footer() ).html('Yht.')
+        $( api.column(4).footer() ).html(round(kesto_page_total,1) + ' / '+  round(kesto_total,1) + 'h')
+        $( api.column(6).footer() ).html(round(matka_page_total,1) + ' / '+  round(matka_total,1) + 'km')
         }
     }); 
 
@@ -379,7 +368,7 @@ $('#treenit tbody').on('click', 'td.details-control', function () {
 
 // Fetch training details
 function rowDetails(rowData){
-    let id = rowData[0]
+    let id = rowData[columnsCount-1]
     let div = $('<div/>').addClass('col-md-6 p-3')
     $.ajax({
         url : "{% url 'training_details' pk=12345 %}".replace(/12345/, id.toString()),
@@ -444,8 +433,8 @@ function highlightLepoRows(){
     let table = document.getElementById('treenit')
     let rows = table.rows
     for(i = 0; i < rows.length; i++){  
-        let sportCell = rows[i].cells[4] 
-        let detailsCell = rows[i].cells[columnsCount] 
+        let sportCell = rows[i].cells[3] 
+        let detailsCell = rows[i].cells[0] 
         if (typeof sportCell !== 'undefined'){
             if (sportCell.innerHTML == 'Lepo'){
                 lepoRows.push(i)

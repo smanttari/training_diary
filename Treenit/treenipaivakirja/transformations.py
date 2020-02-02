@@ -100,6 +100,7 @@ def trainings_datatable(user_id):
             'Keskisyke','Tuntuma','Kommentti','Nousu (m)'
             ])
 
+    trainings_df['details'] = np.nan
     trainings_df = days_df.merge(trainings_df, how='left', left_on='vvvvkkpp', right_on='vvvvkkpp')
     trainings_df['Laji'] = trainings_df['Laji'].fillna('Lepo')
     trainings_df.loc[trainings_df['Laji'] != 'Lepo','Lajiryhmä'] = trainings_df.loc[trainings_df['Laji'] != 'Lepo','Lajiryhmä'].fillna('Muut')
