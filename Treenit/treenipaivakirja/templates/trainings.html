@@ -314,10 +314,10 @@ var treenitTable = $('#treenit').DataTable({
                 x = i
             }
             else {
-            x = 0
+                x = 0
             }
             return x
-        };
+        }
 
         // Total over all pages
         kesto_total = api
@@ -346,7 +346,7 @@ var treenitTable = $('#treenit').DataTable({
         $( api.column(4).footer() ).html(round(kesto_page_total,1) + ' / '+  round(kesto_total,1) + 'h')
         $( api.column(6).footer() ).html(round(matka_page_total,1) + ' / '+  round(matka_total,1) + 'km')
         }
-    }); 
+    })
 
 
 // Create details row
@@ -409,13 +409,13 @@ function formatDetails(details){
                 let min_sek = extractMinAndSecFromSpeed(d.vauhti_min_km)
                 rows += 
                 '<tr>' +
-                    '<td>' + (d.nro || '-') + '</td>' +
-                    '<td>' + (d.tehoalue_id__tehoalue || '-') + '</td>' +
-                    '<td>' + (d.kesto_h ? d.kesto_h + 'h ' : '') + (d.kesto_min || '0') + 'min' + '</td>' +
-                    '<td>' + (d.keskisyke || '-') + '</td>' +
-                    '<td>' + (d.maksimisyke || '-')+ '</td>' +
-                    '<td>' + (d.matka || '-') + '</td>' +
-                    '<td>' + (min_sek.m == 0 ? '-' : min_sek.m + ':') + (min_sek.s == 0 ? '' : min_sek.s) + '</td>' +
+                    '<td>' + (d.nro || '') + '</td>' +
+                    '<td>' + (d.tehoalue_id__tehoalue || '') + '</td>' +
+                    '<td>' + durationToString(d.kesto_h, d.kesto_min) + '</td>' +
+                    '<td>' + (d.keskisyke || '') + '</td>' +
+                    '<td>' + (d.maksimisyke || '')+ '</td>' +
+                    '<td>' + (d.matka || '') + '</td>' +
+                    '<td>' + (min_sek.m == 0 ? '' : min_sek.m + ':') + (min_sek.s == 0 ? '' : min_sek.s) + '</td>' +
                 '</tr>'
             }
         )

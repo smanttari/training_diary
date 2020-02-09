@@ -39,20 +39,18 @@ function extractMinAndSecFromSpeed(speedMinPerKm){
 }
 
 
-// Convert "{}h {}min" to decimal
+// Convert "hh:mm" to decimal
 function timeStringToDecimal(time){
     if (typeof time === 'string' ) {
-        hIndex = time.indexOf('h')
-        minIndex = time.indexOf('min')
-        var h = 0
-        var min = 0
-        if (hIndex != -1){
-            h = time.slice(0,hIndex).trim()
+        sepIndex = time.indexOf(':')
+        if (sepIndex != -1){
+            var h = parseInt(time.slice(0,2))
+            var min = parseInt(time.slice(3,5))
+            return h + min/60.0
         }
-        if (minIndex != -1){
-            min = time.slice(hIndex+1,minIndex).trim()
+        else {
+            return 0
         }
-        return parseInt(h) + parseInt(min)/60.0
     }
     else if (typeof time === 'number' ) {
         return time
@@ -63,9 +61,27 @@ function timeStringToDecimal(time){
 }
 
 
+// Convert duration given in hours and minutes to string "hh:mm". 
+function durationToString(h,mins){
+    if (h){
+        h = ('0' + h.toString()).slice(-2)
+    }
+    else {
+        h = '00'
+    }
+    if (mins) {
+        mins = ('0' + mins.toString()).slice(-2)
+    }
+    else {
+        mins = '00'
+    }
+    return h + ':' + mins
+}
+
+
 // Round number
 function round(value, decimals) {
-    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals)
 }
 
 

@@ -8,22 +8,17 @@ import json
 
 def duration_to_string(h,mins):
     """ 
-    Formats duration given in hours and minutes to single string. 
+    Formats duration given in hours and minutes to string "hh:mm". 
     """
     if h is None or np.isnan(h):
-        h = 0
-    if mins is None or np.isnan(mins):
-        mins = 0
-    h = str(int(h))
-    mins = str(int(mins))
-    if h == '0' and mins == '0':
-        return ''
-    elif mins == '0':
-        return h + 'h'
-    elif h == '0':
-        return mins + 'min'
+        h = '00'
     else:
-        return '{}h {}min'.format(h,mins)
+        h = '0{}'.format(int(h))[-2:]
+    if mins is None or np.isnan(mins):
+        mins = '00'
+    else:
+        mins = '0{}'.format(int(mins))[-2:]
+    return '{}:{}'.format(h,mins)
 
 
 def h_min_to_hours(h,mins):
