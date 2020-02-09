@@ -322,9 +322,9 @@ def training_add(request):
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
             instance.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
             vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
-            if instance.vauhti_min_km is None and vauhti_km_h is not None:
+            if instance.vauhti_min_km is None and vauhti_km_h is not None and vauhti_km_h != 0:
                 instance.vauhti_min_km = 60 / vauhti_km_h
-            elif instance.vauhti_min_km is not None and vauhti_km_h is None:
+            elif instance.vauhti_min_km is not None and instance.vauhti_min_km != 0 and vauhti_km_h is None:
                 instance.vauhti_km_h = 60 / instance.vauhti_min_km
             instance.save()
             training = harjoitus.objects.get(id=instance.id)
@@ -372,9 +372,9 @@ def training_modify(request,pk):
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
             post.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
-            if post.vauhti_min_km is None and vauhti_km_h is not None:
+            if post.vauhti_min_km is None and vauhti_km_h is not None and vauhti_km_h != 0:
                 post.vauhti_min_km = 60 / vauhti_km_h
-            elif post.vauhti_min_km is not None and vauhti_km_h is None:
+            elif post.vauhti_min_km is not None and post.vauhti_min_km != 0 and vauhti_km_h is None:
                 post.vauhti_km_h = 60 / post.vauhti_min_km
             post.save()
         if teho_formset.is_valid() and teho_formset.has_changed():
