@@ -105,33 +105,39 @@ function showDiv(id) {
 
 
 // show all initialized forms in formset
-function showForms(prefix, initialCount, requiredFields){
+function showForms(prefix, requiredFields){
+    // total number of forms
+    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
+    // initial number of forms
+    let initial = $(`#id_${prefix}-INITIAL_FORMS`).val()
     let id = 0
-    while (id < initialCount) {
-        let form = $(`#id_${prefix}-${id}`)
-        form.find('input,select').each (function() {
-            let fieldName = $(this).attr('name').split('-')[2]
-            if (requiredFields.includes(fieldName)){
-                $(this).prop('required', true)
-            }
-            if (fieldName == 'DELETE'){
-                $(this).prop('checked', false)
-            }
-        })
-        form.collapse('show')
+    while (id < total) {
+        if (id != initial){ // do not show empty extra-form
+            let form = $(`#id_${prefix}-${id}`)
+            form.find('input,select').each (function() {
+                let fieldName = $(this).attr('name').split('-')[2]
+                if (requiredFields.includes(fieldName)){
+                    $(this).prop('required', true)
+                }
+                if (fieldName == 'DELETE'){
+                    $(this).prop('checked', false)
+                }
+            })
+            form.collapse('show')
+        }
         id++ 
     }
 }
 
 
 // add new form to formset
-function addForm(prefix, initialCount, requiredFields){
+function addForm(prefix, requiredFields){
     // current total number of forms
     let totalElement = $(`#id_${prefix}-TOTAL_FORMS`)
     let total = totalElement.val()
     // clone new form
-    let initialForm = $(`#id_${prefix}-${initialCount}`)
-    let newForm = initialForm.clone(true)
+    let initial = $(`#id_${prefix}-INITIAL_FORMS`).val()
+    let newForm = $(`#id_${prefix}-${initial}`).clone(true)
     // destroy datepickers
     newForm.find('.date-picker').each (function() {
         $(this).datepicker().destroy()

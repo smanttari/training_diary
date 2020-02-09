@@ -235,13 +235,12 @@ $("#save").click(function() {
 
 // teho formset
 let prefix = '{{teho_formset.prefix}}'
-let initial_count = $(`#id_${prefix}-INITIAL_FORMS`).val()
 let required_fields = '{{required_fields}}'
 
-showForms(prefix, initial_count, required_fields)
+showForms(prefix, required_fields)
 
 $("#teho_add").click(function() {
-  addForm(prefix, initial_count, required_fields)
+  addForm(prefix, required_fields)
 })
 
 $("button[name$='-del']").click(function() {
