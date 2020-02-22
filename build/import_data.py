@@ -18,26 +18,7 @@ datasets = {
             viikonpaiva_lyh,
             hiihtokausi
         )
-        VALUES (?,?,?,?,?,?,?,?,?,?)""",
-    "laji": """
-        INSERT INTO treenipaivakirja_laji (
-            id,
-            laji,
-            laji_nimi,
-            laji_ryhma,
-            user_id
-        )
-        VALUES (?,?,?,?,?)""",
-    "tehoalue": """
-        INSERT INTO treenipaivakirja_tehoalue (
-            id,
-            jarj_nro,
-            tehoalue,
-            alaraja,
-            ylaraja,
-            user_id
-        )
-        VALUES (?,?,?,?,?,?)"""
+        VALUES (?,?,?,?,?,?,?,?,?,?)"""
 }
 
 # open connection to db
