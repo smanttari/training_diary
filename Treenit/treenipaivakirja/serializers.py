@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from treenipaivakirja.models import harjoitus
+from treenipaivakirja.models import Harjoitus
 
 
 class HarjoitusSerializer(serializers.ModelSerializer):
@@ -7,7 +7,7 @@ class HarjoitusSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(many=False)
 
     class Meta:
-        model = harjoitus
+        model = Harjoitus
         fields = [
             'id',
             'pvm',

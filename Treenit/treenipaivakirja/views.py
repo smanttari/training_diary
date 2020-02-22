@@ -1,4 +1,4 @@
-from treenipaivakirja.models import harjoitus, aika, laji, teho, tehoalue, kausi
+from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi
 from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm
 import treenipaivakirja.transformations as tr
 from django.db.models import Sum, Max, Min
@@ -41,7 +41,7 @@ def index(request):
     current_day_minus_14 = pd.Timestamp(current_day_pd - timedelta(days=14))
     current_day_minus_28 = pd.Timestamp(current_day_pd - timedelta(days=28))
 
-    if not harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=current_user_id):
         hours_current_year = 0
         hours_change = 0
         hours_per_week_current_year = 0
@@ -49,7 +49,7 @@ def index(request):
         feeling_current_period = 0
         feeling_change = 0
     else:
-        trainings = harjoitus.objects.filter(user=current_user_id).values_list('aika__pvm','aika__vuosi','aika__vko','kesto','tuntuma')
+        trainings = Harjoitus.objects.filter(user=current_user_id).values_list('aika__pvm','aika__vuosi','aika__vko','kesto','tuntuma')
         trainings_df = pd.DataFrame(list(trainings), columns=['Päivä','Vuosi','Viikko','Kesto','Tuntuma'])
         trainings_df = trainings_df.fillna(np.nan)  #replace None with NaN
         trainings_df['Päivä'] = pd.to_datetime(trainings_df['Päivä'])
@@ -90,13 +90,13 @@ def trainings_view(request):
     """
     current_user_id = request.user.id
     current_day = datetime.now().date()
-    first_day = harjoitus.objects.filter(user=current_user_id).aggregate(Min('aika__pvm'))['aika__pvm__min']
+    first_day = Harjoitus.objects.filter(user=current_user_id).aggregate(Min('aika__pvm'))['aika__pvm__min']
     startdate = tr.coalesce(first_day,current_day).strftime('%d.%m.%Y')
     enddate = current_day.strftime('%d.%m.%Y') 
     sports = tr.sports_dict(current_user_id)
     sport = 'Kaikki'
 
-    zones = list(teho.objects.filter(harjoitus_id__user=current_user_id).values_list('tehoalue_id__tehoalue',flat=True).distinct().order_by('tehoalue_id__jarj_nro'))
+    zones = list(Teho.objects.filter(harjoitus_id__user=current_user_id).values_list('tehoalue_id__tehoalue',flat=True).distinct().order_by('tehoalue_id__jarj_nro'))
     table_headers = ['details','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti','edit','delete']
     table_headers = table_headers[:-3] + zones + table_headers[-3:]
     
@@ -167,7 +167,7 @@ def reports_amounts(request):
     """
     current_user_id = request.user.id
 
-    if not harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=current_user_id):
         years = []
         sport = ''
         sports = []
@@ -223,7 +223,7 @@ def reports_sports(request):
     """
     current_user_id = request.user.id
 
-    if not harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=current_user_id):
         sport = ''
         sports = []
         avg_per_sport = []
@@ -281,9 +281,9 @@ def reports_zones(request):
     Trainings reports per zone
     """
     current_user_id = request.user.id
-    seasons = list(kausi.objects.filter(user=current_user_id).values_list('kausi',flat=True).order_by('-alkupvm'))
+    seasons = list(Kausi.objects.filter(user=current_user_id).values_list('kausi',flat=True).order_by('-alkupvm'))
     
-    if not harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=current_user_id):
         years = []
         hours_per_zone_json = []
     else:
@@ -304,8 +304,8 @@ def training_add(request):
     """ 
     Inserts new training 
     """
-    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=1,can_delete=True)
-    required_fields = [f.name for f in teho._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    TehoFormset = inlineformset_factory(Harjoitus,Teho,form=TehoForm,extra=1,can_delete=True)
+    required_fields = [f.name for f in Teho._meta.get_fields() if not getattr(f, 'blank', False) is True]
     if request.method == "POST":
         harjoitus_form = HarjoitusForm(request.user,request.POST)
         teho_formset = TehoFormset(request.POST)
@@ -317,7 +317,7 @@ def training_add(request):
             kesto_min = tr.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
             instance.kesto_h = kesto_h
             instance.kesto_min = kesto_min
-            instance.kesto = tr.h_min_to_hours(kesto_h,kesto_min)
+            instance.kesto = tr.duration_to_decimal(kesto_h,kesto_min)
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
             instance.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
@@ -327,7 +327,7 @@ def training_add(request):
             elif instance.vauhti_min_km is not None and instance.vauhti_min_km != 0 and vauhti_km_h is None:
                 instance.vauhti_km_h = 60 / instance.vauhti_min_km
             instance.save()
-            training = harjoitus.objects.get(id=instance.id)
+            training = Harjoitus.objects.get(id=instance.id)
             teho_formset = TehoFormset(request.POST, request.FILES,instance=training)
             if teho_formset.is_valid() and teho_formset.has_changed():
                 teho_formset.save()
@@ -335,9 +335,9 @@ def training_add(request):
             return redirect('trainings')
     else:
         harjoitus_form = HarjoitusForm(request.user,initial={'pvm': datetime.now()})
-        teho_formset = TehoFormset(queryset=teho.objects.none())
+        teho_formset = TehoFormset(queryset=Teho.objects.none())
         for form in teho_formset:
-            form.fields['tehoalue'].queryset = tehoalue.objects.filter(user=request.user).order_by('jarj_nro')
+            form.fields['tehoalue'].queryset = Tehoalue.objects.filter(user=request.user).order_by('jarj_nro')
 
     return render(request, 'training_form.html',
         context = {
@@ -354,9 +354,9 @@ def training_modify(request,pk):
     """ 
     Modifies training information 
     """
-    TehoFormset = inlineformset_factory(harjoitus,teho,form=TehoForm,extra=1,can_delete=True)
-    required_fields = [f.name for f in teho._meta.get_fields() if not getattr(f, 'blank', False) is True]
-    training = harjoitus.objects.get(id=pk,user_id=request.user.id)
+    TehoFormset = inlineformset_factory(Harjoitus,Teho,form=TehoForm,extra=1,can_delete=True)
+    required_fields = [f.name for f in Teho._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    training = Harjoitus.objects.get(id=pk,user_id=request.user.id)
     if request.method == "POST":
         harjoitus_form = HarjoitusForm(request.user,request.POST,instance=training)
         teho_formset = TehoFormset(request.POST,request.FILES,instance=training)
@@ -367,7 +367,7 @@ def training_modify(request,pk):
             kesto_min = tr.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
             post.kesto_h = kesto_h
             post.kesto_min = kesto_min
-            post.kesto = tr.h_min_to_hours(kesto_h,kesto_min)
+            post.kesto = tr.duration_to_decimal(kesto_h,kesto_min)
             vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
             vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
             vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
@@ -391,7 +391,7 @@ def training_modify(request,pk):
         harjoitus_form = HarjoitusForm(request.user,instance=training,initial={'vauhti_min': vauhti_m, 'vauhti_s': vauhti_s })
         teho_formset = TehoFormset(instance=training)
         for form in teho_formset:
-            form.fields['tehoalue'].queryset = tehoalue.objects.filter(user=request.user)
+            form.fields['tehoalue'].queryset = Tehoalue.objects.filter(user=request.user)
     
     return render(request, 'training_form.html',
         context = {
@@ -408,7 +408,7 @@ def training_delete(request,pk):
     """ 
     Deletes training 
     """
-    training = harjoitus.objects.get(id=pk,user_id=request.user.id)
+    training = Harjoitus.objects.get(id=pk,user_id=request.user.id)
     day = training.pvm
     sport = training.laji
     duration = training.kesto
@@ -437,13 +437,13 @@ def settings_view(request):
     """
     current_user = request.user
 
-    SeasonsFormset = inlineformset_factory(User, kausi, form=KausiForm, extra=1, can_delete=True)
-    ZonesFormset = inlineformset_factory(User, tehoalue, form=TehoalueForm, extra=1, can_delete=True)
-    SportsFormset = inlineformset_factory(User, laji, form=LajiForm, extra=1, can_delete=True)
+    SeasonsFormset = inlineformset_factory(User, Kausi, form=KausiForm, extra=1, can_delete=True)
+    ZonesFormset = inlineformset_factory(User, Tehoalue, form=TehoalueForm, extra=1, can_delete=True)
+    SportsFormset = inlineformset_factory(User, Laji, form=LajiForm, extra=1, can_delete=True)
 
-    zones_required_fields = [f.name for f in tehoalue._meta.get_fields() if not getattr(f, 'blank', False) is True]
-    seasons_required_fields = [f.name for f in kausi._meta.get_fields() if not getattr(f, 'blank', False) is True]
-    sports_required_fields = [f.name for f in laji._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    zones_required_fields = [f.name for f in Tehoalue._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    seasons_required_fields = [f.name for f in Kausi._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    sports_required_fields = [f.name for f in Laji._meta.get_fields() if not getattr(f, 'blank', False) is True]
     
     user_form = UserForm(instance=current_user)
     pw_form = PasswordChangeForm(user=current_user)

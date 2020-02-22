@@ -1,5 +1,5 @@
 from django import forms
-from treenipaivakirja.models import harjoitus, teho, laji, tehoalue, kausi
+from treenipaivakirja.models import Harjoitus, Teho, Laji, Tehoalue, Kausi
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
@@ -12,7 +12,7 @@ class HarjoitusForm(forms.ModelForm):
     vauhti_s = forms.IntegerField(label='s',min_value=0,max_value=59,required=False,widget=forms.NumberInput({'placeholder': 's'}))
 
     class Meta:
-        model = harjoitus
+        model = Harjoitus
         widgets = {
             'vuorokaudenaika': forms.RadioSelect,
             'kommentti': forms.Textarea(attrs={'rows': 3}),
@@ -39,12 +39,12 @@ class HarjoitusForm(forms.ModelForm):
     # https://simpleisbetterthancomplex.com/questions/2017/03/22/how-to-dynamically-filter-modelchoices-queryset-in-a-modelform.html
     def __init__(self, user, *args, **kwargs):
         super(HarjoitusForm, self).__init__(*args, **kwargs)
-        self.fields['laji'].queryset = laji.objects.filter(user=user)
+        self.fields['laji'].queryset = Laji.objects.filter(user=user)
 
 
 class LajiForm(forms.ModelForm):
     class Meta:
-        model = laji
+        model = Laji
         fields = [
             'laji',
             'laji_nimi',
@@ -60,7 +60,7 @@ class TehoForm(forms.ModelForm):
     vauhti_s = forms.IntegerField(label='Vauhti (s)',min_value=0,max_value=59,required=False,widget=forms.NumberInput({'placeholder': 's'}))
 
     class Meta:
-        model = teho
+        model = Teho
         fields = [
             'nro',
             'tehoalue',
@@ -79,7 +79,7 @@ class TehoForm(forms.ModelForm):
 
 class TehoalueForm(forms.ModelForm):
     class Meta:
-        model = tehoalue
+        model = Tehoalue
         fields = [
             'jarj_nro',
             'tehoalue',
@@ -118,7 +118,7 @@ class RegistrationForm(UserCreationForm):
 
 class KausiForm(forms.ModelForm):
     class Meta:
-        model = kausi
+        model = Kausi
         fields = [
             'kausi',
             'alkupvm',

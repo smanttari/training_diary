@@ -30,7 +30,7 @@ for dataset,sql in datasets.items():
     try:
         # read csv
         data = []
-        with open(f'build/{dataset}.csv', encoding='ansi') as csv_file:
+        with open(f'data/{dataset}.csv', encoding='ansi') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=';')
             for row in csv_reader:
                 data.append(row)

@@ -66,7 +66,7 @@ class DurationToDecimalTest(TestCase):
         self.assertEqual(tr.duration_to_decimal(h,mins),2.5)
 
 
-class VauhtiMinKm(TestCase):
+class VauhtiMinKmTest(TestCase):
     def test_none(self):
         m = None
         s = None
@@ -93,7 +93,7 @@ class VauhtiMinKm(TestCase):
         self.assertEqual(tr.vauhti_min_km(m,s),11.2)
 
 
-class DataFrameToJson(TestCase):
+class DataFrameToJsonTest(TestCase):
     def test_empty_df(self):
         df = pd.DataFrame()
         self.assertEqual(tr.dataframe_to_json(df),json.dumps([]))
@@ -110,7 +110,7 @@ class DataFrameToJson(TestCase):
         self.assertEqual(tr.dataframe_to_json(df),json.dumps(result))
 
 
-class Coalesce(TestCase):
+class CoalesceTest(TestCase):
     def test_none(self):
         x = None
         val = 'kissa'

@@ -1,4 +1,4 @@
-from treenipaivakirja.models import harjoitus
+from treenipaivakirja.models import Harjoitus
 from treenipaivakirja.serializers import HarjoitusSerializer
 from django.http import JsonResponse, Http404
 from rest_framework import status
@@ -15,7 +15,7 @@ def trainings(request):
     List all trainings or create a new training.
     """
     if request.method == 'GET':
-        trainings = harjoitus.objects.all()
+        trainings = Harjoitus.objects.all()
         serializer = HarjoitusSerializer(trainings, many=True)
         return Response(serializer.data)
 
@@ -34,8 +34,8 @@ def trainings_by_id(request,pk):
     Retrieve, update or delete a training.
     """
     try:
-        training = harjoitus.objects.get(id=pk)
-    except harjoitus.DoesNotExist:
+        training = Harjoitus.objects.get(id=pk)
+    except Harjoitus.DoesNotExist:
         raise Http404
 
     if request.method == 'GET':
