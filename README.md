@@ -25,7 +25,7 @@ python Treenit/manage.py migrate
 * Import static data
 
 ````
-python build/import_data.py
+python data/import_data.py
 ````
 
 ## Getting Started ##
