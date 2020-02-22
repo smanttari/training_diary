@@ -21,13 +21,13 @@ def duration_to_string(h,mins):
     return '{}:{}'.format(h,mins)
 
 
-def h_min_to_hours(h,mins):
+def duration_to_decimal(h,mins):
     """ 
     Calculates duration in hours (decimal) when given hours and minutes seperately. 
     """
-    if h is None:
+    if h is None or np.isnan(h):
         h = 0
-    if mins is None:
+    if mins is None or np.isnan(mins):
         mins = 0
     hours = h + mins/60
     return hours

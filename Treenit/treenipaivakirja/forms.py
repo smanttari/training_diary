@@ -124,3 +124,12 @@ class KausiForm(forms.ModelForm):
             'alkupvm',
             'loppupvm'
             ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        alkupvm = cleaned_data.get("alkupvm")
+        loppupvm = cleaned_data.get("loppupvm")
+
+        if alkupvm and loppupvm:
+            if loppupvm < alkupvm:
+                raise forms.ValidationError("Loppupäivä ei voi olla pienempi kuin alkupäivä.")
