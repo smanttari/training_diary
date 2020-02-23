@@ -6,9 +6,7 @@ Web application for recording and analyzing trainings.
 
 * Install Python 3.6+
 
-* Clone repository or download source code
-
-Run following commands in repository root folder:
+* Clone repository
 
 * Install required python libraries
 
@@ -16,23 +14,23 @@ Run following commands in repository root folder:
 pip install -r requirements.txt
 ````
 
-* Set up the database
+* Move to Treenit-folder and run database migrations
 
 ````
-python Treenit/manage.py migrate
+python manage.py migrate
 ````
 
 * Import static data
 
 ````
-python data/import_data.py
+python manage.py loaddata aika.json
 ````
 
 ## Getting Started ##
 
 Start program by running following command
 ````
-python Treenit/manage.py runserver
+python manage.py runserver
 ````
 
 Open web-browser (preferred Chrome) and go to
@@ -40,7 +38,7 @@ Open web-browser (preferred Chrome) and go to
 http://127.0.0.1:8000/treenipaivakirja/
 ````
 
-Log in or register a new user.
+Register a new user.
 
 ![login](./img/login.png)
 

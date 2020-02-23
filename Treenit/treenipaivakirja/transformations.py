@@ -149,11 +149,11 @@ def sports_list(user_id):
 def trainings(user_id):
     trainings_objects = Harjoitus.objects.filter(user=user_id).values_list(
         'id','pvm','kesto','matka','aika_id__vuosi','aika_id__kk','aika_id__kk_nimi',
-        'aika_id__vko','aika_id__hiihtokausi','laji_id__laji_nimi',
+        'aika_id__vko','laji_id__laji_nimi',
         'laji_id__laji','laji_id__laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke')
     trainings_df = pd.DataFrame(list(trainings_objects), 
         columns = [
-            'id','pvm','kesto','matka','vuosi','kk','kk_nimi','vko','hiihtokausi',
+            'id','pvm','kesto','matka','vuosi','kk','kk_nimi','vko',
             'laji_nimi','laji','laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke'
             ])
     trainings_df = trainings_df.fillna(np.nan)  #replace None with NaN

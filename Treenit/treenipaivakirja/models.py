@@ -62,7 +62,6 @@ class Aika(models.Model):
     vko = models.IntegerField()
     viikonpaiva = models.IntegerField()
     viikonpaiva_lyh = models.CharField(max_length=20)
-    hiihtokausi = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Aika" 
