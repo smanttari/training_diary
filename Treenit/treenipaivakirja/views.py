@@ -53,7 +53,7 @@ def index(request):
         trainings_df = pd.DataFrame(list(trainings), columns=['Päivä','Vuosi','Viikko','Kesto','Tuntuma'])
         trainings_df = trainings_df.fillna(np.nan)  #replace None with NaN
         trainings_df['Päivä'] = pd.to_datetime(trainings_df['Päivä'])
-        trainings_df['Kesto'] = trainings_df['Kesto'].fillna(0).astype(float).round(1)
+        trainings_df['Kesto'] = trainings_df['Kesto'].fillna(0).astype(float).round(2)
 
         hours_current_year = trainings_df[(trainings_df['Vuosi'] == current_year) & (trainings_df['Päivä'] <= current_day_pd)]['Kesto'].sum()
         hours_past_year = trainings_df[(trainings_df['Vuosi'] == (current_year-1)) & (trainings_df['Päivä'] <= pd.Timestamp(current_day_pd - timedelta(days=365)))]['Kesto'].sum()
@@ -63,6 +63,7 @@ def index(request):
             current_week = 1
         elif current_week == 1 and current_month == 12:
             current_week = 52
+            
         hours_per_week_current_year = hours_current_year / current_week
         hours_per_week_past_year = trainings_df[trainings_df['Vuosi'] == (current_year-1)]['Kesto'].sum() / 52
         hours_per_week_change = hours_per_week_current_year - hours_per_week_past_year
