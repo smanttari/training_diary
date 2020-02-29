@@ -1,73 +1,11 @@
 from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi
+from treenipaivakirja.utils import duration_to_string
 from django.db.models import Sum, Max, Min
 
 from datetime import datetime
 import pandas as pd
 import numpy as np
 import json
-
-def duration_to_string(h,mins):
-    """ 
-    Formats duration given in hours and minutes to string "hh:mm". 
-    """
-    if h is None or np.isnan(h):
-        h = '00'
-    else:
-        h = '0{}'.format(int(h))[-2:]
-    if mins is None or np.isnan(mins):
-        mins = '00'
-    else:
-        mins = '0{}'.format(int(mins))[-2:]
-    return '{}:{}'.format(h,mins)
-
-
-def duration_to_decimal(h,mins):
-    """ 
-    Calculates duration in hours (decimal) when given hours and minutes seperately. 
-    """
-    if h is None or np.isnan(h):
-        h = 0
-    if mins is None or np.isnan(mins):
-        mins = 0
-    hours = h + mins/60
-    return hours
-
-
-def vauhti_min_km(m,s):
-    """ 
-    Calculates speed in min/km when given minutes and seconds seperately. 
-    """
-    if m is None and s is None:
-        vauhti_min_km = None
-    elif m is None and s is not None:
-        vauhti_min_km = s/60.0
-    elif m is not None and s is None:
-        vauhti_min_km = m
-    else:
-        vauhti_min_km = m + s/60.0
-    return vauhti_min_km
-
-
-def dataframe_to_json(df):
-    """
-    Converts pandas dataframe to json which is compatible with d3Charts.js.
-    Dataframe index should be chart category and columns represent chart series.
-    """
-    data_list = []
-    for index, row in df.iterrows():
-        row_dict = {}
-        row_dict['category'] = index
-        row_dict['series'] = row.fillna('').to_dict()
-        data_list.append(row_dict)
-    return json.dumps(data_list)
-
-
-def coalesce(x,val):
-    """ Returns given value if x is None. """
-    if x is None or pd.isnull(x):
-        return val
-    else:
-        return x
 
 
 def trainings_datatable(user_id):

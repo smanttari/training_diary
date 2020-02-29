@@ -24,28 +24,31 @@ class ViewTest(TestCase):
         running1 = Harjoitus.objects.create(
             pvm = datetime.date(2019,12,20),
             laji = running,
-            kesto = 1.25,
+            kesto_h = 1,
+            kesto_min = 15,
             tuntuma = 4,
             user = user1
             )
         running2 = Harjoitus.objects.create(
             pvm = datetime.date(2020,1,2),
             laji = running,
-            kesto = 0.75,
+            kesto_h = 0,
+            kesto_min = 45,
             tuntuma = 7,
             user = user1
             )
         skiing1 = Harjoitus.objects.create(
             pvm = datetime.date(2020,1,8),
             laji = skiing,
-            kesto = 1.5,
+            kesto_h = 1,
+            kesto_min = 30,
             tuntuma= 8,
             user = user1
             )
         gym1 = Harjoitus.objects.create(
             pvm = datetime.date(2019,12,28),
             laji = gym,
-            kesto = 10,
+            kesto_h = 10,
             tuntuma = 6,
             user = user2
             )

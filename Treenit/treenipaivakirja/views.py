@@ -1,5 +1,6 @@
 from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi
 from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm
+import treenipaivakirja.utils as utils
 import treenipaivakirja.transformations as tr
 from django.db.models import Sum, Max, Min
 from django.shortcuts import render,redirect
@@ -63,13 +64,13 @@ def index(request):
             current_week = 1
         elif current_week == 1 and current_month == 12:
             current_week = 52
-            
+
         hours_per_week_current_year = hours_current_year / current_week
         hours_per_week_past_year = trainings_df[trainings_df['Vuosi'] == (current_year-1)]['Kesto'].sum() / 52
         hours_per_week_change = hours_per_week_current_year - hours_per_week_past_year
 
-        feeling_current_period = tr.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_14) & (trainings_df['Päivä'] <= current_day_pd)]['Tuntuma'].mean(),0)
-        feeling_last_period = tr.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_28) & (trainings_df['Päivä'] <= current_day_minus_14)]['Tuntuma'].mean(),0)
+        feeling_current_period = utils.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_14) & (trainings_df['Päivä'] <= current_day_pd)]['Tuntuma'].mean(),0)
+        feeling_last_period = utils.coalesce(trainings_df[(trainings_df['Päivä'] >= current_day_minus_28) & (trainings_df['Päivä'] <= current_day_minus_14)]['Tuntuma'].mean(),0)
         feeling_change = feeling_current_period - feeling_last_period
 
     return render(request,'index.html',
@@ -92,7 +93,7 @@ def trainings_view(request):
     current_user_id = request.user.id
     current_day = datetime.now().date()
     first_day = Harjoitus.objects.filter(user=current_user_id).aggregate(Min('aika__pvm'))['aika__pvm__min']
-    startdate = tr.coalesce(first_day,current_day).strftime('%d.%m.%Y')
+    startdate = utils.coalesce(first_day,current_day).strftime('%d.%m.%Y')
     enddate = current_day.strftime('%d.%m.%Y') 
     sports = tr.sports_dict(current_user_id)
     sport = 'Kaikki'
@@ -252,16 +253,16 @@ def reports_sports(request):
                 amounts_per_sport['year'][s] = data_per_year[['vuosi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
                 avg_per_sport_table['year'][s] = data_per_year[['vuosi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
                 data_per_year = data_per_year.set_index('vuosi')
-                hours_per_sport['year'][s] = json.loads(tr.dataframe_to_json(data_per_year[['kesto (h)']]))
-                kilometers_per_sport['year'][s] = json.loads(tr.dataframe_to_json(data_per_year[['matka (km)']]))
-                avg_per_sport['year'][s] = json.loads(tr.dataframe_to_json(data_per_year[['vauhti (km/h)','keskisyke']]))
+                hours_per_sport['year'][s] = json.loads(utils.dataframe_to_json(data_per_year[['kesto (h)']]))
+                kilometers_per_sport['year'][s] = json.loads(utils.dataframe_to_json(data_per_year[['matka (km)']]))
+                avg_per_sport['year'][s] = json.loads(utils.dataframe_to_json(data_per_year[['vauhti (km/h)','keskisyke']]))
             if not data_per_season.empty:
                 amounts_per_sport['season'][s] = data_per_season[['kausi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
                 avg_per_sport_table['season'][s] = data_per_season[['kausi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
                 data_per_season = data_per_season.set_index('kausi')
-                hours_per_sport['season'][s] = json.loads(tr.dataframe_to_json(data_per_season[['kesto (h)']]))
-                kilometers_per_sport['season'][s] = json.loads(tr.dataframe_to_json(data_per_season[['matka (km)']]))
-                avg_per_sport['season'][s] = json.loads(tr.dataframe_to_json(data_per_season[['vauhti (km/h)','keskisyke']]))
+                hours_per_sport['season'][s] = json.loads(utils.dataframe_to_json(data_per_season[['kesto (h)']]))
+                kilometers_per_sport['season'][s] = json.loads(utils.dataframe_to_json(data_per_season[['matka (km)']]))
+                avg_per_sport['season'][s] = json.loads(utils.dataframe_to_json(data_per_season[['vauhti (km/h)','keskisyke']]))
 
     return render(request, 'reports_sports.html',
         context = {
@@ -312,21 +313,7 @@ def training_add(request):
         teho_formset = TehoFormset(request.POST)
         if harjoitus_form.is_valid() and harjoitus_form.has_changed():
             instance = harjoitus_form.save(commit=False)
-            instance.aika_id = instance.pvm.strftime('%Y%m%d')
             instance.user = request.user
-            kesto_h = tr.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
-            kesto_min = tr.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
-            instance.kesto_h = kesto_h
-            instance.kesto_min = kesto_min
-            instance.kesto = tr.duration_to_decimal(kesto_h,kesto_min)
-            vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
-            vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
-            instance.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
-            vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
-            if instance.vauhti_min_km is None and vauhti_km_h is not None and vauhti_km_h != 0:
-                instance.vauhti_min_km = 60 / vauhti_km_h
-            elif instance.vauhti_min_km is not None and instance.vauhti_min_km != 0 and vauhti_km_h is None:
-                instance.vauhti_km_h = 60 / instance.vauhti_min_km
             instance.save()
             training = Harjoitus.objects.get(id=instance.id)
             teho_formset = TehoFormset(request.POST, request.FILES,instance=training)
@@ -362,34 +349,13 @@ def training_modify(request,pk):
         harjoitus_form = HarjoitusForm(request.user,request.POST,instance=training)
         teho_formset = TehoFormset(request.POST,request.FILES,instance=training)
         if harjoitus_form.is_valid() and harjoitus_form.has_changed():
-            post = harjoitus_form.save(commit=False)
-            post.aika_id = post.pvm.strftime('%Y%m%d')
-            kesto_h = tr.coalesce(harjoitus_form.cleaned_data['kesto_h'],0)
-            kesto_min = tr.coalesce(harjoitus_form.cleaned_data['kesto_min'],0)
-            post.kesto_h = kesto_h
-            post.kesto_min = kesto_min
-            post.kesto = tr.duration_to_decimal(kesto_h,kesto_min)
-            vauhti_km_h = harjoitus_form.cleaned_data['vauhti_km_h']
-            vauhti_m = harjoitus_form.cleaned_data['vauhti_min']
-            vauhti_s = harjoitus_form.cleaned_data['vauhti_s']
-            post.vauhti_min_km = tr.vauhti_min_km(vauhti_m,vauhti_s)
-            if post.vauhti_min_km is None and vauhti_km_h is not None and vauhti_km_h != 0:
-                post.vauhti_min_km = 60 / vauhti_km_h
-            elif post.vauhti_min_km is not None and post.vauhti_min_km != 0 and vauhti_km_h is None:
-                post.vauhti_km_h = 60 / post.vauhti_min_km
-            post.save()
+            harjoitus_form.save()
         if teho_formset.is_valid() and teho_formset.has_changed():
             teho_formset.save()
         messages.add_message(request, messages.SUCCESS, 'Harjoitus tallennettu.')
         return redirect('trainings')
     else:
-        if training.vauhti_min_km is None:
-            vauhti_m = None
-            vauhti_s = None
-        else:
-            vauhti_m = int(training.vauhti_min_km)
-            vauhti_s = round((training.vauhti_min_km*60) % 60,0)
-        harjoitus_form = HarjoitusForm(request.user,instance=training,initial={'vauhti_min': vauhti_m, 'vauhti_s': vauhti_s })
+        harjoitus_form = HarjoitusForm(request.user,instance=training)
         teho_formset = TehoFormset(instance=training)
         for form in teho_formset:
             form.fields['tehoalue'].queryset = Tehoalue.objects.filter(user=request.user)
