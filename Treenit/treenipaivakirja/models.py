@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 from django.contrib.auth.models import User
 from treenipaivakirja.utils import coalesce, duration_to_decimal, speed_min_per_km
         
@@ -44,7 +43,7 @@ class Harjoitus(models.Model):
         super(Harjoitus, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '%s %s %s h' % (self.id ,self.laji, self.kesto)
+        return '%s %s h' % (self.laji, self.kesto)
     
     
 class Laji(models.Model):   
@@ -105,6 +104,9 @@ class Teho(models.Model):
         if self.vauhti_min_km is not None and self.vauhti_min_km != 0:
             self.vauhti_km_h = 60 / self.vauhti_min_km
         super(Teho, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return '%s %s %s h' % (self.harjoitus, self.tehoalue, self.kesto)
 
 
 class Tehoalue(models.Model):
