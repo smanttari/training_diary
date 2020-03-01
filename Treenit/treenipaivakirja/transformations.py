@@ -1,5 +1,5 @@
 from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi
-from treenipaivakirja.utils import duration_to_string
+from treenipaivakirja.utils import duration_to_string, dataframe_to_json
 from django.db.models import Sum, Max, Min
 
 from datetime import datetime
