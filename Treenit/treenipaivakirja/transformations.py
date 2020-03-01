@@ -130,13 +130,15 @@ def trainings_per_month(trainings_df,user_id):
     current_year = str(current_day.year)
     current_month = str(current_day.strftime("%m"))
     first_day_yyyymmdd = Harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
+    first_month = str(first_day_yyyymmdd)[4:6]
     years_months = Aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_year + '1231').values_list('vuosi','kk').distinct()
     years_months = pd.DataFrame(list(years_months), columns=['vuosi','kk'])
     years_months['vuosi'] = years_months['vuosi'].astype(str)
     trainings_per_month = trainings_df.groupby(['vuosi','kk']).sum().reset_index()[['vuosi','kk','kesto','matka']]
     trainings_per_month = years_months.merge(trainings_per_month,how='left',right_on=['vuosi','kk'],left_on=['vuosi','kk'])
     trainings_per_month[['kesto','matka']] = trainings_per_month[['kesto','matka']].round(0)
-    trainings_per_month[(trainings_per_month['vuosi'] < current_year) | (trainings_per_month['kk'] <= int(current_month))] = trainings_per_month[(trainings_per_month['vuosi'] < current_year) | (trainings_per_month['kk'] <= int(current_month))].fillna(0)
+    trainings_per_month[(trainings_per_month['vuosi'] < current_year) & (trainings_per_month['kk'] >= int(first_month))] = trainings_per_month[(trainings_per_month['vuosi'] < current_year) & (trainings_per_month['kk'] >= int(first_month))].fillna(0)
+    trainings_per_month[(trainings_per_month['vuosi'] == current_year) & (trainings_per_month['kk'] <= int(current_month))] = trainings_per_month[(trainings_per_month['vuosi'] == current_year) & (trainings_per_month['kk'] <= int(current_month))].fillna(0)
     return trainings_per_month
 
 
@@ -145,13 +147,15 @@ def trainings_per_week(trainings_df,user_id):
     current_year = str(current_day.year)
     current_week = str(current_day.strftime("%V"))
     first_day_yyyymmdd = Harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
+    first_week = datetime.strptime(str(first_day_yyyymmdd),'%Y%m%d').strftime("%V")
     years_weeks = Aika.objects.filter(vvvvkkpp__gte = first_day_yyyymmdd, vvvvkkpp__lte = current_year + '1231').values_list('vuosi','vko').distinct()
     years_weeks = pd.DataFrame(list(years_weeks), columns=['vuosi','vko'])
     years_weeks['vuosi'] = years_weeks['vuosi'].astype(str)
     trainings_per_week = trainings_df.groupby(['vuosi','vko']).sum().reset_index()[['vuosi','vko','kesto','matka']]
     trainings_per_week = years_weeks.merge(trainings_per_week,how='left',right_on=['vuosi','vko'],left_on=['vuosi','vko'])
     trainings_per_week[['kesto','matka']] = trainings_per_week[['kesto','matka']].round(1)
-    trainings_per_week[(trainings_per_week['vuosi'] < current_year) | (trainings_per_week['vko'] <= int(current_week))] = trainings_per_week[(trainings_per_week['vuosi'] < current_year) | (trainings_per_week['vko'] <= int(current_week))].fillna(0)
+    trainings_per_week[(trainings_per_week['vuosi'] < current_year) & (trainings_per_week['vko'] >= int(first_week))] = trainings_per_week[(trainings_per_week['vuosi'] < current_year) & (trainings_per_week['vko'] >= int(first_week))].fillna(0)
+    trainings_per_week[(trainings_per_week['vuosi'] == current_year) & (trainings_per_week['vko'] <= int(current_week))] = trainings_per_week[(trainings_per_week['vuosi'] == current_year) & (trainings_per_week['vko'] <= int(current_week))].fillna(0)
     return trainings_per_week
 
 
@@ -226,14 +230,14 @@ def hours_per_zone(trainings_df,user_id):
         zones_per_training = zones_df[['harjoitus_id','kesto']].groupby('harjoitus_id').sum()
         zones_per_training = trainings_df.merge(zones_per_training,how='left',left_on='id',right_index=True,suffixes=('','_zone'))[['id','vuosi','kausi','kesto','kesto_zone']].fillna(0)
         zones_per_training['Muu'] = zones_per_training['kesto'] - zones_per_training['kesto_zone']
-        zone_not_defined_per_year = zones_per_training[['vuosi','Muu']].groupby('vuosi').sum().round(1)
-        zone_not_defined_per_season = zones_per_training[zones_per_training['kausi'] != 0][['kausi','Muu']].groupby('kausi').sum().round(1)
-        
+        zone_not_defined_per_year = zones_per_training[['vuosi','Muu']].groupby('vuosi').sum().round(1).reset_index()
+        zone_not_defined_per_season = zones_per_training[zones_per_training['kausi'] != 0][['kausi','Muu']].groupby('kausi').sum().round(1).reset_index()
+
         # count training hours per zone per year
-        zones_per_year = zones_df.groupby(['vuosi','teho']).sum().reset_index()
+        zones_per_year = zones_df.groupby(['vuosi','teho']).sum().reset_index()    
         zones_per_year = zones_per_year.pivot(index='vuosi', columns='teho', values='kesto').round(1)
         zones_per_year.index = zones_per_year.index.astype(str)
-        zones_per_year = zone_not_defined_per_year.merge(zones_per_year, how='left', left_index=True, right_on='vuosi')
+        zones_per_year = zone_not_defined_per_year.merge(zones_per_year, how='left', left_on='vuosi', right_on='vuosi').set_index('vuosi') 
         zones_per_year = zones_per_year[zones] 
 
         # count training hours per zone per season
@@ -241,7 +245,7 @@ def hours_per_zone(trainings_df,user_id):
         if not zones_per_season.empty:
             zones_per_season = zones_per_season.pivot(index='kausi', columns='teho', values='kesto').round(1)
             zones_per_season.index = zones_per_season.index.astype(str)
-            zones_per_season = zone_not_defined_per_season.merge(zones_per_season, how='left', left_index=True, right_on='kausi')
+            zones_per_season = zone_not_defined_per_season.merge(zones_per_season, how='left', left_on='kausi', right_on='kausi').set_index('kausi')
             zones_per_season = zones_per_season.loc[:,[z for z in zones if z in list(zones_per_season)]]
         
         hours_per_zone = {}

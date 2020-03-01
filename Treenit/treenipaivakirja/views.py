@@ -185,7 +185,7 @@ def reports_amounts(request):
         trainings_df = tr.trainings(current_user_id)
         sports = tr.sports_list(current_user_id) 
         sport = sports[0]
-        years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique()
+        years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique().tolist()
 
         trainings_per_season = tr.trainings_per_season(trainings_df)
         trainings_per_year = tr.trainings_per_year(trainings_df)
@@ -268,11 +268,11 @@ def reports_sports(request):
         context = {
             'sport': sport,
             'sports': sports,
-            'avg_per_sport': avg_per_sport,
-            'amounts_per_sport': amounts_per_sport,
-            'avg_per_sport_table': avg_per_sport_table,
-            'hours_per_sport': hours_per_sport,
-            'kilometers_per_sport': kilometers_per_sport
+            'avg_per_sport': json.dumps(avg_per_sport),
+            'amounts_per_sport': json.dumps(amounts_per_sport),
+            'avg_per_sport_table': json.dumps(avg_per_sport_table),
+            'hours_per_sport': json.dumps(hours_per_sport),
+            'kilometers_per_sport': json.dumps(kilometers_per_sport)
             })
 
 
@@ -290,14 +290,14 @@ def reports_zones(request):
         hours_per_zone_json = []
     else:
         trainings_df = tr.trainings(current_user_id)
-        years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique()
+        years = trainings_df.sort_values(by='vuosi', ascending=False)['vuosi'].unique().tolist()
         hours_per_zone_json = tr.hours_per_zone(trainings_df,current_user_id)
 
     return render(request, 'reports_zones.html',
         context = {
             'years': years,
             'seasons': seasons,
-            'hours_per_zone_json': hours_per_zone_json
+            'hours_per_zone_json': json.dumps(hours_per_zone_json)
             })
 
 
