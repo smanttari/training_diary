@@ -66,7 +66,7 @@ class DurationToDecimalTest(TestCase):
         self.assertEqual(duration_to_decimal(h,mins),2.5)
 
 
-class VauhtiMinKmTest(TestCase):
+class SpeedMinPerKmTest(TestCase):
     def test_none(self):
         m = None
         s = None

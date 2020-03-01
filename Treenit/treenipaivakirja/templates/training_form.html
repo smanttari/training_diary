@@ -113,13 +113,10 @@
                     <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.nro.label }}</b></div>
                     <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.tehoalue.label }}</b></div>
                     <div class="form-group col-md-2 ml-2"><b>Kesto</b></div>
-                    <div class="form-group col-md-1 ml-2" hidden>{{ teho_formset.0.kesto.label }}</div>
                     <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.keskisyke.label }}</b></div>
                     <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.maksimisyke.label }}</b></div>
                     <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.matka.label }} (km)</b></div>
                     <div class="form-group col-md-2 ml-2"><b>Vauhti</b></div>
-                    <div class="form-group col-md-1 ml-2" hidden>{{ teho_formset.0.vauhti_min_km.label }}</div>
-                    <div class="form-group col-md-1 ml-2" hidden>{{ teho_formset.0.vauhti_km_h.label }}</div>
                 </div>
             </div>
 
@@ -140,9 +137,6 @@
                             {{ form.kesto_h|add_class:'form-control' }}
                             {{ form.kesto_min|add_class:'form-control' }}
                         </div>
-                    </div>
-                    <div class="form-group col-md-1 ml-2" hidden>
-                        {{ form.kesto|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.keskisyke.label }}</b></label>
@@ -165,12 +159,6 @@
                                 <span class="input-group-text">min/km</span>
                             </div>
                         </div> 
-                    </div>
-                    <div class="form-group col-md-1 ml-2" hidden>
-                        {{ form.vauhti_min_km|add_class:'form-control' }}
-                    </div>
-                    <div class="form-group col-md-1 ml-2" hidden>
-                        {{ form.vauhti_km_h|add_class:'form-control' }}
                     </div>
                     <div class="form-group col-md-1 ml-2">
                         <button 
@@ -207,11 +195,6 @@
 
 <script type="text/javascript">
 
-$(window).on('load',function(){
-    splitVauhtiMinKm()
-    document.getElementById("trainings").classList.add('active')
-})
-
 let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
 $('#id_pvm').datepicker({
     uiLibrary: 'bootstrap4',
@@ -225,12 +208,6 @@ $('#id_pvm').datepicker({
     width: 160,
     maxDate: today
 })
-
-$("#save").click(function() {
-    calculateKesto()
-    calculateVauhtiMinKm()
-    calculateVauhtiKmH()
-  })
 
 
 // teho formset
@@ -247,75 +224,6 @@ $("button[name$='-del']").click(function() {
   let id = $(this).attr('name').split('-')[1]
   deleteForm(prefix, id, required_fields)
 })
-
-
-function calculateKesto(){
-    let id = 0
-    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
-    while (id < total) {
-        let kesto_h = $(`#id_${prefix}-${id}-kesto_h`).val()
-        let kesto_min = $(`#id_${prefix}-${id}-kesto_min`).val()
-        if (kesto_h || kesto_min){
-            let kesto = calculateDuration(kesto_h, kesto_min)
-            $(`#id_${prefix}-${id}-kesto`).val(kesto)
-        }
-        else {
-            $(`#id_${prefix}-${id}-kesto`).val(null)
-        }
-        id++
-    }
-}
-
-function calculateVauhtiMinKm(){
-    let id = 0
-    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
-    while (id < total) {
-        let vauhti_min = $(`#id_${prefix}-${id}-vauhti_min`).val()
-        let vauhti_s = $(`#id_${prefix}-${id}-vauhti_s`).val()
-        if (vauhti_min || vauhti_s){
-            let vauhti_min_km = calculateSpeedMinPerKm(vauhti_min, vauhti_s)
-            $(`#id_${prefix}-${id}-vauhti_min_km`).val(vauhti_min_km)
-        }
-        else {
-            $(`#id_${prefix}-${id}-vauhti_min_km`).val(null)
-        }
-        id++
-    }
-}
-
-function splitVauhtiMinKm(){
-    let id = 0
-    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
-    while (id < total) {
-        let vauhti_min_km = $(`#id_${prefix}-${id}-vauhti_min_km`).val()
-        if (vauhti_min_km){
-            let min_sek = extractMinAndSecFromSpeed(vauhti_min_km)
-            $(`#id_${prefix}-${id}-vauhti_min`).val(min_sek.m)
-            $(`#id_${prefix}-${id}-vauhti_s`).val(min_sek.s)
-        }
-        else {
-            $(`#id_${prefix}-${id}-vauhti_min`).val(null)
-            $(`#id_${prefix}-${id}-vauhti_s`).val(null)
-        }
-        id++
-    }
-}
-
-function calculateVauhtiKmH(){
-    let id = 0
-    let total = $(`#id_${prefix}-TOTAL_FORMS`).val()
-    while (id < total) {
-        let vauhti_min_km = $(`#id_${prefix}-${id}-vauhti_min_km`).val()
-        if (vauhti_min_km){
-            let vauhti_km_h = convertMinPerKmToKmPerH(vauhti_min_km)
-            $(`#id_${prefix}-${id}-vauhti_km_h`).val(vauhti_km_h)
-        }
-        else {
-            $(`#id_${prefix}-${id}-vauhti_km_h`).val(null)
-        }
-        id++
-    }
-}
 
 </script>
 

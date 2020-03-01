@@ -406,7 +406,6 @@ function formatDetails(details){
         let rows = ''
         details.forEach(
             d => {
-                let min_sek = extractMinAndSecFromSpeed(d.vauhti_min_km)
                 rows += 
                 '<tr>' +
                     '<td>' + (d.nro || '') + '</td>' +
@@ -415,7 +414,7 @@ function formatDetails(details){
                     '<td>' + (d.keskisyke || '') + '</td>' +
                     '<td>' + (d.maksimisyke || '')+ '</td>' +
                     '<td>' + (d.matka || '') + '</td>' +
-                    '<td>' + (min_sek.m == 0 ? '' : min_sek.m + ':') + (min_sek.s == 0 ? '' : min_sek.s) + '</td>' +
+                    '<td>' + speedToString(d.vauhti_min,d.vauhti_s) + '</td>' +
                 '</tr>'
             }
         )

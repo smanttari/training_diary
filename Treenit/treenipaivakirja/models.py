@@ -90,10 +90,21 @@ class Teho(models.Model):
     matka = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     vauhti_km_h = models.DecimalField(max_digits=5, decimal_places=2, null=True, verbose_name='Vauhti (km/h)', blank=True)
     vauhti_min_km = models.DecimalField(max_digits=5, decimal_places=2, null=True, verbose_name='Vauhti (min/km)', blank=True)
+    vauhti_min = models.PositiveIntegerField(null=True, blank=True, verbose_name='min')
+    vauhti_s = models.PositiveIntegerField(null=True, blank=True, verbose_name='s')
     tehoalue = models.ForeignKey('tehoalue', on_delete=models.PROTECT, blank=False)
 
     class Meta:
         verbose_name_plural = "Teho"
+
+    def save(self, *args, **kwargs):
+        self.kesto_h = coalesce(self.kesto_h,0)
+        self.kesto_min = coalesce(self.kesto_min,0)
+        self.kesto = duration_to_decimal(self.kesto_h,self.kesto_min)
+        self.vauhti_min_km = speed_min_per_km(self.vauhti_min,self.vauhti_s)
+        if self.vauhti_min_km is not None and self.vauhti_min_km != 0:
+            self.vauhti_km_h = 60 / self.vauhti_min_km
+        super(Teho, self).save(*args, **kwargs)
 
 
 class Tehoalue(models.Model):

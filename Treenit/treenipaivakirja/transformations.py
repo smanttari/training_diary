@@ -254,5 +254,5 @@ def hours_per_zone(trainings_df,user_id):
 def zones_per_training(training_id):
     zones = list(Teho.objects.filter(harjoitus=training_id).values(
         'nro', 'tehoalue_id__tehoalue', 'kesto_h', 'kesto_min', 'keskisyke', 
-        'maksimisyke', 'matka', 'vauhti_min_km').order_by('nro'))
+        'maksimisyke', 'matka', 'vauhti_min', 'vauhti_s').order_by('nro'))
     return zones

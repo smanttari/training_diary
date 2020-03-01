@@ -1,44 +1,3 @@
-// Calculate duration in hours (decimal) when given hours and minutes
-function calculateDuration(h, min){
-    let hours = h || 0
-    let minutes = min || 0
-    let duration = parseInt(hours) + parseInt(minutes)/60.0
-    duration = Math.round(duration * 100) / 100
-    return duration
-}
-
-
-// Calculate speed (min/km) when given minutes and seconds
-function calculateSpeedMinPerKm(min, s){
-    let minutes = min || 0
-    let seconds = s || 0
-    let speedMinPerKm = parseInt(minutes) + parseInt(seconds)/60.0
-    speedMinPerKm = Math.round(speedMinPerKm * 100) / 100
-    return speedMinPerKm
-}
-
-
-// Convert min/km to km/h
-function convertMinPerKmToKmPerH(speedMinPerKm){
-    let speed = speedMinPerKm || 0
-    if (speed === 0) {
-        return 0
-    } else {
-        let speedKmPerH = Math.round(60.0/speed * 100) / 100
-        return speedKmPerH
-    }
-}
-
-
-// Calculate minutes and seconds when given speed in form min/km
-function extractMinAndSecFromSpeed(speedMinPerKm){
-    let speed = speedMinPerKm || 0
-    let minutes = Math.floor(speed)
-    let seconds = Math.round((speed - minutes) * 60.0)
-    return {'m': minutes, 's': seconds}
-}
-
-
 // Convert "hh:mm" to decimal
 function timeStringToDecimal(time){
     if (typeof time === 'string' ) {
@@ -63,19 +22,24 @@ function timeStringToDecimal(time){
 
 // Convert duration given in hours and minutes to string "hh:mm". 
 function durationToString(h,mins){
-    if (h){
-        h = ('0' + h.toString()).slice(-2)
+    let hours = h || 0
+    let minutes = mins || 0
+    hours = ('0' + hours.toString()).slice(-2)
+    minutes = ('0' + minutes.toString()).slice(-2)
+    return hours + ':' + minutes
+}
+
+
+// Convert speed given in minutes and seconds to string "mm:ss". 
+function speedToString(mins,s){
+    if (mins == null && s == null){
+        return ''
     }
-    else {
-        h = '00'
-    }
-    if (mins) {
-        mins = ('0' + mins.toString()).slice(-2)
-    }
-    else {
-        mins = '00'
-    }
-    return h + ':' + mins
+    let minutes = mins || 0
+    let seconds = s || 0
+    minutes = ('0' + minutes.toString()).slice(-2)
+    seconds = ('0' + seconds.toString()).slice(-2)
+    return minutes + ':' + seconds
 }
 
 
