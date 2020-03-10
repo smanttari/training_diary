@@ -85,7 +85,8 @@ class ViewTest(TestCase):
             matka = 13,
             keskisyke = 130,
             vauhti_km_h = 13,
-            tuntuma= 8,
+            tuntuma = 8,
+            kommentti = 'Super good!',
             user = user1
             )
         skiing3 = Harjoitus.objects.create(
@@ -109,13 +110,16 @@ class ViewTest(TestCase):
             harjoitus = running2,
             nro = 1,
             tehoalue = zone_area1,
-            kesto_min = 30
+            kesto_min = 30,
+            keskisyke = 133
         )
         zone2 = Teho.objects.create(
             harjoitus = running2,
             nro = 2,
             tehoalue = zone_area2,
-            kesto_min = 15
+            kesto_min = 15,
+            keskisyke = 165,
+            maksimisyke = 177
         )
         zone3 = Teho.objects.create(
             harjoitus = skiing2,
@@ -332,3 +336,30 @@ class ViewTest(TestCase):
         self.assertEqual(context['years'],['2019'])
         self.assertEqual(context['seasons'],[])
         self.assertEqual(json.loads(context['hours_per_zone_json']),[])
+
+    def test_trainings_data_for_user1(self):
+        login = self.client.login(username='user1', password='top_secret1')
+        columns = {'columns[]':['details', 'Vko', 'Päivä', 'Laji', 'Kesto', 'Keskisyke', 'Matka (km)', 'Vauhti (km/h)', 'Tuntuma', 'Aerobic', 'Anaerobic', 'Kommentti', 'edit', 'delete']}
+        response = self.client.post(reverse('trainings_data'), columns)
+        data = response.json()['data']
+        data_filtered = [row for row in data if row[3] != 'Lepo']
+        self.assertEqual(data_filtered[0],['', 2, '2020-01-10 Pe', 'Skiing', '00:30', '140', 7.0, '', '8', '', '', '', '5', '5'])
+        self.assertEqual(data_filtered[1],['', 2, '2020-01-08 Ke', 'Skiing', '01:00', '130', 13.0, 13.0, '8', '01:00', '', 'Super good!', '4', '4'])
+        self.assertEqual(data_filtered[2],['', 1, '2020-01-02 To', 'Running', '00:45', '140', 8.0, 10.0, '7', '00:30', '00:15', '', '2', '2'])
+        self.assertEqual(data_filtered[3],['', 51, '2019-12-20 Pe', 'Running', '01:15', '150', 10.0, 8.0, '4', '', '', '', '1', '1'])
+        self.assertEqual(data_filtered[4],['', 2, '2019-01-07 Ma', 'Skiing', '01:45', '140', 20.0, 15.0, '5', '', '', '', '3', '3'])
+
+    def test_trainings_data_for_user2(self):
+        login = self.client.login(username='user2', password='top_secret2')
+        columns = {'columns[]':['details', 'Vko', 'Päivä', 'Laji', 'Kesto', 'Keskisyke', 'Matka (km)', 'Vauhti (km/h)', 'Tuntuma', 'Kommentti', 'edit', 'delete']}
+        response = self.client.post(reverse('trainings_data'), columns)
+        data = response.json()['data']
+        data_filtered = [row for row in data if row[3] != 'Lepo']
+        self.assertEqual(data_filtered[0],['', 48, '2019-11-28 To', 'Gym', '10:00', '', '', '', '6', '', '6', '6'])
+
+    def test_trainings_details_for_user1(self):
+        login = self.client.login(username='user1', password='top_secret1')
+        response = self.client.post(reverse('training_details', kwargs={'pk':2}))
+        data = response.json()['data']
+        self.assertEqual(data[0],{'nro': 1, 'tehoalue_id__tehoalue': 'Aerobic', 'kesto_h': 0, 'kesto_min': 30, 'keskisyke': 133, 'maksimisyke': None, 'matka': None, 'vauhti_min': None, 'vauhti_s': None})
+        self.assertEqual(data[1],{'nro': 2, 'tehoalue_id__tehoalue': 'Anaerobic', 'kesto_h': 0, 'kesto_min': 15, 'keskisyke': 165, 'maksimisyke': 177, 'matka': None, 'vauhti_min': None, 'vauhti_s': None})

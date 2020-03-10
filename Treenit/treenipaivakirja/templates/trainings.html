@@ -224,7 +224,7 @@ var treenitTable = $('#treenit').DataTable({
                 "csrfmiddlewaretoken": '{{ csrf_token }}'
             },
         dataType: "json",
-        dataSrc: ''
+        dataSrc: 'data'
     },
     processing: true,
     searching: true,
@@ -373,9 +373,9 @@ function rowDetails(rowData){
     $.ajax({
         url : "{% url 'training_details' pk=12345 %}".replace(/12345/, id.toString()),
         dataType: "json",
-        dataSrc: '',
+        dataSrc: 'data',
         success: function (response){
-            div.html(formatDetails(response))
+            div.html(formatDetails(response['data']))
         }
     })
     return div

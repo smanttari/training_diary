@@ -247,8 +247,8 @@ def reports_sports(request):
         amounts_per_sport = {'year':{}, 'season':{}}
 
         for s in sports:
-            data_per_year = trainings_per_sport_per_year[trainings_per_sport_per_year['laji_nimi'] == s]
-            data_per_season = trainings_per_sport_per_season[trainings_per_sport_per_season['laji_nimi'] == s]
+            data_per_year = trainings_per_sport_per_year[trainings_per_sport_per_year['laji_nimi'].astype(str) == s]
+            data_per_season = trainings_per_sport_per_season[trainings_per_sport_per_season['laji_nimi'].astype(str) == s]
             if not data_per_year.empty:
                 amounts_per_sport['year'][s] = data_per_year[['vuosi','lkm','kesto (h)','matka (km)']].fillna('').to_dict(orient='records')
                 avg_per_sport_table['year'][s] = data_per_year[['vuosi','kesto (h) ka.','matka (km) ka.','vauhti (km/h)','keskisyke']].rename(columns={'kesto (h) ka.':'kesto (h)','matka (km) ka.':'matka (km)'}).fillna('').to_dict(orient='records')
@@ -508,10 +508,10 @@ def trainings_data(request):
     else:
         trainings_df = trainings_df[table_columns]
         trainings_list = trainings_df.fillna('').values.tolist()
-    return JsonResponse(trainings_list, safe=False)
+    return JsonResponse({'data': trainings_list})
 
 
 @login_required
 def training_details(request, pk):
     training_details = tr.zones_per_training(pk)
-    return JsonResponse(training_details, safe=False)
+    return JsonResponse({'data':training_details})
