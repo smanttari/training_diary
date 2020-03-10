@@ -5,6 +5,7 @@ from treenipaivakirja.models import Laji,Harjoitus,Tehoalue,Teho
 
 
 class ModelTest(TestCase):
+    fixtures = ['test_aika.json']
 
     def test_harjoitus_model_save_aika_id(self):
         running = Laji.objects.create(laji='R', laji_nimi='Running')
