@@ -429,7 +429,7 @@ def settings_view(request):
             user_form = UserForm(request.POST, instance=current_user)
             if user_form.is_valid():
                 user_form.save()
-                messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
+                messages.add_message(request, messages.SUCCESS, 'Profiili tallennettu.')
                 return redirect('settings')
 
         if 'pw_save' in request.POST:
@@ -447,7 +447,7 @@ def settings_view(request):
             if sports_formset.is_valid() and sports_formset.has_changed():
                 try:
                     sports_formset.save()
-                    messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
+                    messages.add_message(request, messages.SUCCESS, 'Laji tallennettu.')
                     return redirect(reverse('settings') + '?page=' + page)
                 except ProtectedError:
                     messages.add_message(request, messages.ERROR, 'Lajia ei voida poistaa, koska siihen on liitetty harjoituksia.')
@@ -458,7 +458,7 @@ def settings_view(request):
             if zones_formset.is_valid() and zones_formset.has_changed():
                 try:
                     zones_formset.save()
-                    messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
+                    messages.add_message(request, messages.SUCCESS, 'Tehoalue tallennettu.')
                     return redirect(reverse('settings') + '?page=' + page)
                 except ProtectedError:
                     messages.add_message(request, messages.ERROR, 'Tehoaluetta ei voida poistaa, koska siihen on liitetty harjoituksia.')
@@ -468,7 +468,7 @@ def settings_view(request):
             seasons_formset = SeasonsFormset(request.POST, request.FILES, instance=current_user)
             if seasons_formset.is_valid() and seasons_formset.has_changed():
                 seasons_formset.save()
-                messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
+                messages.add_message(request, messages.SUCCESS, 'Harjoituskausi tallennettu.')
                 return redirect(reverse('settings') + '?page=' + page)
 
     return render(request,'settings.html',
