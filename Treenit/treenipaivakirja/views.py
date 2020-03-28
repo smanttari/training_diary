@@ -471,6 +471,12 @@ def settings_view(request):
                 messages.add_message(request, messages.SUCCESS, 'Harjoituskausi tallennettu.')
                 return redirect(reverse('settings') + '?page=' + page)
 
+        if 'profile_del' in request.POST:
+            u = User.objects.get(username = current_user)
+            u.delete()
+            messages.add_message(request, messages.SUCCESS, 'Profiili poistettu.') 
+            return redirect('index')
+
     return render(request,'settings.html',
         context = {
             'user_form': user_form,
@@ -491,6 +497,7 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.add_message(request, messages.SUCCESS, 'Käyttäjätili luotu.') 
             return redirect('accounts/login')
     else:
         form = RegistrationForm() 

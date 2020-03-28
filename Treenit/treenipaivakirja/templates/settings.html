@@ -25,19 +25,22 @@
   <h6 class="card-header text-muted">
       <ul class="nav nav-tabs card-header-tabs" role="tablist">
         <li class="nav-item">
-          <a id="btn_profile" class="nav-link active" href="#" name="nav_btn" data-toggle="tab" id="hours">Profiili</a>
+          <a id="btn_profile" class="nav-link active" href="#" name="nav_btn" data-toggle="tab">Profiili</a>
         </li>
         <li class="nav-item">
-          <a id="btn_sports" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Lajit</a>
+          <a id="btn_sports" class="nav-link" href="#" name="nav_btn" data-toggle="tab">Lajit</a>
         </li>
         <li class="nav-item">
-          <a id="btn_zones" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Tehoalueet</a>
+          <a id="btn_zones" class="nav-link" href="#" name="nav_btn" data-toggle="tab">Tehoalueet</a>
         </li>
         <li class="nav-item">
-          <a id="btn_seasons" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Harjoituskaudet</a>
+          <a id="btn_seasons" class="nav-link" href="#" name="nav_btn" data-toggle="tab">Harjoituskaudet</a>
         </li>
         <li class="nav-item">
-          <a id="btn_pw_reset" class="nav-link" href="#" name="nav_btn" data-toggle="tab" id="kilometers">Vaihda salasana</a>
+          <a id="btn_pw_reset" class="nav-link" href="#" name="nav_btn" data-toggle="tab">Vaihda salasana</a>
+        </li>
+        <li class="nav-item">
+          <a id="btn_delete_profile" class="nav-link" href="#" name="nav_btn" data-toggle="tab">Poista profiili</a>
         </li>
       </ul>
   </h6>
@@ -236,6 +239,16 @@
       </form>
     </div>
 
+    <div name="page" id="delete_profile" style="display: block">
+      <h5 class="card-title mb-4">POISTA PROFIILI</h5>
+      <form method="post">{% csrf_token %}
+        <p>Haluatko varmasti poistaa profiilisi ja menettää kaikki tallentamasi tiedot?</p>
+        <div class="form-actions col-md-6 mt-3">
+          <button type="submit" class="btn btn-success mr-3" name="profile_del" id="profile_del">Kyllä</button>
+        </div>
+      </form>
+    </div>
+
   </div>
 </div>
 
@@ -313,6 +326,10 @@ $("#btn_seasons").click(function() {
 
 $("#btn_pw_reset").click(function() {
   showDiv('pw_reset')
+})
+
+$("#btn_delete_profile").click(function() {
+  showDiv('delete_profile')
 })
 
 

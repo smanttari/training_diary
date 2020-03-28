@@ -45,6 +45,13 @@
   </div>
   </form>
 
-</div>      
+</div>
+
+{% if messages %}
+{% for message in messages %}{% endfor %}
+<script> 
+  setTimeout(() => $(".alert").alert('close'), 4000)
+</script>
+{% endif %}
 
 {% endblock %}
