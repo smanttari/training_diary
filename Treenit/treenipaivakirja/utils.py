@@ -6,6 +6,8 @@ def duration_to_string(h,mins):
     """ 
     Formats duration given in hours and minutes to string "hh:mm". 
     """
+    if (h is None or np.isnan(h)) and (mins is None or np.isnan(mins)):
+        return None
     if h is None or np.isnan(h):
         h = '00'
     else:

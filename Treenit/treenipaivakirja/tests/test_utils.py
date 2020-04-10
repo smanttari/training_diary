@@ -11,12 +11,12 @@ class DurationToStringTest(TestCase):
     def test_none(self):
         h = None
         mins = None
-        self.assertEqual(duration_to_string(h,mins),'00:00')
+        self.assertEqual(duration_to_string(h,mins),None)
 
     def test_nan(self):
         h = np.nan
         mins = np.nan
-        self.assertEqual(duration_to_string(h,mins),'00:00')
+        self.assertEqual(duration_to_string(h,mins),None)
 
     def test_h_only(self):
         h = 15
