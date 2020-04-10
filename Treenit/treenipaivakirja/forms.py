@@ -14,7 +14,7 @@ class HarjoitusForm(forms.ModelForm):
     class Meta:
         model = Harjoitus
         widgets = {
-            'vuorokaudenaika': forms.RadioSelect,
+            'vuorokaudenaika': forms.RadioSelect(attrs={'class': 'custom-control-input'}),
             'kommentti': forms.Textarea(attrs={'rows': 3}),
         }
         fields = [

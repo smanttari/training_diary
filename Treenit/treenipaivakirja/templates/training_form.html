@@ -27,7 +27,10 @@
                 <label class="col-md-2 col-xl-1 col-form-label"></label> 
                 <div class="col-md-3">
                     {% for radio in harjoitus_form.vuorokaudenaika %}
-                        <div class="form-check form-check-inline">{{ radio }}</div>
+                        <div class="custom-control custom-radio custom-control-inline">
+                        {{ radio.tag }}
+                        <label class="custom-control-label" for="id_vuorokaudenaika_{{ forloop.counter0 }}">{{ radio.choice_label }}</label>
+                        </div>
                     {% endfor %}
                 </div>
             </div>

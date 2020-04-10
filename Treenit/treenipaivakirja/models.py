@@ -20,7 +20,7 @@ class Harjoitus(models.Model):
     tuntuma_choices = ((1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(10,10))    
     tuntuma = models.IntegerField(choices=tuntuma_choices,null=True, blank=True)
     kommentti = models.TextField(max_length=250, null=True, blank=True)
-    vuorokaudenaika_choices = ((1,'aamu'),(2,'ilta'),)
+    vuorokaudenaika_choices = ((1,'aamupäivä'),(2,'iltapäivä'),)
     vuorokaudenaika = models.IntegerField(choices=vuorokaudenaika_choices, blank=False, default=2, verbose_name="")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     nousu = models.IntegerField(null=True, blank=True, verbose_name='Nousu (m)')
