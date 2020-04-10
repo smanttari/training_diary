@@ -303,13 +303,6 @@ var treenitTable = $('#treenit').DataTable({
     fnDrawCallback: function( oSettings ) {
         highlightLepoRows()
         $("select[name=treenit_length]").removeClass("custom-select");
-        var api = this.api()
-        if (window.innerHeight > 900){
-            api.page.len(15)
-        }
-        else {
-            api.page.len(10)
-        }
     },
     footerCallback: function ( row, data, start, end, display ) {
         var api = this.api(), data;
