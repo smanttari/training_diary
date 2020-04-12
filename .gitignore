@@ -6,3 +6,7 @@ env
 *.sqlite3
 *.log
 *.log.*
+log.html
+report.html
+selenium-screenshot-*.png
+output.xml
