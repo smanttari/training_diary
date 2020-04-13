@@ -8,13 +8,13 @@ Web application for recording and analyzing trainings.
 
 * Clone repository
 
-* Install required python libraries
+* Move to Treenit-folder and install required python libraries
 
 ````
 pip install -r requirements.txt
 ````
 
-* Move to Treenit-folder and run database migrations
+* Run database migrations
 
 ````
 python manage.py migrate

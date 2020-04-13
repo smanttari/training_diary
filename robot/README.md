@@ -1,12 +1,10 @@
 # Robot Framework Tests
 
 ## Installation
-Install following Python libraries
+Install required Python libraries
 
 ````
-pip install robotframework
-pip install robotframework-seleniumlibrary
-pip install robotframework-databaselibrary
+pip install -r requirements.txt
 ````
 
 Download Chrome Driver and set it to PATH

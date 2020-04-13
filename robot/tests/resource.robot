@@ -2,7 +2,7 @@
 Documentation     A resource file with reusable keywords and variables.
 Library           SeleniumLibrary
 Library           DatabaseLibrary
-Library           ../libraries/DjangoORM.py    ${PROJECT_ROOT}
+Library           ../libraries/DjangoORM.py    ${APP_ROOT}
 
 
 *** Variables ***
@@ -10,10 +10,10 @@ ${SERVER}         127.0.0.1:8000
 ${BROWSER}        Chrome     
 ${DELAY}          0.1
 ${URL}            http://${SERVER}/treenipaivakirja/
-${PROJECT_ROOT}   ../Treenit
-${DATABASE}       ${PROJECT_ROOT}/treenit.sqlite3
+${APP_ROOT}       ../Treenit
+${DATABASE}       ${APP_ROOT}/treenit.sqlite3
 ${USERNAME}       test_user
-${PASSWORD}       top_secret
+${PASSWORD}       top_secret12
 
 *** Keywords ***
 Create Test User
