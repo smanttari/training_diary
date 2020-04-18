@@ -4,7 +4,7 @@ import json
 
 from django.test import TestCase
 
-from treenipaivakirja.utils import duration_to_string, duration_to_decimal, speed_min_per_km, dataframe_to_json, coalesce
+from treenipaivakirja.utils import duration_to_string, duration_to_decimal, speed_min_per_km, dataframe_to_dict, coalesce
 
 
 class DurationToStringTest(TestCase):
@@ -93,21 +93,21 @@ class SpeedMinPerKmTest(TestCase):
         self.assertEqual(speed_min_per_km(m,s),11.2)
 
 
-class DataFrameToJsonTest(TestCase):
+class DataFrameToDictTest(TestCase):
     def test_empty_df(self):
         df = pd.DataFrame()
-        self.assertEqual(dataframe_to_json(df),json.dumps([]))
+        self.assertEqual(dataframe_to_dict(df),[])
 
     def test_df_with_no_rows(self):
         df = pd.DataFrame(columns=['A','B','C'])
-        self.assertEqual(dataframe_to_json(df),json.dumps([]))
+        self.assertEqual(dataframe_to_dict(df),[])
 
     def test_df_with_rows(self):
         categories = ['A','B']
         data = {'col1': [1, 2], 'col2': [3, 4]}
         df = pd.DataFrame(data, index=categories)
         result = [{"category": "A", "series": {"col1": 1, "col2": 3}}, {"category": "B", "series": {"col1": 2, "col2": 4}}]
-        self.assertEqual(dataframe_to_json(df),json.dumps(result))
+        self.assertEqual(dataframe_to_dict(df),result)
 
 
 class CoalesceTest(TestCase):

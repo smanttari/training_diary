@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
-import json
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+
+from django.http import HttpResponse
+
 
 def duration_to_string(h,mins):
     """ 
@@ -46,9 +50,17 @@ def speed_min_per_km(m,s):
     return speed_min_per_km
 
 
-def dataframe_to_json(df):
+def coalesce(x,val):
+    """ Returns given value if x is None. """
+    if x is None or pd.isnull(x):
+        return val
+    else:
+        return x
+
+
+def dataframe_to_dict(df):
     """
-    Converts pandas dataframe to json which is compatible with d3Charts.js.
+    Converts pandas dataframe to list of dicts.
     Dataframe index should be chart category and columns represent chart series.
     """
     data_list = []
@@ -57,12 +69,29 @@ def dataframe_to_json(df):
         row_dict['category'] = index
         row_dict['series'] = row.fillna('').to_dict()
         data_list.append(row_dict)
-    return json.dumps(data_list)
+    return data_list
 
 
-def coalesce(x,val):
-    """ Returns given value if x is None. """
-    if x is None or pd.isnull(x):
-        return val
-    else:
-        return x
+def dataframe_to_csv(df,filename):
+    """ Returns Http-response containing csv-file converted from pandas dataframe """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(filename)
+    df.to_csv(response,sep=';',header=True,index=False,encoding='utf-8')
+    return response
+
+
+def dataframe_to_excel(df,filename):
+    """ Returns Http-response containing excel-file converted from pandas dataframe """
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="{}.xlsx"'.format(filename)
+    wb = Workbook()
+    ws = wb.active
+    for r in dataframe_to_rows(df, index=False, header=True):
+        ws.append(r)
+    wb.save(response)
+    return response
+
+def get_required_fields(model):
+    """ Return list of required fields in given Django Model """
+    required_fields = [f.name for f in model._meta.get_fields() if not getattr(f, 'blank', False) is True]
+    return required_fields
