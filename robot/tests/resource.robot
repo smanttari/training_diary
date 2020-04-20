@@ -15,6 +15,7 @@ ${DATABASE}       ${APP_ROOT}/treenit.sqlite3
 ${USERNAME}       test_user
 ${PASSWORD}       top_secret12
 
+
 *** Keywords ***
 Create Test User
     Setup Testdata     ${USERNAME}   ${PASSWORD}  
@@ -22,15 +23,22 @@ Create Test User
 Delete Test User
     Remove Testdata     ${USERNAME}
 
-Open Browser To Login Page
+Open App
     Open Browser    ${URL}accounts/login/   ${BROWSER}
     Maximize Browser Window
     Set Selenium speed  ${DELAY}
     Login Page Should Be Open
 
+Close App
+    Close Browser
+
 Login Page Should Be Open
     Location Should Contain     ${URL}accounts/login/
     Title Should Be             Treenipäiväkirja | Login
+
+Registration Page Should Be Open
+    Location Should Contain     ${URL}register
+    Title Should Be             Treenipäiväkirja | Rekisteröidy
 
 Logout Page Should Be Open
     Location Should Contain     ${URL}accounts/logout/
@@ -62,3 +70,13 @@ Log Out
     Click Link      	nav_user
     Click Link    	    nav_logout
     Logout Page Should Be Open
+
+Delete Account
+    Click Link    	nav_user
+    Click Link    	nav_settings
+    Click Link		btn_delete_profile
+    Click Button	profile_del
+
+Message Should Be "${message}"
+    Element Should Be Visible	message_box
+	Element Text Should Be		message_text		${message}

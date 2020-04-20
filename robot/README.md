@@ -13,5 +13,5 @@ https://sites.google.com/a/chromium.org/chromedriver/home
 ## Running tests
 
 ````
-robot .\tests\test_trainings_table.robot
+robot .\tests
 ````
