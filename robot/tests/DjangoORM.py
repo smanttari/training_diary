@@ -124,7 +124,7 @@ class DjangoORM:
             kalorit = 615,
             tuntuma = 4,
             nousu = 387,
-            kommentti = '',
+            kommentti = 'Ylläs',
             user = testuser
         )
         skiing2 = self.models.Harjoitus.objects.create(

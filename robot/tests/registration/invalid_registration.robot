@@ -21,27 +21,30 @@ Empty Password Verification     testuser7             top_secret         ${EMPTY
 
 *** Keywords ***
 Go To Registration Page
-    Click Link      Rekisteröidy
+    Click Link      id_add_account
 
 Go To Login Page
-    Click Link      KIRJAUDU SISÄÄN
+    Click Link      nav_log_in
 
-User Enters "${user}" To Username Box
+Input Username
+    [Arguments]    ${user}
     Input Text      id_username     ${user}
 
-User Enters "${password}" To Password Box
+Input Password
+    [Arguments]    ${password}
     Input Text      id_password1    ${password} 
 
-User Enters "${password2}" To Password Verification Box
+Input Password Verification
+    [Arguments]    ${password2}
     Input Text      id_password2    ${password2} 
     
-User Clicks Rekisteröidy
+Click Register
     Click Button    id_register
 
 Registration Should Fail
     [Arguments]    ${username}    ${password}   ${password2}
-    User Enters "${username}" To Username Box
-    User Enters "${password}" To Password Box
-    User Enters "${password2}" To Password Verification Box
-    User Clicks Rekisteröidy
+    Input Username  ${username}
+    Input Password  ${password}
+    Input Password Verification     ${password2}
+    Click Register
     Registration Page Should Be Open

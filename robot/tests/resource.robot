@@ -2,7 +2,7 @@
 Documentation     A resource file with reusable keywords and variables.
 Library           SeleniumLibrary
 Library           DatabaseLibrary
-Library           ../libraries/DjangoORM.py    ${APP_ROOT}
+Library           DjangoORM.py    ${APP_ROOT}
 
 
 *** Variables ***

@@ -73,6 +73,11 @@ Toggle Details
     When user toggles details
     Then details table is not visible
 
+Check Format For Duration-column
+    Given trainings page is opened
+    When user search for word "Ylläs"
+    Then duration should be "01:45"
+
 
 *** Keywords ***
 Setup Test Data And Log In
@@ -142,6 +147,9 @@ Comment Should Be "${comment}"
 
 Date Should Be "${date}"
     Table Cell Should Contain    treenit     2       3       ${date}
+
+Duration Should Be "${duration}"
+    Table Cell Should Contain    treenit     2       5       ${duration}
 
 Details Table Is Visible
     Element Should Be Visible       details_table

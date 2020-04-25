@@ -15,14 +15,14 @@ Valid Registration
     And user enters "james.bond@mailbox.com" to email box
     And user enters "top_secret" to password box
     And user enters "top_secret" to password verification box
-    And user clicks Rekisteröidy
+    And user clicks Register
     Then login page should be open
     And message should be "Käyttäjätili luotu."
     
 
 *** Keywords ***
 Registration Page Is Opened
-    Click Link      Rekisteröidy
+    Click Link      id_add_account
 
 User Enters "${user}" To Username Box
     Input Text      id_username     ${user}
@@ -42,7 +42,7 @@ User Enters "${password}" To Password Box
 User Enters "${password}" To Password Verification Box
     Input Text      id_password2    ${password} 
     
-User Clicks Rekisteröidy
+User Clicks Register
     Click Button    id_register
 
 Remove Account
