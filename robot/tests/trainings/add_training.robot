@@ -81,6 +81,7 @@ Sport "${sport}" Is Selected
 
 User Sets Training Date To "${date}"
     Input Text  id_pvm   ${date}  
+    Press Keys  id_pvm   ENTER 
 
 User Sets Time Of Day To AM
     Click Element       radio_vuorokaudenaika_0
