@@ -13,7 +13,7 @@ class DjangoORM:
         sys.path.append(project_root)
 
         # load Django settings for accessing its ORM
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'Treenit.settings'
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'treenit.settings'
         django.setup()
 
         # load Django models
@@ -172,7 +172,7 @@ class DjangoORM:
 
 
 if __name__ == '__main__':
-    orm = DjangoORM('../Treenit')
+    orm = DjangoORM('../treenit')
     try:
         orm.setup_testdata('test_user','top_secret')
     except django.db.utils.IntegrityError:

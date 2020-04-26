@@ -8,7 +8,7 @@ Web application for recording and analyzing trainings.
 
 * Clone repository
 
-* Move to Treenit-folder and install required python libraries
+* Move to treenit-folder and install required python libraries
 
 ````
 pip install -r requirements.txt

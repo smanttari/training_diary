@@ -10,7 +10,7 @@ ${SERVER}         127.0.0.1:8000
 ${BROWSER}        Chrome     
 ${DELAY}          0.1
 ${URL}            http://${SERVER}/treenipaivakirja/
-${APP_ROOT}       ../Treenit
+${APP_ROOT}       ../treenit
 ${DATABASE}       ${APP_ROOT}/treenit.sqlite3
 ${USERNAME}       test_user
 ${PASSWORD}       top_secret12
