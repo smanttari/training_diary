@@ -19,14 +19,29 @@ Adding A New Sport
     And user enters sport name: "Gym"
     And user enters sport group: "Strength"
     And user saves changes
-    Then message should be "Laji tallennettu."
+    Then message should be "Muutokset tallennettu."
+
+Adding A New Sport Without Shorthand Should Fail
+    Given settings page is opened
+    When user goes to sport sheet
+    And user clicks add new
+    And user saves changes
+    Then no messages should exists
+
+Adding A New Sport Without Name Should Fail
+    Given settings page is opened
+    When user goes to sport sheet
+    And user clicks add new
+    And user enters sport shorthand: "X"
+    And user saves changes
+    Then no messages should exists
 
 Editing Sport
     Given settings page is opened
     When user goes to sport sheet
     And user changes sport shorthand in first row to "Gy"
     And user saves changes
-    Then message should be "Laji tallennettu."
+    Then message should be "Muutokset tallennettu."
     And sport shorthand in first row should be "Gy"
 
 Deleting Sport
@@ -34,7 +49,7 @@ Deleting Sport
     When user goes to sport sheet
     And user clicks delete for the first item
     And user saves changes
-    Then message should be "Laji tallennettu."
+    Then message should be "Muutokset tallennettu."
     And table contains one row less than before
 
 Deleting Sport That Is In Use Should Fail

@@ -411,7 +411,7 @@ def settings_view(request):
             if sports_formset.is_valid() and sports_formset.has_changed():
                 try:
                     sports_formset.save()
-                    messages.add_message(request, messages.SUCCESS, 'Laji tallennettu.')
+                    messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
                     return redirect(reverse('settings') + '?page=' + page)
                 except ProtectedError:
                     messages.add_message(request, messages.ERROR, 'Lajia ei voida poistaa, koska siihen on liitetty harjoituksia.')
@@ -422,7 +422,7 @@ def settings_view(request):
             if zones_formset.is_valid() and zones_formset.has_changed():
                 try:
                     zones_formset.save()
-                    messages.add_message(request, messages.SUCCESS, 'Tehoalue tallennettu.')
+                    messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
                     return redirect(reverse('settings') + '?page=' + page)
                 except ProtectedError:
                     messages.add_message(request, messages.ERROR, 'Tehoaluetta ei voida poistaa, koska siihen on liitetty harjoituksia.')
@@ -432,7 +432,7 @@ def settings_view(request):
             seasons_formset = SeasonsFormset(request.POST, request.FILES, instance=current_user)
             if seasons_formset.is_valid() and seasons_formset.has_changed():
                 seasons_formset.save()
-                messages.add_message(request, messages.SUCCESS, 'Harjoituskausi tallennettu.')
+                messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
                 return redirect(reverse('settings') + '?page=' + page)
 
         if 'profile_del' in request.POST:
