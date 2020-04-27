@@ -9,11 +9,11 @@
 
 {% for form in seasons_formset %}
 {% if form.non_field_errors %}
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
+<div id = "message_box" class="alert alert-danger alert-dismissible fade show" role="alert">
   <strong class="text-uppercase mr-1">
     <i class="fas fa-times-circle"></i>
   </strong>
-  {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+  <span id="message_text">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</span>
   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
@@ -253,12 +253,12 @@
 </div>
 
 
-{% if messages or seasons_formset.total_error_count %}
+<!-- {% if messages or seasons_formset.total_error_count %}
 {% for message in messages %}{% endfor %}
 <script> 
   setTimeout(() => $(".alert").alert('close'), 4000)
 </script>
-{% endif %}
+{% endif %} -->
 
 <script type="text/javascript">
 
