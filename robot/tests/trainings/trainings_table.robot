@@ -78,6 +78,13 @@ Check Format For Duration-column
     When user search for word "Ylläs"
     Then duration should be "01:45"
 
+Disabling Rest Days Checkbox
+    Given trainings page is opened
+    When user selects "Running"
+    Then rest days checkbox should be disabled
+    When user selects "Kaikki"-group
+    Then rest days checkbox should be enabled
+
 
 *** Keywords ***
 Setup Test Data And Log In
@@ -156,3 +163,9 @@ Details Table Is Visible
 
 Details Table Is Not Visible
     Element Should Not Be Visible       details_table
+
+Rest Days Checkbox Should Be Disabled
+    Element Should Be Disabled      lepo
+
+Rest Days Checkbox Should Be Enabled
+    Element Should Be Enabled      lepo

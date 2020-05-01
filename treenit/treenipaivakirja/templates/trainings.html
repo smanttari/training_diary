@@ -190,6 +190,13 @@ $.fn.dataTable.ext.search.push(filterByLepo)
 $("#sport").change(function(event){
     event.preventDefault()
     treenitTable.draw()
+    let selectedSport = $("#sport option:selected" ).text()
+    if (selectedSport !== 'Kaikki'){
+        $("#lepo").prop("disabled", true)
+    }
+    else {
+        $("#lepo").prop("disabled", false)
+    }
 })
 
 $("#startdate").change(function(event){
