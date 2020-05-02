@@ -250,7 +250,8 @@ var treenitTable = $('#treenit').DataTable({
     order: [],
     lengthChange: true,
     language: {
-        search: "Etsi:",
+        search: '<i class="fas fa-search"></i>',
+        searchPlaceholder: 'Etsi...',
         lengthMenu: "Näytä _MENU_ per sivu",
         paginate: {previous: "Edellinen", next: "Seuraava",},
         info: "_START_ - _END_ / _TOTAL_",
@@ -301,6 +302,10 @@ var treenitTable = $('#treenit').DataTable({
             render: function () {
                 return '<i class="text-success fas fa-plus-circle" style="cursor: pointer"></i>'
             }
+        },
+        {
+            targets: [-3],
+            className: "comment"  
         },
         { 
             targets: '_all', 
