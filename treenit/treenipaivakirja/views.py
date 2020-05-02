@@ -99,18 +99,25 @@ def trainings_view(request):
         sport = request.POST['sport']
         startdate = request.POST['startdate']
         enddate = request.POST['enddate']
-        startdate_dt = datetime.strptime(startdate,'%d.%m.%Y')
-        enddate_dt = datetime.strptime(enddate,'%d.%m.%Y')
-        trainings_df = tr.trainings_to_df(current_user_id)
-        trainings_df = tr.filter_trainings_df(trainings_df, startdate_dt, enddate_dt, sports, sport)
+        if 'lepo' in request.POST:
+            restdays = True
+        else:
+            restdays = False
+        export_columns = ['Vko','Pvm','Viikonpäivä','Kesto','Laji','Matka (km)','Vauhti (km/h)','Keskisyke','Tuntuma', 'Kommentti'] + zones
+        trainings_df = tr.trainings_to_df(
+            user_id=current_user_id, 
+            columns=export_columns, 
+            startdate=datetime.strptime(startdate,'%d.%m.%Y').strftime('%Y%m%d'), 
+            enddate=datetime.strptime(enddate,'%d.%m.%Y').strftime('%Y%m%d'),
+            sport=sport,
+            restdays=restdays,
+            duration_format='decimal', 
+            date_format='%d.%m.%Y', 
+            asc=True)
 
-        if trainings_df is None:
+        if trainings_df is None or trainings_df.empty:
             messages.add_message(request, messages.ERROR, 'Ei harjoituksia')
         else:
-            columns = ['Vko','Pvm','Viikonpäivä','Kesto (h)','Laji','Matka (km)','Vauhti (km/h)','Vauhti (min/km)','Keskisyke', 'Nousu (m)','Tuntuma', 'Kommentti'] + zones
-            trainings_df = trainings_df[columns]
-            trainings_df = trainings_df.sort_values(by='Pvm', ascending=True)
-            trainings_df['Pvm'] = pd.to_datetime(trainings_df['Pvm']).dt.strftime('%d.%m.%Y')
             try:
                 if 'export_csv' in request.POST:
                     return utils.dataframe_to_csv(trainings_df,'treenit')
@@ -473,11 +480,10 @@ def register(request):
 def trainings_data(request):
     current_user_id = request.user.id
     table_columns = request.POST.getlist('columns[]')
-    trainings_df = tr.trainings_to_df(current_user_id)
+    trainings_df = tr.trainings_to_df(current_user_id, table_columns)
     if trainings_df is None:
         trainings_list = []
     else:
-        trainings_df = trainings_df[table_columns]
         trainings_list = trainings_df.fillna('').values.tolist()
     return JsonResponse({'data': trainings_list})
 

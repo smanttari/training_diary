@@ -9,54 +9,68 @@ from treenipaivakirja.utils import duration_to_string, dataframe_to_dict
 from django.db.models import Min
 
 
-def trainings_to_df(user_id):
+def trainings_to_df(user_id, columns, startdate=None, enddate=None, sport=None, restdays=True, duration_format='str', date_format='%Y-%m-%d', asc=False):
     """
     Fetch training data from database and return cleaned pandas dataframe of it
     """
-    startdate = Harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
-    if startdate is None:
+    if not Harjoitus.objects.filter(user=user_id):
         return None
-    enddate = datetime.now().date().strftime('%Y%m%d')
+
+    if startdate is None:
+        startdate = Harjoitus.objects.filter(user=user_id).aggregate(Min('aika_id'))['aika_id__min']
+    if enddate is None:
+        enddate = datetime.now().date().strftime('%Y%m%d')
+    if sport is None:
+        sport = 'Kaikki'
+    if restdays is True:
+        join_type = 'left'
+    else:
+        join_type = 'inner'
 
     days = Aika.objects.filter(vvvvkkpp__gte = int(startdate),vvvvkkpp__lte = int(enddate)).values_list('pvm','vvvvkkpp','viikonpaiva_lyh','vko')
-    days_df = pd.DataFrame(list(days), columns=['Pvm','vvvvkkpp','Viikonpäivä','Vko'])
+    days_df = pd.DataFrame(days, columns=['Pvm','vvvvkkpp','Viikonpäivä','Vko'])
 
     trainings = Harjoitus.objects.filter(user=user_id).values_list(
-        'id','id','aika_id','kesto','kesto_h','kesto_min','laji__laji_nimi',
-        'laji__laji_ryhma','matka','vauhti_km_h','vauhti_min_km','keskisyke',
-        'tuntuma','kommentti','nousu')
-
-    trainings_df = pd.DataFrame(list(trainings), 
-        columns = ['edit','delete','vvvvkkpp','Kesto (h)','Kesto_h','Kesto_min',
-            'Laji','Lajiryhmä','Matka (km)','Vauhti (km/h)','Vauhti (min/km)',
-            'Keskisyke','Tuntuma','Kommentti','Nousu (m)'])
+        'id','id','aika_id','kesto','kesto_h','kesto_min','laji__laji_nimi','laji__laji_ryhma','matka','vauhti_km_h','keskisyke','tuntuma','kommentti')
+    trainings_df = pd.DataFrame(trainings, columns = [
+        'edit','delete','vvvvkkpp','Kesto','Kesto_h','Kesto_min','Laji','Lajiryhmä','Matka (km)','Vauhti (km/h)','Keskisyke','Tuntuma','Kommentti'])
 
     # cleaning data
     trainings_df['details'] = np.nan
-    trainings_df = days_df.merge(trainings_df, how='left', left_on='vvvvkkpp', right_on='vvvvkkpp')
+    trainings_df = days_df.merge(trainings_df, how=join_type, left_on='vvvvkkpp', right_on='vvvvkkpp')
     trainings_df['Laji'] = trainings_df['Laji'].fillna('Lepo')
     trainings_df.loc[trainings_df['Laji'] != 'Lepo','Lajiryhmä'] = trainings_df.loc[trainings_df['Laji'] != 'Lepo','Lajiryhmä'].fillna('Muut')
-    trainings_df['Pvm'] = pd.to_datetime(trainings_df['Pvm'])
-    trainings_df = trainings_df.sort_values(by='Pvm', ascending=False)
-    trainings_df['Pvm'] = trainings_df['Pvm'].dt.strftime('%Y-%m-%d')
-    trainings_df[['Kesto (h)','Matka (km)','Vauhti (km/h)','Vauhti (min/km)']] = trainings_df[['Kesto (h)','Matka (km)','Vauhti (km/h)','Vauhti (min/km)']].astype(float).round(1)
-    trainings_df['Viikonpäivä'] = trainings_df['Viikonpäivä'].str.capitalize()
-    trainings_df[['delete','edit','Keskisyke','Tuntuma','Nousu (m)']] = trainings_df[['delete','edit','Keskisyke','Tuntuma','Nousu (m)']].fillna(-1).astype(int).astype(str).replace('-1', np.nan)
+    trainings_df['Pvm'] = pd.to_datetime(trainings_df['Pvm']).dt.strftime(date_format)
+    trainings_df['Kesto'] = trainings_df['Kesto'].astype(float).round(2)
+    trainings_df[['Matka (km)','Vauhti (km/h)']] = trainings_df[['Matka (km)','Vauhti (km/h)']].astype(float).round(1)
+    trainings_df[['delete','edit','Keskisyke','Tuntuma']] = trainings_df[['delete','edit','Keskisyke','Tuntuma']].fillna(-1).astype(int).astype(str).replace('-1', np.nan)
     trainings_df['Päivä'] = trainings_df[['Pvm', 'Viikonpäivä']].apply(lambda x: ' '.join(x), axis=1)
-    trainings_df['Kesto'] = trainings_df.apply(lambda row: duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
+    if duration_format == 'str':
+        trainings_df['Kesto'] = trainings_df.apply(lambda row: duration_to_string(row['Kesto_h'], row['Kesto_min']), axis=1)
 
     # calculate duration per zone
-    zones = Teho.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','tehoalue_id__tehoalue','kesto_h','kesto_min')
+    zones = Teho.objects.filter(harjoitus_id__user=user_id).values_list('harjoitus_id','tehoalue_id__tehoalue','kesto','kesto_h','kesto_min')
     if zones:
-        zones_df = pd.DataFrame(list(zones),columns = ['id','teho','kesto_h','kesto_min'])
-        zones_df = zones_df.fillna(np.nan)  #replace None with NaN
+        zones_df = pd.DataFrame(zones,columns = ['id','teho','kesto','kesto_h','kesto_min']).fillna(np.nan)
+        zones_df['kesto'] = zones_df['kesto'].astype(float)
         zones_df = zones_df.groupby(['id','teho']).sum().reset_index()
-        zones_df['kesto'] = zones_df.apply(lambda row: duration_to_string(row['kesto_h'], row['kesto_min']), axis=1)
+        if duration_format == 'str':
+            zones_df['kesto'] = zones_df.apply(lambda row: duration_to_string(row['kesto_h'], row['kesto_min']), axis=1)
         zones_df = zones_df.pivot(index='id', columns='teho', values='kesto')
         zones_df.index = zones_df.index.map(str)
         trainings_df = trainings_df.merge(zones_df, how='left', left_on='edit', right_index=True)
 
-    return trainings_df
+    # filter by sport
+    if sport != 'Kaikki':
+        if sport in sports_to_dict(user_id).keys():
+            trainings_df = trainings_df[trainings_df['Lajiryhmä'] == sport]
+        else:
+            trainings_df = trainings_df[trainings_df['Laji'] == sport]
+
+    # sorting
+    trainings_df = trainings_df.sort_values(by='vvvvkkpp', ascending=asc)
+
+    return trainings_df[columns]
 
 
 def sports_to_dict(user_id):
@@ -87,8 +101,7 @@ def trainings_base_to_df(user_id):
         'laji_id__laji_nimi','laji_id__laji','laji_id__laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke')
     trainings_df = pd.DataFrame(list(trainings_objects), 
         columns = ['id','pvm','kesto','matka','vuosi','kk','kk_nimi','vko',
-            'laji_nimi','laji','laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke'])
-    trainings_df = trainings_df.fillna(np.nan)  #replace None with NaN
+            'laji_nimi','laji','laji_ryhma','vauhti_km_h','vauhti_min_km','keskisyke']).fillna(np.nan)
     trainings_df['vuosi'] = trainings_df['vuosi'].astype(str)
     trainings_df['pvm'] = pd.to_datetime(trainings_df['pvm'])
     trainings_df[['kesto','matka','vauhti_km_h','vauhti_min_km']] = trainings_df[['kesto','matka','vauhti_km_h','vauhti_min_km']].astype(float)
@@ -219,10 +232,9 @@ def hours_per_zone_to_json(trainings_df,user_id):
     if not zones_objects:
         return json.dumps([])
     else:
-        zones_df = pd.DataFrame(list(zones_objects),columns = ['harjoitus_id','vuosi','teho','kesto'])
+        zones_df = pd.DataFrame(list(zones_objects),columns = ['harjoitus_id','vuosi','teho','kesto']).fillna(np.nan)
         zones_df = zones_df.merge(trainings_df[['id','kausi']], how='inner', left_on='harjoitus_id', right_on='id')
         zones_df['kesto'] = zones_df['kesto'].astype(float)
-        zones_df = zones_df.fillna(np.nan)  #replace None with NaN
 
         # count training hours without zone defined
         zones_per_training = zones_df[['harjoitus_id','kesto']].groupby('harjoitus_id').sum()
@@ -274,19 +286,3 @@ def years_to_list(user_id):
 def seasons_to_list(user_id):
     seasons = Kausi.objects.filter(user=user_id).values_list('kausi',flat=True).order_by('-alkupvm')
     return list(seasons)
-
-
-def filter_trainings_df(trainings_df, startdate, enddate, sports, sport):
-    if trainings_df is None:
-        return None
-    startdate = int(startdate.strftime('%Y%m%d'))
-    enddate = int(enddate.strftime('%Y%m%d'))
-    trainings_df = trainings_df[(trainings_df['vvvvkkpp']>=startdate) & (trainings_df['vvvvkkpp']<=enddate)]
-    if sport != 'Kaikki':
-        if sport in sports.keys():
-            trainings_df = trainings_df[trainings_df['Lajiryhmä'] == sport]
-        else:
-            trainings_df = trainings_df[trainings_df['Laji'] == sport]
-    if trainings_df.empty:
-        return None
-    return trainings_df
