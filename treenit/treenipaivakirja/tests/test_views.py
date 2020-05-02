@@ -343,11 +343,11 @@ class ViewTest(TestCase):
         response = self.client.post(reverse('trainings_data'), columns)
         data = response.json()['data']
         data_filtered = [row for row in data if row[3] != 'Lepo']
-        self.assertEqual(data_filtered[0],['', 2, '2020-01-10 Pe', 'Skiing', '00:30', '140', 7.0, '', '8', '', '', '', '5', '5'])
-        self.assertEqual(data_filtered[1],['', 2, '2020-01-08 Ke', 'Skiing', '01:00', '130', 13.0, 13.0, '8', '01:00', '', 'Super good!', '4', '4'])
-        self.assertEqual(data_filtered[2],['', 1, '2020-01-02 To', 'Running', '00:45', '140', 8.0, 10.0, '7', '00:30', '00:15', '', '2', '2'])
-        self.assertEqual(data_filtered[3],['', 51, '2019-12-20 Pe', 'Running', '01:15', '150', 10.0, 8.0, '4', '', '', '', '1', '1'])
-        self.assertEqual(data_filtered[4],['', 2, '2019-01-07 Ma', 'Skiing', '01:45', '140', 20.0, 15.0, '5', '', '', '', '3', '3'])
+        self.assertEqual(data_filtered[0],['', 2, '2020-01-10 PE', 'Skiing', '00:30', '140', 7.0, '', '8', '', '', '', '5', '5'])
+        self.assertEqual(data_filtered[1],['', 2, '2020-01-08 KE', 'Skiing', '01:00', '130', 13.0, 13.0, '8', '01:00', '', 'Super good!', '4', '4'])
+        self.assertEqual(data_filtered[2],['', 1, '2020-01-02 TO', 'Running', '00:45', '140', 8.0, 10.0, '7', '00:30', '00:15', '', '2', '2'])
+        self.assertEqual(data_filtered[3],['', 51, '2019-12-20 PE', 'Running', '01:15', '150', 10.0, 8.0, '4', '', '', '', '1', '1'])
+        self.assertEqual(data_filtered[4],['', 2, '2019-01-07 MA', 'Skiing', '01:45', '140', 20.0, 15.0, '5', '', '', '', '3', '3'])
 
     def test_trainings_data_for_user2(self):
         login = self.client.login(username='user2', password='top_secret2')
@@ -355,7 +355,7 @@ class ViewTest(TestCase):
         response = self.client.post(reverse('trainings_data'), columns)
         data = response.json()['data']
         data_filtered = [row for row in data if row[3] != 'Lepo']
-        self.assertEqual(data_filtered[0],['', 48, '2019-11-28 To', 'Gym', '10:00', '', '', '', '6', '', '6', '6'])
+        self.assertEqual(data_filtered[0],['', 48, '2019-11-28 TO', 'Gym', '10:00', '', '', '', '6', '', '6', '6'])
 
     def test_trainings_details_for_user1(self):
         login = self.client.login(username='user1', password='top_secret1')

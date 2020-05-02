@@ -25,7 +25,7 @@ Filter By Valid Date Range
     Given trainings page is opened
     When user sets startdate to "25.12.2019"
     And user sets enddate to "25.12.2019"
-    Then date should be "2019-12-25 Ke"
+    Then date should be "2019-12-25 KE"
     And table should contain "1 - 1"-rows
 
 Filter By Invalid Date Range
