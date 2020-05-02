@@ -204,11 +204,10 @@ $("#startdate").change(function(event){
     treenitTable.draw()
 })
 
-$("#startdate").keypress(function(event){
-    if (event.which ==13){
-        event.preventDefault()
-        treenitTable.draw()
-        highlightLepoRows()
+$("#startdate").keydown(function(event){
+    if (event.which == 13){
+        $(this).blur()
+        return false
     }   
 })
 
@@ -217,10 +216,11 @@ $("#enddate").change(function(event){
     treenitTable.draw()
 })
 
-$("#enddate").keypress(function(event){
-    if (event.which ==13){
-        event.preventDefault()
-        treenitTable.draw()
+
+$("#enddate").keydown(function(event){
+    if (event.which == 13){
+        $(this).blur()
+        return false
     }   
 })
 
