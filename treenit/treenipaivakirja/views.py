@@ -113,9 +113,9 @@ def trainings_view(request):
         else:
             try:
                 if 'export_csv' in request.POST:
-                    return utils.dataframe_to_csv(trainings_df,'treenit')
+                    return utils.dataframe_to_csv(trainings_df)
                 if 'export_xls' in request.POST:
-                    return utils.dataframe_to_excel(trainings_df,'treenit')
+                    return utils.dataframe_to_excel(trainings_df)
             except Exception as e:
                 messages.add_message(request, messages.ERROR, 'Lataus epäonnistui: {}'.format(str(e)))
 

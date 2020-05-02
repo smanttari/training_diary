@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import numpy as np
 from openpyxl import Workbook
@@ -75,18 +77,20 @@ def dataframe_to_dict(df):
     return data_list
 
 
-def dataframe_to_csv(df,filename):
+def dataframe_to_csv(df):
     """ Returns Http-response containing csv-file converted from pandas dataframe """
+    timestamp = datetime.now().strftime('%Y-%m-%dT%H%M%S')
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(filename)
+    response['Content-Disposition'] = 'attachment; filename="treenit_{}.csv"'.format(timestamp)
     df.to_csv(response,sep=';',header=True,index=False,encoding='utf-8')
     return response
 
 
-def dataframe_to_excel(df,filename):
+def dataframe_to_excel(df):
     """ Returns Http-response containing excel-file converted from pandas dataframe """
+    timestamp = datetime.now().strftime('%Y-%m-%dT%H%M%S')
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="{}.xlsx"'.format(filename)
+    response['Content-Disposition'] = 'attachment; filename="treenit_{}.xlsx"'.format(timestamp)
     wb = Workbook()
     ws = wb.active
     for r in dataframe_to_rows(df, index=False, header=True):
