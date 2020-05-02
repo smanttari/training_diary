@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
 import json
+import datetime
 
 from django.test import TestCase
 
-from treenipaivakirja.utils import duration_to_string, duration_to_decimal, speed_min_per_km, dataframe_to_dict, coalesce
+from treenipaivakirja.utils import duration_to_string, duration_to_decimal, speed_min_per_km, dataframe_to_dict, coalesce, week_number
 
 
 class DurationToStringTest(TestCase):
@@ -135,3 +136,21 @@ class CoalesceTest(TestCase):
         x = 'koira'
         val = 'kissa'
         self.assertEqual(coalesce(x,val),'koira')
+
+
+class WeekNumberTest(TestCase):
+    def test_february(self):
+        day = datetime.date(2020,2,1)
+        self.assertEqual(week_number(day),5)
+
+    def test_december_week_1(self):
+        day = datetime.date(2019,12,31)
+        self.assertEqual(week_number(day),52)
+
+    def test_january_week_52(self):
+        day = datetime.date(2017,1,1)
+        self.assertEqual(week_number(day),1)
+
+    def test_january_week_53(self):
+        day = datetime.date(2016,1,1)
+        self.assertEqual(week_number(day),1)

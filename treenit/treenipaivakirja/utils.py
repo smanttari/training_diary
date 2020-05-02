@@ -94,7 +94,23 @@ def dataframe_to_excel(df,filename):
     wb.save(response)
     return response
 
+
 def get_required_fields(model):
     """ Return list of required fields in given Django Model """
     required_fields = [f.name for f in model._meta.get_fields() if not getattr(f, 'blank', False) is True]
     return required_fields
+
+
+def week_number(day):
+    """ 
+    Returns week number of the given day. 
+    If January and week number is 52 or 53 then returning 1. 
+    If December and week number is 1 then returning 52.
+    """
+    week = int(day.strftime("%V"))
+    month = int(day.strftime("%m"))
+    if week in [52,53] and month == 1:
+        week = 1
+    elif week == 1 and month == 12:
+        week = 52
+    return week

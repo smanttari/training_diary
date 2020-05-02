@@ -35,8 +35,7 @@ def index(request):
     current_user_id = request.user.id
     current_day = datetime.now().date()
     current_year = current_day.year
-    current_week = int(current_day.strftime("%V"))
-    current_month = int(current_day.strftime("%m"))
+    current_week = utils.week_number(current_day)
     current_day_pd = pd.Timestamp(current_day)
     current_day_minus_14 = pd.Timestamp(current_day_pd - timedelta(days=14))
     current_day_minus_28 = pd.Timestamp(current_day_pd - timedelta(days=28))
@@ -52,11 +51,6 @@ def index(request):
         hours_current_year = cl.hours_year_to_date(current_user_id)
         hours_past_year = cl.hours_past_year_to_date(current_user_id)
         hours_change = hours_current_year - hours_past_year
-
-        if current_week in [52,53] and current_month == 1:
-            current_week = 1
-        elif current_week == 1 and current_month == 12:
-            current_week = 52
 
         total_hours_past_year = cl.total_hours_per_year(current_user_id, current_year-1)
         hours_per_week_current_year = hours_current_year / current_week
@@ -86,8 +80,7 @@ def trainings_view(request):
     """
     current_user_id = request.user.id
     current_day = datetime.now().date()
-    first_day = cl.first_training_date(current_user_id)
-    startdate = utils.coalesce(first_day,current_day).strftime('%d.%m.%Y')
+    startdate = utils.coalesce(cl.first_training_date(current_user_id),current_day).strftime('%d.%m.%Y')
     enddate = current_day.strftime('%d.%m.%Y') 
     sports = tr.sports_to_dict(current_user_id)
     sport = 'Kaikki'
