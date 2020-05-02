@@ -56,6 +56,8 @@ def trainings_to_df(user_id, columns, startdate=None, enddate=None, sport=None, 
         zones_df = zones_df.groupby(['id','teho']).sum().reset_index()
         if duration_format == 'str':
             zones_df['kesto'] = zones_df.apply(lambda row: duration_to_string(row['kesto_h'], row['kesto_min']), axis=1)
+        else:
+            zones_df['kesto'] = zones_df['kesto'].round(2)
         zones_df = zones_df.pivot(index='id', columns='teho', values='kesto')
         zones_df.index = zones_df.index.map(str)
         trainings_df = trainings_df.merge(zones_df, how='left', left_on='edit', right_index=True)

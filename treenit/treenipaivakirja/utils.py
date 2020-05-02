@@ -12,14 +12,17 @@ def duration_to_string(h,mins):
     """
     if (h is None or np.isnan(h)) and (mins is None or np.isnan(mins)):
         return None
+    if mins is None or np.isnan(mins):
+        mins = '00'
+    elif mins >= 60:
+        h = coalesce(h,0) + int(mins/60)
+        mins = '0{}'.format(int(mins % 60))[-2:]
+    else:
+        mins = '0{}'.format(int(mins))[-2:]
     if h is None or np.isnan(h):
         h = '00'
     else:
         h = '0{}'.format(int(h))[-2:]
-    if mins is None or np.isnan(mins):
-        mins = '00'
-    else:
-        mins = '0{}'.format(int(mins))[-2:]
     return '{}:{}'.format(h,mins)
 
 

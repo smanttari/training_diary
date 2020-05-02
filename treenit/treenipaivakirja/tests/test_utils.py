@@ -38,6 +38,16 @@ class DurationToStringTest(TestCase):
         mins = 1.2
         self.assertEqual(duration_to_string(h,mins),'01:01')
 
+    def test_min_greater_than_60(self):
+        h = 1
+        mins = 100
+        self.assertEqual(duration_to_string(h,mins),'02:40')
+
+    def test_min_only_and_greater_than_60(self):
+        h = None
+        mins = 75
+        self.assertEqual(duration_to_string(h,mins),'01:15')
+
 
 class DurationToDecimalTest(TestCase):
     def test_none(self):
