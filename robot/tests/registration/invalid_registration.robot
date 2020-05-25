@@ -30,13 +30,13 @@ Input Username
     [Arguments]    ${user}
     Input Text      id_username     ${user}
 
-Input Password
+Input Pw
     [Arguments]    ${password}
-    Input Text      id_password1    ${password} 
+    Input Password      id_password1    ${password} 
 
-Input Password Verification
+Input Pw Verification
     [Arguments]    ${password2}
-    Input Text      id_password2    ${password2} 
+    Input Password      id_password2    ${password2} 
     
 Click Register
     Click Button    id_register
@@ -44,7 +44,7 @@ Click Register
 Registration Should Fail
     [Arguments]    ${username}    ${password}   ${password2}
     Input Username  ${username}
-    Input Password  ${password}
-    Input Password Verification     ${password2}
+    Input Pw  ${password}
+    Input Pw Verification     ${password2}
     Click Register
     Registration Page Should Be Open

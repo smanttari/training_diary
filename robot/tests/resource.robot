@@ -59,7 +59,7 @@ Settings Page Should Be Open
 Log In 
     [Arguments]    ${user}      ${pass}
     Input Text          id_username    ${user}
-    Input Text          id_password    ${pass}
+    Input Password          id_password    ${pass}
     Click Button        id_login
     Index Page Should Be Open
 

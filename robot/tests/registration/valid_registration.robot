@@ -37,10 +37,10 @@ User Enters "${email}" To Email Box
     Input Text      id_email        ${email}
 
 User Enters "${password}" To Password Box
-    Input Text      id_password1    ${password} 
+    Input Password     id_password1    ${password} 
 
 User Enters "${password}" To Password Verification Box
-    Input Text      id_password2    ${password} 
+    Input Password      id_password2    ${password} 
     
 User Clicks Register
     Click Button    id_register

@@ -41,11 +41,11 @@ Input Old Password
 
 Input New Password
     [Arguments]    ${new_password} 
-    Input Text      id_new_password1    ${new_password} 
+    Input Password      id_new_password1    ${new_password} 
 
 Input Password Verification
     [Arguments]    ${new_password2} 
-    Input Text      id_new_password2    ${new_password2} 
+    Input Password      id_new_password2    ${new_password2} 
 
 Saves Changes
     Click Button        pw_save

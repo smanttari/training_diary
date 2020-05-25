@@ -18,9 +18,9 @@ Input Username
     [Arguments]    ${user}
     Input Text      id_username     ${user}
 
-Input Password
+Input Pw
     [Arguments]    ${password}
-    Input Text      id_password    ${password} 
+    Input Password      id_password    ${password} 
     
 Click Login
     Click Button    id_login
@@ -28,6 +28,6 @@ Click Login
 Login Should Fail
     [Arguments]    ${username}    ${password}
     Input Username  ${username}
-    Input Password  ${password}
+    Input Pw        ${password}
     Click Login
     Login Page Should Be Open

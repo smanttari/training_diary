@@ -31,7 +31,7 @@ User Enters Valid Username
     Input Text      id_username     ${USERNAME}
 
 User Enters Valid Password
-    Input Text      id_password     ${PASSWORD} 
+    Input Password      id_password     ${PASSWORD} 
     
 User Clicks Login
     Click Button    id_login
