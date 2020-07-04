@@ -1,4 +1,4 @@
-# Training Diary #
+# Training App #
 
 Web application for recording and analyzing trainings.
 
@@ -38,10 +38,6 @@ Open web-browser (preferred Chrome) and go to
 http://127.0.0.1:8000/treenipaivakirja/
 ````
 
-Register a new user.
-
-![login](./img/login.png)
-
 ## Features ##
 
 ![features](./img/features.png)
@@ -68,6 +64,6 @@ Register a new user.
 
 ### Personalise settings
 
-* Sports and training zones can be customized to each user
+* Sports, training zones and seasons can be customized to each user
 
 ![settings](./img/settings.png)
