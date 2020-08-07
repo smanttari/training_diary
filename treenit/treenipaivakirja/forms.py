@@ -35,10 +35,11 @@ class HarjoitusForm(forms.ModelForm):
             'kommentti'
             ]
     
-    # filter laji choises dynamically according to current user
-    # https://simpleisbetterthancomplex.com/questions/2017/03/22/how-to-dynamically-filter-modelchoices-queryset-in-a-modelform.html
     def __init__(self, user, *args, **kwargs):
         super(HarjoitusForm, self).__init__(*args, **kwargs)
+        for f in self.visible_fields():
+            if f.name != 'vuorokaudenaika':
+                f.field.widget.attrs['class'] = 'form-control'
         self.fields['laji'].queryset = Laji.objects.filter(user=user)
 
 
@@ -75,6 +76,12 @@ class TehoForm(forms.ModelForm):
             'vauhti_min_km',
             'vauhti_km_h'
             ]
+
+        
+    def __init__(self, *args, **kwargs):
+        super(TehoForm, self).__init__(*args, **kwargs)
+        for f in self.visible_fields():
+            f.field.widget.attrs['class'] = 'form-control'
 
 
 class TehoalueForm(forms.ModelForm):

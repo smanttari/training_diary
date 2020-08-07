@@ -13,157 +13,177 @@
 
     <form method="post">{% csrf_token %}
         <fieldset>
+
+            <div class="row">
+                <div class="col-md-10 border-bottom border-primary ml-3 pl-0 mb-4">
+                    <h5>Perustiedot</h5>
+                </div>
+            </div>
             
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.pvm.label }}</b></label> 
-                <div class="col-md-3">{{ harjoitus_form.pvm|add_class:'form-control' }}</div>
-                {% if harjoitus_form.pvm.errors %}
-                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.pvm.errors %}{{ error }}{% endfor %}</div>
-                {% else %}
-                    <div class="col-md-4 text-muted small">{{ harjoitus_form.pvm.help_text }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group row">
-                <label class="col-md-2 col-xl-1 col-form-label"></label> 
-                <div class="col-md-3">
+                <div class="col-md-2 mb-1">{{ harjoitus_form.pvm }}</div>
+                <div class="col-md-2">
                     {% for radio in harjoitus_form.vuorokaudenaika %}
-                        <div id="radio_vuorokaudenaika_{{ forloop.counter0 }}" class="custom-control custom-radio custom-control-inline">
+                        <div id="radio_vuorokaudenaika_{{ forloop.counter0 }}" class="custom-control custom-radio">
                         {{ radio.tag }}
                         <label class="custom-control-label" for="id_vuorokaudenaika_{{ forloop.counter0 }}">{{ radio.choice_label }}</label>
                         </div>
                     {% endfor %}
                 </div>
+                <div class="col-md-4 text-danger">
+                    {% for error in harjoitus_form.pvm.errors %}{{ error }}{% endfor %}
+                    {% for error in harjoitus_form.vuorokaudenaika.errors %}{{ error }}{% endfor %}
+                </div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.laji.label }}</b></label> 
-                <div class="col-md-2">{{ harjoitus_form.laji|add_class:'form-control' }}</div>
-                <div class="col-md-3 pt-1"><a class="nav-link" href="{% url 'settings' %}?page=sports"><i class="fas fa-plus-circle mr-1"></i>Lisää laji</a></div>
+                <div class="col-md-2">{{ harjoitus_form.laji }}</div>
+                <div class="col-md-2"><a class="nav-link pl-0" href="{% url 'settings' %}?page=sports"><i class="fas fa-plus-circle mr-1"></i>Lisää laji</a></div>
+                <div class="col-md-4 text-danger">
+                    {% if harjoitus_form.laji.errors %}
+                    Lajia {{harjoitus_form.laji.value}} ei löydy.
+                    {% endif %}
+                </div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>Kesto</b></label> 
                 <div class="input-group col-md-3 col-xl-2">
-                    {{ harjoitus_form.kesto_h|add_class:'form-control' }}
-                    {{ harjoitus_form.kesto_min|add_class:'form-control' }}
+                    {{ harjoitus_form.kesto_h }}
+                    {{ harjoitus_form.kesto_min }}
                     <div class="input-group-prepend">
                         <span class="input-group-text">h</span>
                     </div>
                 </div>
+                <div class="col-md-4 text-danger">
+                    {% for error in harjoitus_form.kesto_h.errors %}{{ error }}{% endfor %}
+                    {% for error in harjoitus_form.kesto_min.errors %}{{ error }}{% endfor %}
+                </div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.keskisyke.label }}</b></label> 
-                <div class="col-md-2">{{ harjoitus_form.keskisyke|add_class:'form-control' }}</div>
+                <div class="col-md-2">{{ harjoitus_form.keskisyke }}</div>
+                <div class="col-md-4 text-danger">{% for error in harjoitus_form.keskisyke.errors %}{{ error }}{% endfor %}</div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>Matka</b></label> 
                 <div class="input-group col-md-3 col-xl-2">
-                        {{ harjoitus_form.matka|add_class:'form-control' }}
+                        {{ harjoitus_form.matka }}
                     <div class="input-group-prepend">
                         <span class="input-group-text">km</span>
                     </div>
                 </div>
+                <div class="col-md-4 text-danger">{% for error in harjoitus_form.matka.errors %}{{ error }}{% endfor %}</div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>Vauhti</b></label> 
                 <div class="input-group col-md-3 col-xl-2">
-                        {{ harjoitus_form.vauhti_km_h|add_class:'form-control' }}
+                        {{ harjoitus_form.vauhti_km_h }}
                     <div class="input-group-prepend">
                         <span class="input-group-text">km/h</span>
                     </div>
                 </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-md-2 col-xl-1 col-form-label"><b></b></label> 
+                <label class="col-form-label ml-2 mr-2"><b>tai</b></label> 
                 <div class="input-group col-md-3">
-                        {{ harjoitus_form.vauhti_min|add_class:'form-control' }}
-                        {{ harjoitus_form.vauhti_s|add_class:'form-control' }}
+                        {{ harjoitus_form.vauhti_min }}
+                        {{ harjoitus_form.vauhti_s }}
                     <div class="input-group-prepend">
                         <span class="input-group-text">min/km</span>
                     </div>
                 </div>
+                <div class="col-md-4 text-danger">
+                    <div class="col-md-4 text-danger">{% for error in harjoitus_form.vauhti_km_h.errors %}{{ error }}{% endfor %}</div>
+                    {% for error in harjoitus_form.vauhti_min.errors %}{{ error }}{% endfor %}
+                    {% for error in harjoitus_form.vauhti_s.errors %}{{ error }}{% endfor %}
+                </div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.kalorit.label }}</b></label> 
-                <div class="col-md-2">{{ harjoitus_form.kalorit|add_class:'form-control' }}</div>
+                <div class="col-md-2">{{ harjoitus_form.kalorit }}</div>
+                <div class="col-md-4 text-danger">{% for error in harjoitus_form.kalorit.errors %}{{ error }}{% endfor %}</div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>Nousu</b></label> 
                 <div class="input-group col-md-2">
-                        {{ harjoitus_form.nousu|add_class:'form-control' }}
+                        {{ harjoitus_form.nousu }}
                     <div class="input-group-prepend">
                         <span class="input-group-text">m</span>
                     </div>
                 </div>
+                <div class="col-md-4 text-danger">{% for error in harjoitus_form.nousu.errors %}{{ error }}{% endfor %}</div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.tuntuma.label }}</b></label> 
-                <div class="col-md-2">{{ harjoitus_form.tuntuma|add_class:'form-control' }}</div>
+                <div class="col-md-2">{{ harjoitus_form.tuntuma }}</div>
+                <div class="col-md-4 text-danger">{% for error in harjoitus_form.tuntuma.errors %}{{ error }}{% endfor %}</div>
             </div>
             <div class="form-group row">
                 <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.kommentti.label }}</b></label> 
-                <div class="col-md-4">{{ harjoitus_form.kommentti|add_class:'form-control' }}</div>
+                <div class="col-md-4">{{ harjoitus_form.kommentti }}</div>
+                <div class="col-md-4 text-danger">{% for error in harjoitus_form.kommentti.errors %}{{ error }}{% endfor %}</div>
             </div>       
         
             {{ teho_formset.management_form }}
         
             <div class="row">
-                <div class="col-md-10 border-bottom ml-3 mt-4 mb-3">
+                <div class="col-md-10 border-bottom border-primary ml-3 pl-0 mt-4 mb-4">
                     <h5>Tehot</h5>
                 </div>
             </div>
 
             <div class="d-none d-md-block">
                 <div class="form-row">
-                    <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.nro.label }}</b></div>
-                    <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.tehoalue.label }}</b></div>
-                    <div class="form-group col-md-2 ml-2"><b>Kesto</b></div>
-                    <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.keskisyke.label }}</b></div>
-                    <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.maksimisyke.label }}</b></div>
-                    <div class="form-group col-md-1 ml-2"><b>{{ teho_formset.0.matka.label }} (km)</b></div>
-                    <div class="form-group col-md-2 ml-2"><b>Vauhti</b></div>
+                    <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.nro.label }}</b></div>
+                    <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.tehoalue.label }}</b></div>
+                    <div class="form-group col-md-2 ml-2 mb-1"><b>Kesto</b></div>
+                    <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.keskisyke.label }}</b></div>
+                    <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.maksimisyke.label }}</b></div>
+                    <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.matka.label }} (km)</b></div>
+                    <div class="form-group col-md-2 ml-2 mb-1"><b>Vauhti</b></div>
                 </div>
             </div>
 
             {% for form in teho_formset %}
             <div id="id_{{teho_formset.prefix}}-{{forloop.counter0}}" class="collapse">
                 <div class="form-row pt-1">
-                    <div class="form-group col-md-1 ml-2">
+                    <div class="form-group col-md-1 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.nro.label }}</b></label>
-                        {{ form.nro|add_class:'form-control' }}
+                        {{ form.nro }}
                     </div>
-                    <div class="form-group col-md-1 ml-2">
+                    <div class="form-group col-md-1 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.tehoalue.label }}</b></label>
-                        {{ form.tehoalue|add_class:'form-control' }}
+                        {{ form.tehoalue }}
                     </div>
-                    <div class="form-group col-md-2 ml-2">
+                    <div class="form-group col-md-2 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>Kesto</b></label>
                         <div class="input-group">
-                            {{ form.kesto_h|add_class:'form-control' }}
-                            {{ form.kesto_min|add_class:'form-control' }}
+                            {{ form.kesto_h }}
+                            {{ form.kesto_min }}
                         </div>
                     </div>
-                    <div class="form-group col-md-1 ml-2">
+                    <div class="form-group col-md-1 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.keskisyke.label }}</b></label>
-                        {{ form.keskisyke|add_class:'form-control' }}
+                        {{ form.keskisyke }}
                     </div>
-                    <div class="form-group col-md-1 ml-2">
+                    <div class="form-group col-md-1 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.maksimisyke.label }}</b></label>
-                        {{ form.maksimisyke|add_class:'form-control' }}
+                        {{ form.maksimisyke }}
                     </div>
-                    <div class="form-group col-md-1 ml-2">
+                    <div class="form-group col-md-1 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>{{ teho_formset.0.matka.label }}</b></label>
-                        {{ form.matka|add_class:'form-control' }}
+                        {{ form.matka }}
                     </div>
-                    <div class="form-group col-md-3 ml-2">
+                    <div class="form-group col-md-3 ml-2 mb-2">
                         <label class="d-block d-md-none"><b>Vauhti</b></label>
                         <div class="input-group">
-                                {{ form.vauhti_min|add_class:'form-control' }}
-                                {{ form.vauhti_s|add_class:'form-control' }}
+                                {{ form.vauhti_min }}
+                                {{ form.vauhti_s }}
                             <div class="input-group-prepend">
                                 <span class="input-group-text">min/km</span>
                             </div>
                         </div> 
                     </div>
-                    <div class="form-group col-md-1 ml-2">
+                    <div class="form-group col-md-1 ml-2 mb-2">
                         <button 
                             class="btn btn-link text-decoration-none" 
                             type="button"
@@ -208,7 +228,6 @@ $('#id_pvm').datepicker({
     showOtherMonths: true,
     selectOtherMonths: true,
     weekStartDay: 1,
-    width: 160,
     maxDate: today
 })
 
