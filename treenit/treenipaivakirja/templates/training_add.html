@@ -1,0 +1,66 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Treenipäiväkirja | Lisää harjoitus{% endblock %}
+
+{% block header %}LISÄÄ HARJOITUS{% endblock %}
+
+{% block content %}
+
+<div class="mt-3">
+    <form method="post">{% csrf_token %}
+        <fieldset>
+            <div class="row">
+                <div class="col-md-10 border-bottom border-primary ml-3 pl-0 mb-4">
+                    <h5>Perustiedot</h5>
+                </div>
+            </div>
+            {% include "training_form.html" %}
+            <div class="row">
+                <div class="col-md-10 border-bottom border-primary ml-3 pl-0 mt-4 mb-4">
+                    <h5>Tehot</h5>
+                </div>
+            </div>
+            {% include "zone_form.html" %}
+        </fieldset>
+        <div class="form-actions mt-5">
+            <button type="submit" id="save" name="save" class="btn btn-success mr-3">Tallenna</button>
+            <a id="cancel" class="btn btn-danger" href="{% url 'trainings' %}" role="button">Peruuta</a>
+        </div>
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+$('#id_pvm').datepicker({
+    uiLibrary: 'bootstrap4',
+    calendarWeeks: true,
+    format: 'dd.mm.yyyy',
+    header: true,
+    iconsLibrary: 'fontawesome',
+    showOtherMonths: true,
+    selectOtherMonths: true,
+    weekStartDay: 1,
+    maxDate: today
+})
+
+
+// teho formset
+let prefix = '{{teho_formset.prefix}}'
+let required_fields = '{{required_fields}}'
+
+showForms(prefix, required_fields)
+
+$("#teho_add").click(function() {
+  addForm(prefix, required_fields)
+})
+
+$("button[name$='-del']").click(function() {
+  let id = $(this).attr('name').split('-')[1]
+  deleteForm(prefix, id, required_fields)
+})
+
+</script>
+
+{% endblock %}

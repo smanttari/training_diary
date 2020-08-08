@@ -1,0 +1,68 @@
+{{ teho_formset.management_form }}
+
+<div class="d-none d-md-block">
+    <div class="form-row">
+        <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.nro.label }}</b></div>
+        <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.tehoalue.label }}</b></div>
+        <div class="form-group col-md-2 ml-2 mb-1"><b>Kesto</b></div>
+        <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.keskisyke.label }}</b></div>
+        <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.maksimisyke.label }}</b></div>
+        <div class="form-group col-md-1 ml-2 mb-1"><b>{{ teho_formset.0.matka.label }} (km)</b></div>
+        <div class="form-group col-md-2 ml-2 mb-1"><b>Vauhti</b></div>
+    </div>
+</div>
+
+{% for form in teho_formset %}
+<div id="id_{{teho_formset.prefix}}-{{forloop.counter0}}" class="collapse">
+    <div class="form-row pt-1">
+        <div class="form-group col-md-1 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>{{ teho_formset.0.nro.label }}</b></label>
+            {{ form.nro }}
+        </div>
+        <div class="form-group col-md-1 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>{{ teho_formset.0.tehoalue.label }}</b></label>
+            {{ form.tehoalue }}
+        </div>
+        <div class="form-group col-md-2 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>Kesto</b></label>
+            <div class="input-group">{{ form.kesto_h }}{{ form.kesto_min }}</div>
+        </div>
+        <div class="form-group col-md-1 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>{{ teho_formset.0.keskisyke.label }}</b></label>
+            {{ form.keskisyke }}
+        </div>
+        <div class="form-group col-md-1 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>{{ teho_formset.0.maksimisyke.label }}</b></label>
+            {{ form.maksimisyke }}
+        </div>
+        <div class="form-group col-md-1 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>{{ teho_formset.0.matka.label }}</b></label>
+            {{ form.matka }}
+        </div>
+        <div class="form-group col-md-3 ml-2 mb-2">
+            <label class="d-block d-md-none"><b>Vauhti</b></label>
+            <div class="input-group">
+                {{ form.vauhti_min }}
+                {{ form.vauhti_s }}
+                <div class="input-group-prepend"><span class="input-group-text">min/km</span></div>
+            </div> 
+        </div>
+        <div class="form-group col-md-1 ml-2 mb-2">
+            <button 
+                class="btn btn-link text-decoration-none" 
+                type="button"
+                id="id_{{teho_formset.prefix}}-{{forloop.counter0}}-del" 
+                name="{{teho_formset.prefix}}-{{forloop.counter0}}-del">
+                <i class="far fa-trash-alt"></i> Poista
+            </button> 
+        </div> 
+        <div style="display: none">{{ form.DELETE }}</div>
+        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+    </div>
+    <hr class="d-block d-md-none">
+</div>
+{% endfor %}
+
+<button id="teho_add" type="button" class="btn btn-link text-decoration-none mb-1">
+    <i class="fas fa-plus-circle mr-1"></i>Lisää tehot
+</button>

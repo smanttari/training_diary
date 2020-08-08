@@ -294,10 +294,8 @@ def training_add(request):
         for form in teho_formset:
             form.fields['tehoalue'].queryset = Tehoalue.objects.filter(user=request.user).order_by('jarj_nro')
 
-    return render(request, 'training_form.html',
+    return render(request, 'training_add.html',
         context = {
-            'page_title': 'Treenipäiväkirja | Lisää harjoitus',
-            'page_header': 'LISÄÄ HARJOITUS',
             'teho_formset': teho_formset,
             'harjoitus_form': harjoitus_form,
             'required_fields': required_fields
@@ -327,10 +325,8 @@ def training_modify(request,pk):
         for form in teho_formset:
             form.fields['tehoalue'].queryset = Tehoalue.objects.filter(user=request.user).order_by('jarj_nro')
     
-    return render(request, 'training_form.html',
+    return render(request, 'training_modify.html',
         context = {
-            'page_title': 'Treenipäiväkirja | Muokkaa harjoitusta',
-            'page_header': 'MUOKKAA HARJOITUSTA',
             'teho_formset': teho_formset,
             'harjoitus_form': harjoitus_form,
             'required_fields': required_fields
