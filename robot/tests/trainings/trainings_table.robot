@@ -135,7 +135,7 @@ User Search For Word "${word}"
     Input Text  jquery:.dataTables_filter input     ${word}
 
 User Toggles Details
-    Click Element   xpath://td[@class=" details-control"]
+    Click Element   xpath://td[contains(@class, 'details-control')]
     
 Column Laji Should Contain "${sport}"
     Table Column Should Contain     treenit     4       ${sport}
