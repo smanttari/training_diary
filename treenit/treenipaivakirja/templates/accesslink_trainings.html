@@ -1,0 +1,209 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Treenipäiväkirja | Polar API{% endblock %}
+
+{% block header %}POLAR API{% endblock %}
+{% block secondary-header %}MUOKKAA JA TALLENNA HARJOITUKSIA{% endblock %}
+
+{% block content %}
+
+<div id="validation_alert" class="alert alert-danger fade show" role="alert" hidden>
+    <strong class="text-uppercase mr-1"><i class="fas fa-times-circle"></i></strong>
+    <span id="validation_text">Täytä puuttuvat tiedot. Tarkasta formaatit.</span>
+</div>
+<div id="carousel_trainings" class="carousel slide" data-ride="false">
+    <ol class="carousel-indicators">
+        {% for harjoitus_form in harjoitus_formset %}
+        <li 
+            id="indicator-{{ forloop.counter0 }}" 
+            data-target="#carousel_trainings" 
+            data-slide-to="{{ forloop.counter0 }}" 
+            class="{% if harjoitus_form.errors %}bg-danger{% else %}bg-primary{% endif %}">
+        </li>
+        {% endfor %}
+    </ol>
+    <a class="carousel-control-prev" href="#carousel_trainings" role="button" data-slide="prev">
+        <span><i class="fas fa-chevron-circle-left fa-2x text-primary"></i></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carousel_trainings" role="button" data-slide="next">
+        <span><i class="fas fa-chevron-circle-right fa-2x text-primary"></i></span>
+        <span class="sr-only">Next</span>
+    </a>
+    <div class="carousel-inner border bg-light pt-5 pr-4 pl-4 pb-3">
+        <form method="post" id="trainings_form" novalidate>{% csrf_token %}
+            {{ harjoitus_formset.management_form }}
+            <fieldset>
+            {% for harjoitus_form in harjoitus_formset %}
+                <div class="carousel-item" id="item-{{ forloop.counter0 }}">
+                    <div class="mt-4 pt-4 pb-3 border-top border-bottom border-primary">
+                        <div class="col-md-2 ml-auto text-right">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" 
+                                    id="save-{{ forloop.counter0 }}" name="save-training" 
+                                    {% if not harjoitus_form.DELETE.value %} checked {% endif %}>
+                                <label class="custom-control-label" for="save-{{ forloop.counter0 }}">Tallenna</label>
+                            </div>
+                        </div>
+                        {% include "training_form.html" %}
+                        <div style="display: none">{{ harjoitus_form.DELETE }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+            </fieldset>
+            <div class="form-actions mt-4">
+                <button type="submit" id="save" name="save" class="btn btn-success mr-3">Tallenna valitut</button>
+                <button type="submit" id="discard" name="discard" class="btn btn-danger mr-3">Hylkää kaikki</button>
+                <a id="cancel" class="btn btn-primary" href="{% url 'trainings' %}" role="button">Peruuta</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% if messages %}
+<script> 
+  setTimeout(() => $("#message_box").alert('close'), 5000)
+</script>
+{% endif %}
+
+<script type="text/javascript">
+
+// datepickers
+let today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+$("input[id$='pvm']").each(function(){
+    $(this).datepicker({
+        uiLibrary: 'bootstrap4',
+        calendarWeeks: true,
+        format: 'dd.mm.yyyy',
+        header: true,
+        iconsLibrary: 'fontawesome',
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        weekStartDay: 1,
+        maxDate: today
+    })
+})
+
+
+// events
+let form = document.getElementById('trainings_form')
+
+window.addEventListener('load', function(event) {
+    $("input[name$='DELETE']").each(function() {
+        let id = $(this).attr('id').split('-')[1]
+        if ($(this).prop('checked')){disableForm(id)}  
+    })
+
+    tagRequiredFields('{{required_fields}}')
+    validateForm(form)
+
+    $('.carousel-indicators li').first().addClass('active')
+    $('.carousel-item').first().addClass('active')
+    $('.carousel').carousel('pause')
+})
+
+form.addEventListener('input', function (event) {validateForm(form)})
+
+$('save').click(function() {validateForm(form)})
+
+$("input[name='save-training']").click(function() {
+    let id = $(this).attr('id').split('-')[1]
+    if ($(this).prop('checked')){enableForm(id)}
+    else {disableForm(id)}
+})
+
+
+function validateForm(form){
+    if (form.checkValidity() === false) {
+        event.preventDefault()
+        var invalidFieldIds = listInvalidFieldIds(form)
+        var invalidFormIds = listInvalidFormIds(form)
+        $('#validation_alert').attr('hidden', false)
+        window.scrollTo(0, 0)
+    }
+    else {
+        var invalidFormIds = []
+        var invalidFieldIds = []
+        $('#validation_alert').attr('hidden', true)
+    }
+    tagInvalidForms(invalidFormIds)
+    tagInvalidFields(invalidFieldIds)
+}
+
+
+function listInvalidFieldIds(form){
+    let invalidFieldIds = []
+    let invalid = form.querySelectorAll(':invalid')
+    invalid.forEach(function(item) {
+        invalidFieldIds.push(item.id)
+    })
+    return invalidFieldIds
+}
+
+
+function listInvalidFormIds(form){
+    let invalidFormIds = []
+    let invalid = form.querySelectorAll(':invalid')
+    invalid.forEach(function(item) {
+        let formId = item.id.split('-')[1]
+        if(formId){invalidFormIds.push(formId)}
+    })
+    invalidFormIds = [...new Set(invalidFormIds)]
+    return invalidFormIds
+}
+
+
+function tagInvalidForms(invalidFormIds){
+    $('.carousel-indicators li').each (function() {
+        let id = $(this).attr('id').split('-')[1]
+        if (invalidFormIds.includes(id)) {
+            $(this).removeClass('bg-primary')
+            $(this).addClass('bg-danger')
+        }
+        else {
+            $(this).removeClass('bg-danger')
+            $(this).addClass('bg-primary')
+        }
+    })
+}
+
+
+function tagInvalidFields(invalidFieldIds){
+    $('input, select, textarea').each(function() {
+        if (invalidFieldIds.includes($(this).attr('id'))){
+            $(this).addClass('border border-danger')
+        }
+        else {
+            $(this).removeClass('border border-danger')
+        }
+    })
+}
+
+
+function tagRequiredFields(requiredFields){
+    $('#trainings_form').find('input,select').each (function() {
+        let fieldName = $(this).attr('name').split('-')[2]
+        if (requiredFields.includes(fieldName)){
+            $(this).prop('required', true)
+        }
+    })
+}
+
+
+function enableForm(id){
+    $(`:input[id*=-${id}-]`).prop('disabled',false)
+    $(`#id_form-${id}-DELETE`).prop('checked',false)
+    $(`#item-${id} .gj-datepicker button`).prop('hidden',false)
+}
+
+
+function disableForm(id){
+    $(`:input[id*=-${id}-]`).prop('disabled',true)
+    $(`#id_form-${id}-DELETE`).prop('checked',true).prop('disabled',false)
+    $(`#item-${id} .gj-datepicker button`).prop('hidden',true)  
+}
+
+</script>
+
+{% endblock %}

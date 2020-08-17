@@ -9,9 +9,26 @@
 {% block header %}HARJOITUKSET{% endblock %}
 {% block header-right %}
     <div class="form-inline">
-        <button id="export_csv" name="export_csv" class="btn btn-sm btn-primary mr-2" type="submit" form="filter_form"><i class="fa fa-download mr-2"></i>CSV</button>
-        <button id="export_xls" name="export_xls" class="btn btn-sm btn-primary mr-2" type="submit" form="filter_form"><i class="fa fa-download mr-2"></i>EXCEL</button>
-        <a id="add_new" href="{% url 'training_add' %}" class="btn btn-sm btn-success" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>Lisää uusi</a>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-primary dropdown-toggle mr-2" type="button" id="export" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-download mr-2"></i>LATAA
+            </button>
+            <div class="dropdown-menu">
+                <button id="export_csv" name="export_csv" class="dropdown-item" type="submit" form="filter_form">CSV</a>
+                <button id="export_xls" name="export_xls" class="dropdown-item" type="submit" form="filter_form">EXCEL</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-primary dropdown-toggle mr-2" type="button" id="import" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-upload mr-2"></i>TUO
+            </button>
+            <div class="dropdown-menu">
+                <button id="polar" name="polar" class="dropdown-item" type="submit" form="filter_form">POLAR</a>
+            </div>
+        </div>
+        <div>
+        <a id="add_new" href="{% url 'training_add' %}" class="btn btn-sm btn-success" role="button" aria-pressed="true"><i class="fas fa-plus-circle mr-2"></i>LISÄÄ UUSI</a>
+        </div>
     </div>
 {% endblock %}
 
@@ -58,7 +75,7 @@
                         {% if header == 'details' or header == 'edit' or header == 'delete' %}
                         <th></th>
                         {% else %}
-                        <th class="pl-3 pr-3">{{ header }}</th>
+                        <th class="pl-2 pr-4">{{ header }}</th>
                         {% endif %}
                     {% endfor %}
                     </tr>
@@ -68,7 +85,6 @@
                         {% for header in table_headers %}
                         <th></th>
                         {% endfor %}
-                        
                     </tr>
                 </tfoot>
             </table>
@@ -78,7 +94,6 @@
 </div>
 
 {% if messages %}
-{% for message in messages %}{% endfor %}
 <script> 
   setTimeout(() => $(".alert").alert('close'), 4000)
 </script>

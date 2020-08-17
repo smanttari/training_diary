@@ -18,11 +18,9 @@
     <label class="col-md-2 col-xl-1 col-form-label"><b>{{ harjoitus_form.laji.label }}</b></label> 
     <div class="col-md-2">{{ harjoitus_form.laji }}</div>
     <div class="col-md-2"><a class="nav-link pl-0" href="{% url 'settings' %}?page=sports"><i class="fas fa-plus-circle mr-1"></i>Lisää laji</a></div>
-    <div class="col-md-4 text-danger">
-        {% if harjoitus_form.laji.errors %}
-        Lajia {{harjoitus_form.laji.value}} ei löydy.
-        {% endif %}
-    </div>
+    <div class="col-md-2 text-danger">{% for error in harjoitus_form.laji.errors %}{{ error }}{% endfor %}</div>
+    <label class="col-md-1 col-form-label text-muted">{{ harjoitus_form.polar_sport.label }}</label>
+    <div class="col-md-2">{{ harjoitus_form.polar_sport }}</div>
 </div>
 <div class="form-group row">
     <label class="col-md-2 col-xl-1 col-form-label"><b>Kesto</b></label> 

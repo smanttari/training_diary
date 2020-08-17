@@ -18,6 +18,8 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('settings/', views.settings_view, name='settings'),
     path('register', views.register, name='register'),
+    path('accesslink_callback', views.accesslink_callback, name='accesslink_callback'),
+    path('accesslink_trainings', views.accesslink_trainings, name='accesslink_trainings'),
     path('api/trainings', rest_api.trainings),
     path('api/trainings/<int:pk>', rest_api.trainings_by_id),
     path('api/token', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),

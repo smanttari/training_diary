@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 
 import pandas as pd
 import numpy as np
@@ -16,12 +17,14 @@ from django.db.models.deletion import ProtectedError
 from django.http import JsonResponse
 from django.conf import settings
 from django.urls import reverse
+from django.views.decorators.debug import sensitive_variables
 
-from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi
-from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm
+from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi, PolarUser, PolarSport
+from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm, HarjoitusFormSet
 import treenipaivakirja.utils as utils
 import treenipaivakirja.transformations as tr
 import treenipaivakirja.calculations as cl
+import treenipaivakirja.accesslink as al
 
 
 LOGGER_DEBUG = logging.getLogger(__name__)
@@ -89,6 +92,8 @@ def trainings_view(request):
     table_headers = table_headers[:-3] + zones + table_headers[-3:]
     
     if request.method == "POST":
+        if 'polar' in request.POST:
+            return redirect('accesslink_trainings')
         sport = request.POST['sport']
         startdate = request.POST['startdate']
         enddate = request.POST['enddate']
@@ -354,6 +359,83 @@ def training_delete(request,pk):
             'day': training.pvm,
             'sport': training.laji,
             'duration': training.kesto
+            })
+
+
+@sensitive_variables('access_token')
+@login_required
+def accesslink_callback(request):
+    auth_code = request.GET.get('code')
+    if auth_code is None:
+        messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {}'.format(request.GET.get('error','')))
+        return redirect('trainings')
+    else:
+        token = al.get_access_token(auth_code)
+        if token.status_code != 200:
+            messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {} {}'.format(token.status_code,token.json()['error']))
+            return redirect('trainings')
+        else:
+            polar_user_id = token.json()['x_user_id']
+            access_token = token.json()['access_token']
+            user = al.register_user(access_token, request.user.id)
+            if user.status_code != 200:
+                messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {} {}'.format(user.status_code,user.reason))
+                return redirect('trainings')
+            else:
+                polar_user = PolarUser.objects.create(
+                    polar_user_id = polar_user_id,
+                    access_token = access_token,
+                    registration_date = datetime.strptime(user.json()['registration-date'][:19], '%Y-%m-%dT%H:%M:%S'),
+                    user = User.objects.get(id=request.user.id))
+    return redirect('accesslink_trainings')
+
+
+@sensitive_variables('access_token')
+@login_required
+def accesslink_trainings(request):
+    try:
+        polar_user = PolarUser.objects.get(user=request.user.id)
+    except:
+        params = {'response_type': 'code', 'client_id': settings.ACCESSLINK_CLIENT_KEY}
+        polar_auth_url = f'{settings.ACCESSLINK_AUTH_URL}?{urlencode(params)}'
+        return redirect(polar_auth_url)
+
+    required_fields = utils.get_required_fields(Harjoitus)
+    HarjoitusFormset = formset_factory(form=HarjoitusForm, formset=HarjoitusFormSet, extra=0, can_delete=True)
+
+    if request.method == 'POST':
+        if 'save' in request.POST:
+            harjoitus_formset = HarjoitusFormset(request.POST, form_kwargs={'user': request.user})
+            if harjoitus_formset.is_valid():
+                for form in harjoitus_formset:
+                    if form not in harjoitus_formset.deleted_forms:
+                        PolarSport.objects.update_or_create(
+                            user=request.user, 
+                            polar_sport=form.cleaned_data['polar_sport'],
+                            defaults={'laji': form.cleaned_data['laji']})        
+                        instance = form.save(commit=False)
+                        instance.user = request.user
+                        instance.save()
+                messages.add_message(request, messages.SUCCESS, 'Harjoitukset tallennettu.')
+                al.commit_transaction(request, polar_user)
+                return redirect('trainings')
+            else:
+                messages.add_message(request, messages.ERROR, 'Tallennus epäonnistui. Täytä puuttuvat tiedot. Tarkasta formaatit.')
+        if 'discard' in request.POST:
+            al.commit_transaction(request, polar_user)
+            return redirect('trainings')
+    else: 
+        exercises_list = al.get_exercises(request, polar_user)
+        if exercises_list is None:
+            return redirect('trainings')     
+        form_data = al.parse_exercises(request.user.id, exercises_list)
+        harjoitus_formset = HarjoitusFormset(data=form_data, form_kwargs={'user': request.user})
+        messages.add_message(request, messages.SUCCESS, 'Harjoitusten hakeminen onnistui. Yhteensä {} harjoitusta saatavilla.'.format(len(exercises_list)))
+
+    return render(request, 'accesslink_trainings.html',
+        context = {
+            'harjoitus_formset': harjoitus_formset,
+            'required_fields': required_fields
             })
 
 

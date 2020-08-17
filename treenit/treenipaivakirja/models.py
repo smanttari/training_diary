@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django_cryptography.fields import encrypt
 from treenipaivakirja.utils import coalesce, duration_to_decimal, speed_min_per_km
         
         
@@ -136,3 +137,27 @@ class Kausi(models.Model):
 
     def __str__(self):
         return self.kausi
+
+
+class PolarUser(models.Model):
+    polar_user_id = models.BigIntegerField(primary_key=True)
+    access_token = encrypt(models.CharField(max_length=500, null=True, blank=True))
+    registration_date = models.DateTimeField(null=True, blank=True)
+    latest_exercise_transaction_id = models.BigIntegerField(null=True, blank=True)
+    latest_activity_transaction_id = models.BigIntegerField(null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE) 
+
+    def __str__(self):
+        return str(self.polar_user_id)
+
+
+class PolarSport(models.Model):
+    polar_sport = models.CharField(max_length=100, verbose_name='Polar laji')
+    laji = models.ForeignKey(Laji, on_delete=models.CASCADE, verbose_name='Laji')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.polar_sport)
+
+    class Meta:
+        unique_together = [['polar_sport', 'user']]

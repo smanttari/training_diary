@@ -119,7 +119,7 @@ USE_L10N = True
 
 USE_THOUSAND_SEPARATOR = True
 
-USE_TZ = True
+USE_TZ = False
 
 SHORT_DATETIME_FORMAT = '%d.%m.%Y'
 
@@ -175,3 +175,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+# Polar Accesslink
+ACCESSLINK_URL = 'https://www.polaraccesslink.com/v3'
+ACCESSLINK_AUTH_URL = 'https://flow.polar.com/oauth2/authorization'
+ACCESSLINK_ACCESS_TOKEN_URL = 'https://polarremote.com/v2/oauth2/token'
+ACCESSLINK_CLIENT_KEY = None
+ACCESSLINK_CLIENT_SECRET = None

@@ -140,3 +140,12 @@ class KausiForm(forms.ModelForm):
         if alkupvm and loppupvm:
             if loppupvm < alkupvm:
                 raise forms.ValidationError("Loppupäivä ei voi olla pienempi kuin alkupäivä.")
+
+
+class HarjoitusFormSet(forms.BaseFormSet):
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        form.fields['polar_sport'] = forms.CharField(widget=forms.TextInput(attrs={
+            'class': 'form-control-plaintext text-muted',
+            'readonly':True
+            }))

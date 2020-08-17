@@ -59,3 +59,24 @@ tfoot{
 .main_div {
     margin-top: -30px;
 }
+
+.carousel-control-next{
+    height: 80px;
+    width: 100px;
+}
+
+.carousel-control-prev{
+    height: 80px;
+    width: 100px;
+}
+
+.carousel-indicators{
+    height: 50px;
+    top: 15px;
+}
+
+.carousel-indicators li{
+    width: 15px;
+    height: 15px;
+    border-radius: 100%;
+}
