@@ -26,6 +26,18 @@ python manage.py migrate
 python manage.py loaddata aika.json
 ````
 
+* Create config.ini-file with following variables
+````
+[APP]
+DEBUG = True
+SECRET_KEY = your_secret_key
+
+[ACCESSLINK]
+CLIENT_KEY = 
+CLIENT_SECRET = 
+````
+
+
 ## Getting Started ##
 
 Start program by running following command

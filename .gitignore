@@ -10,3 +10,4 @@ log.html
 report.html
 selenium-screenshot-*.png
 output.xml
+*.ini
