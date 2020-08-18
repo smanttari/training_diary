@@ -25,10 +25,16 @@ config.read(os.path.join(BASE_DIR, 'config.ini'))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config['APP']['SECRET_KEY']
+try:
+    SECRET_KEY = config['APP']['SECRET_KEY']
+except KeyError:
+    SECRET_KEY = 'secret'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config['APP']['DEBUG']
+try:
+    DEBUG = config['APP']['DEBUG']
+except KeyError:
+    DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -185,5 +191,9 @@ REST_FRAMEWORK = {
 ACCESSLINK_URL = 'https://www.polaraccesslink.com/v3'
 ACCESSLINK_AUTH_URL = 'https://flow.polar.com/oauth2/authorization'
 ACCESSLINK_ACCESS_TOKEN_URL = 'https://polarremote.com/v2/oauth2/token'
-ACCESSLINK_CLIENT_KEY = config['ACCESSLINK']['CLIENT_KEY']
-ACCESSLINK_CLIENT_SECRET = config['ACCESSLINK']['CLIENT_SECRET']
+try:
+    ACCESSLINK_CLIENT_KEY = config['ACCESSLINK']['CLIENT_KEY']
+    ACCESSLINK_CLIENT_SECRET = config['ACCESSLINK']['CLIENT_SECRET']
+except KeyError:
+    ACCESSLINK_CLIENT_KEY = None
+    ACCESSLINK_CLIENT_SECRET = None
