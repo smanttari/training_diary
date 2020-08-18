@@ -35,7 +35,7 @@ def index(request):
     """ 
     Front page 
     """
-    current_user_id = request.user.id
+    user_id = request.user.id
     current_day = datetime.now().date()
     current_year = current_day.year
     current_week = utils.week_number(current_day)
@@ -43,7 +43,7 @@ def index(request):
     current_day_minus_14 = pd.Timestamp(current_day_pd - timedelta(days=14))
     current_day_minus_28 = pd.Timestamp(current_day_pd - timedelta(days=28))
 
-    if not Harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=user_id):
         hours_current_year = 0
         hours_change = 0
         hours_per_week_current_year = 0
@@ -51,17 +51,17 @@ def index(request):
         feeling_current_period = 0
         feeling_change = 0
     else:
-        hours_current_year = cl.hours_year_to_date(current_user_id)
-        hours_past_year = cl.hours_past_year_to_date(current_user_id)
+        hours_current_year = cl.hours_year_to_date(user_id)
+        hours_past_year = cl.hours_past_year_to_date(user_id)
         hours_change = hours_current_year - hours_past_year
 
-        total_hours_past_year = cl.total_hours_per_year(current_user_id, current_year-1)
+        total_hours_past_year = cl.total_hours_per_year(user_id, current_year-1)
         hours_per_week_current_year = hours_current_year / current_week
         hours_per_week_past_year = total_hours_past_year / 52
         hours_per_week_change = hours_per_week_current_year - hours_per_week_past_year
 
-        feeling_current_period = cl.avg_feeling_per_period(current_user_id,current_day_minus_14,current_day)
-        feeling_last_period = cl.avg_feeling_per_period(current_user_id,current_day_minus_28,current_day_minus_14)
+        feeling_current_period = cl.avg_feeling_per_period(user_id,current_day_minus_14,current_day)
+        feeling_last_period = cl.avg_feeling_per_period(user_id,current_day_minus_28,current_day_minus_14)
         feeling_change = feeling_current_period - feeling_last_period
 
     return render(request,'index.html',
@@ -81,13 +81,13 @@ def trainings_view(request):
     """ 
     List of trainings 
     """
-    current_user_id = request.user.id
+    user_id = request.user.id
     current_day = datetime.now().date()
-    startdate = utils.coalesce(cl.first_training_date(current_user_id),current_day).strftime('%d.%m.%Y')
+    startdate = utils.coalesce(cl.first_training_date(user_id),current_day).strftime('%d.%m.%Y')
     enddate = current_day.strftime('%d.%m.%Y') 
-    sports = tr.sports_to_dict(current_user_id)
+    sports = tr.sports_to_dict(user_id)
     sport = 'Kaikki'
-    zones = tr.zone_areas_to_list(current_user_id)
+    zones = tr.zone_areas_to_list(user_id)
     table_headers = ['details','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti','edit','delete']
     table_headers = table_headers[:-3] + zones + table_headers[-3:]
     
@@ -103,7 +103,7 @@ def trainings_view(request):
             restdays = False
         export_columns = ['Vko','Pvm','Viikonpäivä','Kesto','Laji','Matka (km)','Vauhti (km/h)','Keskisyke','Tuntuma', 'Kommentti'] + zones
         trainings_df = tr.trainings_to_df(
-            user_id=current_user_id, 
+            user_id=user_id, 
             columns=export_columns, 
             startdate=datetime.strptime(startdate,'%d.%m.%Y').strftime('%Y%m%d'), 
             enddate=datetime.strptime(enddate,'%d.%m.%Y').strftime('%Y%m%d'),
@@ -139,9 +139,9 @@ def reports_amounts(request):
     """ 
     Training amount reports 
     """
-    current_user_id = request.user.id
+    user_id = request.user.id
 
-    if not Harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=user_id):
         years = []
         sport = ''
         sports = []
@@ -154,15 +154,15 @@ def reports_amounts(request):
         hours_per_sport_json = []
         hours_per_sport_group_json = []
     else:
-        trainings_df = tr.trainings_base_to_df(current_user_id)
-        sports = tr.sports_to_list(current_user_id) 
-        years = tr.years_to_list(current_user_id)
+        trainings_df = tr.trainings_base_to_df(user_id)
+        sports = tr.sports_to_list(user_id) 
+        years = tr.years_to_list(user_id)
         sport = sports[0]
         
         trainings_per_season = tr.trainings_per_season_to_df(trainings_df)
         trainings_per_year = tr.trainings_per_year_to_df(trainings_df)
-        trainings_per_month = tr.trainings_per_month_to_df(trainings_df,current_user_id)
-        trainings_per_week = tr.trainings_per_week_to_df(trainings_df,current_user_id)
+        trainings_per_month = tr.trainings_per_month_to_df(trainings_df,user_id)
+        trainings_per_week = tr.trainings_per_week_to_df(trainings_df,user_id)
 
         hours_per_season_json = tr.hours_per_season_to_json(trainings_per_season)
         hours_per_year_json = tr.hours_per_year_to_json(trainings_per_year)
@@ -195,9 +195,9 @@ def reports_sports(request):
     """ 
     Trainings reports per sport
     """
-    current_user_id = request.user.id
+    user_id = request.user.id
 
-    if not Harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=user_id):
         sport = ''
         sports = []
         avg_per_sport = []
@@ -206,9 +206,9 @@ def reports_sports(request):
         hours_per_sport = []
         kilometers_per_sport = []
     else:    
-        sports = tr.sports_to_list(current_user_id) 
+        sports = tr.sports_to_list(user_id) 
         sport = sports[0]
-        trainings_df = tr.trainings_base_to_df(current_user_id)
+        trainings_df = tr.trainings_base_to_df(user_id)
         trainings_per_sport_per_year = tr.trainings_per_sport_to_df(trainings_df, 'vuosi')
         trainings_per_sport_per_season = tr.trainings_per_sport_to_df(trainings_df, 'kausi')
 
@@ -254,16 +254,16 @@ def reports_zones(request):
     """ 
     Trainings reports per zone
     """
-    current_user_id = request.user.id
-    seasons = tr.seasons_to_list(current_user_id)
+    user_id = request.user.id
+    seasons = tr.seasons_to_list(user_id)
     
-    if not Harjoitus.objects.filter(user=current_user_id):
+    if not Harjoitus.objects.filter(user=user_id):
         years = []
         hours_per_zone_json = []
     else:
-        years = tr.years_to_list(current_user_id)
-        trainings_df = tr.trainings_base_to_df(current_user_id)
-        hours_per_zone_json = tr.hours_per_zone_to_json(trainings_df,current_user_id)
+        years = tr.years_to_list(user_id)
+        trainings_df = tr.trainings_base_to_df(user_id)
+        hours_per_zone_json = tr.hours_per_zone_to_json(trainings_df,user_id)
 
     return render(request, 'reports_zones.html',
         context = {
@@ -365,6 +365,9 @@ def training_delete(request,pk):
 @sensitive_variables('access_token')
 @login_required
 def accesslink_callback(request):
+    """
+    Authentication to Polar Accesslink
+    """
     auth_code = request.GET.get('code')
     if auth_code is None:
         messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {}'.format(request.GET.get('error','')))
@@ -393,6 +396,9 @@ def accesslink_callback(request):
 @sensitive_variables('access_token')
 @login_required
 def accesslink_trainings(request):
+    """
+    Fetch training data from Polar Accesslink
+    """
     try:
         polar_user = PolarUser.objects.get(user=request.user.id)
     except:
@@ -444,7 +450,7 @@ def settings_view(request):
     """ 
     Settings page 
     """
-    current_user = request.user
+    user = request.user
 
     SeasonsFormset = inlineformset_factory(User, Kausi, form=KausiForm, extra=1, can_delete=True)
     ZonesFormset = inlineformset_factory(User, Tehoalue, form=TehoalueForm, extra=1, can_delete=True)
@@ -454,11 +460,11 @@ def settings_view(request):
     seasons_required_fields = utils.get_required_fields(Kausi)
     sports_required_fields = utils.get_required_fields(Laji)
     
-    user_form = UserForm(instance=current_user)
-    pw_form = PasswordChangeForm(user=current_user)
-    seasons_formset = SeasonsFormset(instance=current_user)
-    zones_formset = ZonesFormset(instance=current_user)
-    sports_formset = SportsFormset(instance=current_user)
+    user_form = UserForm(instance=user)
+    pw_form = PasswordChangeForm(user=user)
+    seasons_formset = SeasonsFormset(instance=user)
+    zones_formset = ZonesFormset(instance=user)
+    sports_formset = SportsFormset(instance=user)
 
     if request.method == 'GET':
         page = request.GET.get('page','')
@@ -468,7 +474,7 @@ def settings_view(request):
     if request.method == 'POST':
         if 'profile_save' in request.POST:
             page = 'profile'
-            user_form = UserForm(request.POST, instance=current_user)
+            user_form = UserForm(request.POST, instance=user)
             if user_form.is_valid():
                 user_form.save()
                 messages.add_message(request, messages.SUCCESS, 'Profiili tallennettu.')
@@ -476,7 +482,7 @@ def settings_view(request):
 
         if 'pw_save' in request.POST:
             page = 'pw_reset'
-            pw_form = PasswordChangeForm(data=request.POST, user=current_user)
+            pw_form = PasswordChangeForm(data=request.POST, user=user)
             if pw_form.is_valid():
                 pw_form.save()
                 update_session_auth_hash(request, pw_form.user)
@@ -485,7 +491,7 @@ def settings_view(request):
 
         if 'sports_save' in request.POST:
             page = 'sports'
-            sports_formset = SportsFormset(request.POST, request.FILES, instance=current_user)
+            sports_formset = SportsFormset(request.POST, request.FILES, instance=user)
             if sports_formset.is_valid() and sports_formset.has_changed():
                 try:
                     sports_formset.save()
@@ -496,7 +502,7 @@ def settings_view(request):
 
         if 'zones_save' in request.POST:
             page = 'zones'
-            zones_formset = ZonesFormset(request.POST, request.FILES, instance=current_user)
+            zones_formset = ZonesFormset(request.POST, request.FILES, instance=user)
             if zones_formset.is_valid() and zones_formset.has_changed():
                 try:
                     zones_formset.save()
@@ -507,14 +513,14 @@ def settings_view(request):
 
         if 'seasons_save' in request.POST:
             page = 'seasons'
-            seasons_formset = SeasonsFormset(request.POST, request.FILES, instance=current_user)
+            seasons_formset = SeasonsFormset(request.POST, request.FILES, instance=user)
             if seasons_formset.is_valid() and seasons_formset.has_changed():
                 seasons_formset.save()
                 messages.add_message(request, messages.SUCCESS, 'Muutokset tallennettu.')
                 return redirect(reverse('settings') + '?page=' + page)
 
         if 'profile_del' in request.POST:
-            u = User.objects.get(username = current_user)
+            u = User.objects.get(username = user)
             u.delete()
             messages.add_message(request, messages.SUCCESS, 'Profiili poistettu.') 
             return redirect('index')
@@ -549,9 +555,8 @@ def register(request):
 
 @login_required
 def trainings_data(request):
-    current_user_id = request.user.id
     table_columns = request.POST.getlist('columns[]')
-    trainings_df = tr.trainings_to_df(current_user_id, table_columns)
+    trainings_df = tr.trainings_to_df(request.user.id, table_columns)
     if trainings_df is None:
         trainings_list = []
     else:
