@@ -1,0 +1,274 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Treenipäiväkirja | Palautuminen{% endblock %}
+
+{% block header %}PALAUTUMINEN{% endblock %}
+{% block header-right %}
+<div class="dropdown">
+  <button class="btn btn-sm btn-primary dropdown-toggle mr-2" type="button" id="import" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <i class="fa fa-upload mr-2"></i>TUO
+  </button>
+  <div class="dropdown-menu dropdown-menu-right">
+    <a id="polar" href="{% url 'accesslink_recovery' %}" class="dropdown-item">Polar</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="row mb-3">
+  <div class="col">
+    <div class="float-left">
+      <form class="form-inline">
+        <div class="form-group ml-1 mr-1">
+          <label class="text-muted mr-2">Aikaväli:</label>
+          <input class="form-control ml-2" id="startdate" pattern="\d{4}-d{1,2}-\d{1,2}" placeholder="yyyy-mm-dd" required/>
+        </div>
+        <div class="form-group ml-3 mr-1">
+          <label class="text-muted mr-2">-</label>
+          <input class="form-control ml-2" id="enddate" pattern="\d{4}-\d{1,2}-\d{1,2}" placeholder="yyyy-mm-dd" required/>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Uni
+          <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_sleep">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" data-toggle="tab" id="sleep_duration">Kesto</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-toggle="tab" id="sleep_score">Laatu</a>
+            </li>
+          </ul>
+      </h6>
+      <div class="card-body">
+        <div id="chart_sleep"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6 mb-3">
+    <div class="card">
+      <h6 class="card-header text-muted">Leposyke
+        <ul class="nav nav-tabs card-header-tabs float-right" role="tablist" id="nav_recharge">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" data-toggle="tab" id="recharge_hr">Keskisyke</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-toggle="tab" id="recharge_hrv">Sykevälivaihtelu</a>
+          </li>
+        </ul>
+      </h6>
+      <div class="card-body">
+        <div id="chart_recharge"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+<script> 
+  setTimeout(() => $("#message_box").alert('close'), 5000)
+</script>
+{% endif %}
+
+
+<script type="text/javascript">
+
+// activate nav item
+document.getElementById("nav_recovery").classList.add('active')
+
+// enable Bootstrap tooltips
+$(function () {$('[data-toggle="tooltip"]').tooltip()})
+
+// load data
+let startDate = '{{ start_date }}'
+let endDate = '{{ end_date }}'
+let sleepDuration = {{ sleep_duration_json|safe }}
+let sleepScore = {{ sleep_score_json|safe }}
+let rechargeHr = {{ recharge_hr_json|safe }}
+let rechargeHrv = {{ recharge_hrv_json|safe }}
+
+
+// Datepickers
+var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+$('#startdate').datepicker({
+    uiLibrary: 'bootstrap4',
+    calendarWeeks: true,
+    format: 'yyyy-mm-dd',
+    header: true,
+    iconsLibrary: 'fontawesome',
+    showOtherMonths: true,
+    selectOtherMonths: true,
+    weekStartDay: 1,
+    stopPropagation: true,
+    width: 190,
+    value: startDate,
+    maxDate: function () {
+        return $('#enddate').val();
+    }
+})
+$('#enddate').datepicker({
+    uiLibrary: 'bootstrap4',
+    calendarWeeks: true,
+    format: 'yyyy-mm-dd',
+    header: true,
+    iconsLibrary: 'fontawesome',
+    showOtherMonths: true,
+    selectOtherMonths: true,
+    weekStartDay: 1,
+    width: 190,
+    value: endDate,
+    minDate: function () {
+        return $('#startdate').val();
+    }
+})
+
+
+drawSleepDuration()
+drawRechargeHr()
+
+
+// click events
+$('#sleep_duration').click(function() {drawSleepDuration()})
+$('#sleep_score').click(function() {drawSleepScore()})
+$('#recharge_hr').click(function() {drawRechargeHr()})
+$('#recharge_hrv').click(function() {drawRechargeHrv()})
+
+$("#startdate").change(function(event){
+  startDate = $('#startdate').val()
+  drawSleep()
+  drawRecharge()
+})
+
+$("#enddate").change(function(event){
+  endDate = $('#enddate').val()
+  drawSleep()
+  drawRecharge()
+})
+
+
+function filterByDateRange(data){
+  filteredData = data.filter((d) => {
+    return d.category >= Date.parse(startDate) && d.category <= Date.parse(endDate)
+  })
+  return filteredData
+}
+
+
+function drawSleep(){
+  let measure = document.getElementById("nav_sleep").getElementsByClassName("nav-link active")[0].id
+  if (measure == 'sleep_duration'){
+    drawSleepDuration()
+  }
+  else if (measure == 'sleep_score'){
+    drawSleepScore()
+  }
+}
+
+
+function drawRecharge(){
+  let measure = document.getElementById("nav_recharge").getElementsByClassName("nav-link active")[0].id
+  if (measure == 'recharge_hr'){
+    drawRechargeHr()
+  }
+  else if (measure == 'recharge_hrv'){
+    drawRechargeHrv()
+  }
+}
+
+
+function drawSleepDuration(){
+  let div = 'chart_sleep'
+  let data = filterByDateRange(sleepDuration)
+  let options = {
+    type:'line',
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 60, right: 60},
+    xaxis: {font: {size: 11}, orientation: 'skew', ticksCount:10, format:'%Y-%m-%d', date:true},
+    yaxis: {font: {size: 11}},
+    ylabel: {label: 'Kesto (h)', size: 12},
+    colors: ['#536be2'],
+    grid: true,
+    tooltip: true,
+    line: {labels:false},
+    avgLine: {size:12, color: '#fd397a', prefix: "ka ", suffix:"h"},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+
+function drawSleepScore(){
+  let div = 'chart_sleep'
+  let data = filterByDateRange(sleepScore)
+  let options = {
+    type:'line',
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 60, right: 60},
+    xaxis: {font: {size: 11}, orientation: 'skew', ticksCount:10, format:'%Y-%m-%d', date:true},
+    yaxis: {font: {size: 11}},
+    ylabel: {label: 'Score (1-100)', size: 12},
+    colors: ['#536be2'],
+    grid: true,
+    tooltip: true,
+    line: {labels:false},
+    avgLine: {size:12, color: '#fd397a', prefix: "ka "},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+
+function drawRechargeHr(){
+  let div = 'chart_recharge'
+  let data = filterByDateRange(rechargeHr)
+  let options = {
+    type:'line',
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 70, right: 60},
+    xaxis: {font: {size: 11}, orientation: 'skew', ticksCount:10 , format:'%Y-%m-%d', date:true},
+    yaxis: {font: {size: 11}},
+    ylabel: {label: 'Keskisyke', size: 12},
+    colors: ['#536be2'],
+    grid: true,
+    tooltip: true,
+    line: {labels:false},
+    avgLine: {size:12, color: '#fd397a', prefix: "ka "},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+
+function drawRechargeHrv(){
+  let div = 'chart_recharge'
+  let data = filterByDateRange(rechargeHrv)
+  let options = {
+    type:'line',
+    width: 800,
+    height: 400,
+    margin: {top: 40, bottom: 60, left: 70, right: 60},
+    xaxis: {font: {size: 11}, orientation: 'skew', ticksCount:10 , format:'%Y-%m-%d', date:true},
+    yaxis: {font: {size: 11}},
+    ylabel: {label: 'Sykevälivaihtelu', size: 12},
+    colors: ['#536be2'],
+    grid: true,
+    tooltip: true,
+    line: {labels:false},
+    avgLine: {size:12, color: '#fd397a', prefix: "ka "},
+    responsiveness: true
+    }
+    drawComboChart(div,data,options)
+}
+
+</script>
+
+{% endblock %}

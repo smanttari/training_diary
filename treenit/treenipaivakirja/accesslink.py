@@ -5,7 +5,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 
-from treenipaivakirja.models import PolarUser, PolarSport
+from treenipaivakirja.models import PolarUser, PolarSport, PolarSleep, PolarRecharge
 
 
 def get_access_token(auth_code):
@@ -170,8 +170,8 @@ def parse_duration(duration):
     return (h,m)
 
 
-def parse_exercises(user_id, exercises):
-    polar_sports = PolarSport.objects.filter(user=user_id).values_list('polar_sport','laji_id')
+def parse_exercises(polar_user, exercises):
+    polar_sports = PolarSport.objects.filter(polar_user=polar_user.polar_user_id).values_list('polar_sport','laji_id')
     polar_sports = {sport[0]:sport[1] for sport in polar_sports}
     trainings = {
         'form-TOTAL_FORMS': len(exercises),
@@ -190,3 +190,36 @@ def parse_exercises(user_id, exercises):
         trainings[f'form-{i}-vauhti_km_h'] = round(e.get('distance',0)/(duration[0]+duration[1]/60)/1000,1) if e.get('distance',0) != 0 else None
         trainings[f'form-{i}-kalorit'] = e.get('calories')
     return trainings
+
+
+def parse_sleep_data(polar_user, sleep):
+    sleep_objects = []
+    for entry in sleep.json()['nights']:
+        sleep_objects.append(PolarSleep(
+            polar_user = polar_user,
+            date = entry['date'],
+            start_time = datetime.strptime(entry['sleep_start_time'][:19], '%Y-%m-%dT%H:%M:%S'),
+            end_time = datetime.strptime(entry['sleep_end_time'][:19], '%Y-%m-%dT%H:%M:%S'),
+            continuity = entry['continuity'],
+            light_sleep = int(entry['light_sleep'])/3600,
+            deep_sleep = int(entry['deep_sleep'])/3600,
+            rem_sleep = int(entry['rem_sleep'])/3600,
+            sleep_score = entry['sleep_score'],
+            total_interruption_duration = int(entry['total_interruption_duration'])/3600
+        ))
+    for s in sleep_objects:
+        s.duration = (s.end_time - s.start_time).seconds/3600
+    return sleep_objects
+
+
+def parse_recharge_data(polar_user, recharge):
+    recharge_objects = []
+    for entry in recharge.json()['recharges']:
+        recharge_objects.append(PolarRecharge(
+            polar_user = polar_user,
+            date = entry['date'],
+            heart_rate_avg = entry['heart_rate_avg'],
+            heart_rate_variability_avg = entry['heart_rate_variability_avg'],
+            nightly_recharge_status = entry['nightly_recharge_status']
+        ))
+    return recharge_objects

@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from urllib.parse import urlencode
 
 import pandas as pd
@@ -19,7 +19,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.views.decorators.debug import sensitive_variables
 
-from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi, PolarUser, PolarSport
+from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi, PolarUser, PolarSport, PolarSleep, PolarRecharge
 from treenipaivakirja.forms import HarjoitusForm, LajiForm, TehoForm, TehoalueForm, UserForm, RegistrationForm, KausiForm, HarjoitusFormSet
 import treenipaivakirja.utils as utils
 import treenipaivakirja.transformations as tr
@@ -369,6 +369,7 @@ def accesslink_callback(request):
     Authentication to Polar Accesslink
     """
     auth_code = request.GET.get('code')
+    state = request.GET.get('state')
     if auth_code is None:
         messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {}'.format(request.GET.get('error','')))
         return redirect('trainings')
@@ -390,7 +391,10 @@ def accesslink_callback(request):
                     access_token = access_token,
                     registration_date = datetime.strptime(user.json()['registration-date'][:19], '%Y-%m-%dT%H:%M:%S'),
                     user = User.objects.get(id=request.user.id))
-    return redirect('accesslink_trainings')
+    if state == 'trainings':
+        return redirect('accesslink_trainings')
+    else:
+        return redirect('accesslink_recovery')
 
 
 @sensitive_variables('access_token')
@@ -402,7 +406,11 @@ def accesslink_trainings(request):
     try:
         polar_user = PolarUser.objects.get(user=request.user.id)
     except:
-        params = {'response_type': 'code', 'client_id': settings.ACCESSLINK_CLIENT_KEY}
+        params = {
+            'response_type': 'code', 
+            'state': 'trainings',
+            'client_id': settings.ACCESSLINK_CLIENT_KEY
+            }
         polar_auth_url = f'{settings.ACCESSLINK_AUTH_URL}?{urlencode(params)}'
         return redirect(polar_auth_url)
 
@@ -416,7 +424,7 @@ def accesslink_trainings(request):
                 for form in harjoitus_formset:
                     if form not in harjoitus_formset.deleted_forms:
                         PolarSport.objects.update_or_create(
-                            user=request.user, 
+                            polar_user_id=polar_user.polar_user_id, 
                             polar_sport=form.cleaned_data['polar_sport'],
                             defaults={'laji': form.cleaned_data['laji']})        
                         instance = form.save(commit=False)
@@ -434,7 +442,7 @@ def accesslink_trainings(request):
         exercises_list = al.get_exercises(request, polar_user)
         if exercises_list is None:
             return redirect('trainings')     
-        form_data = al.parse_exercises(request.user.id, exercises_list)
+        form_data = al.parse_exercises(polar_user, exercises_list)
         harjoitus_formset = HarjoitusFormset(data=form_data, form_kwargs={'user': request.user})
         messages.add_message(request, messages.SUCCESS, 'Harjoitusten hakeminen onnistui. Yhteensä {} harjoitusta saatavilla.'.format(len(exercises_list)))
 
@@ -443,6 +451,83 @@ def accesslink_trainings(request):
             'harjoitus_formset': harjoitus_formset,
             'required_fields': required_fields
             })
+
+
+@sensitive_variables('access_token')
+@login_required
+def accesslink_recovery(request):
+    """ 
+    Fetch recovery data from Polar Accesslink
+    """
+    try:
+        polar_user = PolarUser.objects.get(user=request.user.id)
+        access_token = polar_user.access_token
+    except:
+        params = {
+            'response_type': 'code', 
+            'state': 'recovery',
+            'client_id': settings.ACCESSLINK_CLIENT_KEY
+            }
+        polar_auth_url = f'{settings.ACCESSLINK_AUTH_URL}?{urlencode(params)}'
+        return redirect(polar_auth_url)
+    
+    sleep = al.list_sleep(access_token)
+    if sleep.status_code != 200:
+        messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {} {}'.format(sleep.status_code,sleep.reason))
+        return redirect('recovery')
+    sleep_objects = al.parse_sleep_data(polar_user, sleep)
+    PolarSleep.objects.bulk_create(sleep_objects, ignore_conflicts=True)
+
+    recharge = al.list_nightly_recharge(access_token)
+    if recharge.status_code != 200:
+        messages.add_message(request, messages.ERROR, 'Polar Accesslink Error: {} {}'.format(recharge.status_code,recharge.reason))
+        return redirect('recovery')
+    recharge_objects = al.parse_recharge_data(polar_user, recharge)
+    PolarRecharge.objects.bulk_create(recharge_objects, ignore_conflicts=True)
+    messages.add_message(request, messages.SUCCESS, 'Datan hakeminen onnistui.')
+    return redirect('recovery')
+
+
+@login_required
+def recovery(request):
+    """ 
+    Recovery data
+    """
+    user_id = request.user.id
+
+    sleep_df = tr.sleep_to_df(user_id)
+    if sleep_df.empty:
+        sleep_duration_json = []
+        sleep_score_json = []
+        sleep_end_date = datetime.now().date()
+    else:
+        sleep_duration_json = tr.sleep_duration_to_json(sleep_df)
+        sleep_score_json = tr.sleep_score_to_json(sleep_df)
+        sleep_end_date = sleep_df['date'].iloc[-1]
+
+    recharge_df = tr.recharge_to_df(user_id)
+    if recharge_df.empty:
+        recharge_hr_json = []
+        recharge_hrv_json = []
+        recharge_end_date = datetime.now().date()
+    else:
+        recharge_hr_json = tr.recharge_hr_to_json(recharge_df)
+        recharge_hrv_json = tr.recharge_hrv_to_json(recharge_df)
+        recharge_end_date = recharge_df['date'].iloc[-1]
+    
+    end_date = max(sleep_end_date, recharge_end_date)
+    start_date = '{}-{}-01'.format(end_date.year, ('0'+str(end_date.month-1))[-2:])
+    end_date = str(end_date)
+
+    return render(request, 'recovery.html', 
+        context = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'sleep_duration_json': sleep_duration_json,
+            'sleep_score_json': sleep_score_json,
+            'recharge_hr_json': recharge_hr_json,
+            'recharge_hrv_json': recharge_hrv_json
+        })
 
 
 @login_required

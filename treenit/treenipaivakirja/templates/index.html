@@ -21,10 +21,10 @@
 
     <hr class="mt-5 mb-4">
 
-    <p class="lead mb-4">Harjoitusvuotesi tähän asti</p>  
-    <div class="card-deck pb-4">
+    <p class="lead mb-4">Yhteenveto harjoitusvuodestasi tähän asti</p>  
+    <div class="card-deck pb-3">
       <div class="card shadow-sm border-0 bg-white rounded">
-        <div class="card-body pr-5 pl-5">
+        <div class="card-body pr-5 pl-5 text-center">
           <h6 class="card-title mb-1">Treenit kuluvana vuonna</h6>
           <ul class="list-inline mb-1">
             <li class="list-inline-item"><h1 class="card-text display-4 text-primary">{{ hours_current_year }}</h1></li>
@@ -44,7 +44,7 @@
         </div>
       </div>
       <div class="card shadow-sm border-0 bg-white rounded">
-        <div class="card-body pr-5 pl-5">
+        <div class="card-body pr-5 pl-5 text-center">
           <h6 class="card-title mb-1">Viikoittainen treenimäärä</h6>
           <ul class="list-inline mb-1">
             <li class="list-inline-item"><h1 class="card-text display-4 text-primary">{{ hours_per_week_current_year }}</h1></li>
@@ -64,7 +64,7 @@
         </div>
       </div>
       <div class="card shadow-sm border-0 bg-white rounded">
-        <div class="card-body pr-5 pl-5">
+        <div class="card-body pr-5 pl-5 text-center">
           <h6 class="card-title mb-1">Treenifiilis keskimäärin</h6>
           <ul class="list-inline mb-1">
               <li class="list-inline-item"><h1 class="card-text display-4 text-primary">{{ feeling_current_period }}</h1></li>
@@ -86,11 +86,11 @@
     </div>
 
     <hr class="mt-5 mb-4">
-    
+
     <p class="lead mb-4">Toiminnallisuudet</p>
     <div class="card-deck pb-4">
       <div class="card shadow-sm border-0 bg-white rounded pb-5">
-        <div class="card-body p-5">
+        <div class="card-body p-4 pt-5 text-center">
           <a id="settings_icon" href="{% url 'settings' %}">
             <i class="fas fa-cog fa-5x"></i>
           </a>
@@ -99,21 +99,30 @@
         </div>
       </div>
       <div class="card shadow-sm border-0 bg-white rounded">
-        <div class="card-body p-5">
+        <div class="card-body p-4 pt-5 text-center">
           <a id="calendar_icon" href="{% url 'trainings' %}">
             <i class="far fa-calendar-alt fa-5x"></i>
           </a>
-          <h5 class="card-title mt-3">Kalenteri</h5>
-          <p class="card-text text-muted">Tarkastele harjoitteluhistoriaasi. Muokkaa yksittäisiä harjoituksiasi tai lisää uusia harjoituksia.</p>
+          <h5 class="card-title mt-3">Harjoituskalenteri</h5>
+          <p class="card-text text-muted">Tarkastele harjoitteluhistoriaasi. Muokkaa tai lisää uusia harjoituksia.</p>
         </div>
       </div>
       <div class="card shadow-sm border-0 bg-white rounded">
-        <div class="card-body p-5">
+        <div class="card-body p-4 pt-5 text-center">
           <a id="chart_icon" href="{% url 'reports_amounts' %}">
             <i class="fas fa-chart-line fa-5x"></i>
           </a>
-          <h5 class="card-title mt-3">Raportit</h5>
+          <h5 class="card-title mt-3">Harjoitusraportit</h5>
           <p class="card-text text-muted">Seuraa harjoitusmäärien ja laadun kehitystä. Huomaa edistyksesi.</p>
+        </div>
+      </div>
+      <div class="card shadow-sm border-0 bg-white rounded pb-5">
+        <div class="card-body p-4 pt-5 text-center">
+          <a id="settings_icon" href="{% url 'recovery' %}">
+            <i class="fas fa-procedures fa-5x"></i>
+          </a>
+          <h5 class="card-title mt-3">Palautuminen</h5>
+          <p class="card-text text-muted">Seuraa palautumistasi. Pidä treenit ja lepo tasapainossa.</p>
         </div>
       </div>
     </div>

@@ -74,6 +74,7 @@ Remove Test Data And Close App
 
 Trainings Form Is Opened
     Click Link      nav_trainings
+    Click Link      nav_trainings_list
     Click Link      add_new
 
 Sport "${sport}" Is Selected

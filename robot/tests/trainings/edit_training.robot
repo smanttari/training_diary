@@ -45,6 +45,7 @@ Remove Test Data And Close App
 
 Trainings Page Is Opened
     Click Link      nav_trainings
+    Click Link      nav_trainings_list
 
 Rest Days Are Toggled Off
     Click Element   restdays  

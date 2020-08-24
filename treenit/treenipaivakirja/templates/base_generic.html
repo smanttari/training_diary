@@ -34,25 +34,29 @@
 <body>
 
 	<nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
-		<a class="navbar-brand ml-1" href="{% url 'index' %}"><img src="{% static 'treenipaivakirja/images/logo-light.svg' %}" width="30" height="30" alt="logo"></a>
+		<a class="navbar-brand ml-1" href="{% url 'index' %}">
+			<img src="{% static 'treenipaivakirja/images/logo-light.svg' %}" height="25" alt="logo">
+			<span class="ml-2">TREENIPÄIVÄKIRJA</span>
+		</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse" id="navbarNav">
 			<ul class="navbar-nav">
-				<li class="nav-item ml-3">
-					<a class="nav-link" id="nav_index" href="{% url 'index' %}">ETUSIVU</a>
-				</li>
-				<li class="nav-item ml-3">
-					<a class="nav-link" id="nav_trainings" href="{% url 'trainings' %}">HARJOITUKSET</a>
-				</li>
 				<li class="nav-item dropdown ml-3">
-					<a class="nav-link dropdown-toggle" id="nav_reports" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">RAPORTIT</a>
-					<div class="dropdown-menu" aria-labelledby="reports">
-						<a class="dropdown-item" id="nav_report_amounts" href="{% url 'reports_amounts' %}">MÄÄRÄT</a>
-						<a class="dropdown-item" id="nav_report_sports" href="{% url 'reports_sports' %}">LAJIT</a>
-						<a class="dropdown-item" id="nav_report_zones" href="{% url 'reports_zones' %}">TEHOT</a>
+					<a class="nav-link dropdown-toggle" id="nav_trainings" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">HARJOITUKSET</a>
+					<div class="dropdown-menu" aria-labelledby="trainings">
+						<h6 class="dropdown-header">HARJOITUKSET</h6>
+						<a class="dropdown-item" id="nav_trainings_list" href="{% url 'trainings' %}">Kalenteri</a>
+						<div class="dropdown-divider"></div>
+						<h6 class="dropdown-header">RAPORTIT</h6>
+						<a class="dropdown-item" id="nav_report_amounts" href="{% url 'reports_amounts' %}">Määrät</a>
+						<a class="dropdown-item" id="nav_report_sports" href="{% url 'reports_sports' %}">Lajit</a>
+						<a class="dropdown-item" id="nav_report_zones" href="{% url 'reports_zones' %}">Tehot</a>
 					</div>
+				</li>
+				<li class="nav-item ml-3">
+					<a class="nav-link" id="nav_recovery" href="{% url 'recovery' %}">PALAUTUMINEN</a>
 				</li>
 			</ul>
 			<ul class="navbar-nav ml-auto">

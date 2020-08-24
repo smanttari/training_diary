@@ -152,12 +152,40 @@ class PolarUser(models.Model):
 
 
 class PolarSport(models.Model):
+    polar_user = models.ForeignKey(PolarUser, on_delete=models.CASCADE)
     polar_sport = models.CharField(max_length=100, verbose_name='Polar laji')
     laji = models.ForeignKey(Laji, on_delete=models.CASCADE, verbose_name='Laji')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.polar_sport)
 
     class Meta:
-        unique_together = [['polar_sport', 'user']]
+        unique_together = [['polar_sport', 'polar_user']]
+
+
+class PolarSleep(models.Model):
+    polar_user = models.ForeignKey(PolarUser, on_delete=models.CASCADE)
+    date = models.DateField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    duration = models.DecimalField(max_digits=4, decimal_places=2)
+    continuity = models.DecimalField(max_digits=2, decimal_places=1)
+    light_sleep = models.DecimalField(max_digits=4, decimal_places=2)
+    deep_sleep = models.DecimalField(max_digits=4, decimal_places=2)
+    rem_sleep = models.DecimalField(max_digits=4, decimal_places=2)
+    sleep_score = models.IntegerField()
+    total_interruption_duration = models.DecimalField(max_digits=4, decimal_places=2)
+
+    class Meta:
+        unique_together = [['polar_user', 'date']]
+
+
+class PolarRecharge(models.Model):
+    polar_user = models.ForeignKey(PolarUser, on_delete=models.CASCADE)
+    date = models.DateField()
+    heart_rate_avg = models.IntegerField()
+    heart_rate_variability_avg = models.IntegerField()
+    nightly_recharge_status = models.IntegerField()
+
+    class Meta:
+        unique_together = [['polar_user', 'date']]

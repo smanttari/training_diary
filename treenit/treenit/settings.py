@@ -34,7 +34,7 @@ except KeyError:
 try:
     DEBUG = config['APP']['DEBUG']
 except KeyError:
-    DEBUG = False
+    DEBUG = True
 
 ALLOWED_HOSTS = []
 

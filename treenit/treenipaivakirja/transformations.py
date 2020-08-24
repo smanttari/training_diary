@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi
+from treenipaivakirja.models import Harjoitus, Aika, Laji, Teho, Tehoalue, Kausi, PolarSleep, PolarRecharge
 from treenipaivakirja.utils import duration_to_string, dataframe_to_dict,coalesce
 from django.db.models import Min
 
@@ -281,3 +281,36 @@ def years_to_list(user_id):
 def seasons_to_list(user_id):
     seasons = Kausi.objects.filter(user=user_id).values_list('kausi',flat=True).order_by('-alkupvm')
     return list(seasons)
+
+
+def sleep_to_df(user_id):
+    sleep = PolarSleep.objects.filter(polar_user_id__user=user_id).values_list('date','duration','sleep_score').order_by('date')
+    sleep_df = pd.DataFrame(sleep, columns = ['date','duration','score'])
+    return sleep_df
+
+
+def sleep_duration_to_json(sleep_df):
+    duration = sleep_df[['date','duration']].rename(columns={'date': 'category', 'duration': 'series'})
+    return duration.to_json(orient='records')
+
+
+def sleep_score_to_json(sleep_df):
+    score = sleep_df[['date','score']].rename(columns={'date': 'category', 'score': 'series'})
+    return score.to_json(orient='records')
+
+
+def recharge_to_df(user_id):
+    recharge = PolarRecharge.objects.filter(polar_user_id__user=user_id).values_list(
+        'date','heart_rate_avg','heart_rate_variability_avg').order_by('date')
+    recharge_df = pd.DataFrame(recharge, columns = ['date','heart_rate_avg','heart_rate_variability_avg'])
+    return recharge_df
+
+
+def recharge_hr_to_json(recharge_df):
+    hr = recharge_df[['date','heart_rate_avg']].rename(columns={'date': 'category', 'heart_rate_avg': 'series'})
+    return hr.to_json(orient='records')
+
+
+def recharge_hrv_to_json(recharge_df):
+    hrv = recharge_df[['date','heart_rate_variability_avg']].rename(columns={'date': 'category', 'heart_rate_variability_avg': 'series'})
+    return hrv.to_json(orient='records')
