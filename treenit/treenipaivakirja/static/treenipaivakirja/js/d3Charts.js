@@ -23,6 +23,7 @@ function drawComboChart(div,dataset,opt){
     let legend = options.legend || false
     let line = options.line || {width: 2, labels: false}
     let margin = options.margin || {top: 50, bottom: 50, left: 50, right: 50}
+    let movingAvg = options.movingAvg || false
     let padding = options.padding || 0.1
     let responsiveness = options.responsiveness || false
     let serietype = options.serietype || false
@@ -177,7 +178,7 @@ function drawComboChart(div,dataset,opt){
 
     let yaxisMin = yaxis.min
     let yaxisMax = yaxis.max
-    if (typeof yaxisMin == 'undefined' || yaxisMin > d3.max(values1, d => +d)) {yaxisMin = d3.min(values1, d => +d) - ((d3.max(values1, d => +d) - d3.min(values1, d => +d)) * 0.1)}
+    if (typeof yaxisMin == 'undefined' || yaxisMin > d3.min(values1, d => +d)) {yaxisMin = d3.min(values1, d => +d) - ((d3.max(values1, d => +d) - d3.min(values1, d => +d)) * 0.1)}
     if (typeof yaxisMax == 'undefined' || yaxisMax < d3.max(values1, d => +d)) {yaxisMax = d3.max(values1, d => +d) + ((d3.max(values1, d => +d) - d3.min(values1, d => +d)) * 0.1)}
 
     let y1Scale = d3.scaleLinear()
@@ -186,7 +187,7 @@ function drawComboChart(div,dataset,opt){
 
     let y2axisMin = y2axis.min
     let y2axisMax = y2axis.max
-    if (typeof y2axisMin == 'undefined' || y2axisMin > d3.max(values2, d => +d)) {y2axisMin = d3.min(values2, d => +d) - ((d3.max(values2, d => +d) - d3.min(values2, d => +d)) * 0.1)}
+    if (typeof y2axisMin == 'undefined' || y2axisMin > d3.min(values2, d => +d)) {y2axisMin = d3.min(values2, d => +d) - ((d3.max(values2, d => +d) - d3.min(values2, d => +d)) * 0.1)}
     if (typeof y2axisMax == 'undefined' || y2axisMax < d3.max(values2, d => +d)) {y2axisMax = d3.max(values2, d => +d) + ((d3.max(values2, d => +d) - d3.min(values2, d => +d)) * 0.1)}
 
     let y2Scale = d3.scaleLinear()
@@ -319,6 +320,12 @@ function drawComboChart(div,dataset,opt){
         if (y2axis){addAvgLine(values2,y2Scale)} 
     }
 
+    // add moving average
+    if (movingAvg){
+        series1.forEach(serie => {addMovingAvg(serie,y1Scale)})
+        if (y2axis) {series2.forEach(serie => {addMovingAvg(serie,y2Scale)})}
+    }
+
     // add mouseenter and mouseleave actions to bars
     svg.selectAll('rect')
         .on('mouseenter', function() { 
@@ -326,14 +333,16 @@ function drawComboChart(div,dataset,opt){
             d3.select(this).style('stroke-width', borderwidth)
 
             if (traceDiff){
-                y = d3.select(this).attr('value')
+                value = parseFloat(d3.select(this).attr('value'))
+                y = parseFloat(d3.select(this).attr('y'))
+                height = parseFloat(d3.select(this).attr('height'))
 
                 svg.append('line')
                     .attr('class','baseline')
                     .attr('x1', margin.left)
-                    .attr('y1', d3.select(this).attr('y'))
+                    .attr('y1', value >= 0 ? y : y + height)
                     .attr('x2', width - margin.right)
-                    .attr('y2', d3.select(this).attr('y'))
+                    .attr('y2', value >= 0 ? y : y + height)
                     .attr('stroke', '#DC3545')
 
                 series.forEach(serie => {
@@ -342,7 +351,7 @@ function drawComboChart(div,dataset,opt){
                         .text(d => {
                             if (d.series[serie] == 0){ return ''}
                             else {
-                                let diff = Math.round((d.series[serie] - y) / y * 100)
+                                let diff = Math.round((d.series[serie] - value) / value * 100)
                                 if (diff > 0) {return '+' + diff + '%'}
                                 else {return diff + '%'}
                             }
@@ -373,9 +382,16 @@ function drawComboChart(div,dataset,opt){
 
         bars.enter().append('rect')
             .attr('x', d => xScale(d.category) + seriesScale(serie))
-            .attr('y', d => {return animation ? yScale(yaxisMin) : yScale(d.series[serie])})
+            .attr('y', d => {
+                if (animation){return yScale(Math.max(0,yaxisMin))}
+                else if (d.series[serie] > 0){return yScale(d.series[serie])}
+                else {return yScale(0)}
+            })
             .attr('width', seriesScale.bandwidth()) 
-            .attr('height', d => {return animation ? 0 : yScale(yaxisMin) - yScale(d.series[serie])})
+            .attr('height', d => {
+                if (animation) {return 0}
+                else {return Math.abs(yScale(Math.max(0,yaxisMin)) - yScale(d.series[serie]))}
+            })
             .attr('fill', colorScale(serie))
             .attr('category', d => d.category)
             .attr('serie', serie)
@@ -387,8 +403,11 @@ function drawComboChart(div,dataset,opt){
                 .transition()
                     .delay(function (d, i) { return i * (animation.delay || 10) })
                     .duration((animation.duration || 500))
-                    .attr('y', d => yScale(d.series[serie]))
-                    .attr('height', d => yScale(yaxisMin) - yScale(d.series[serie]))
+                    .attr('y', d => {
+                        if (d.series[serie] > 0){return yScale(d.series[serie])}
+                        else {return yScale(0)}
+                    })
+                    .attr('height', d => {return Math.abs(yScale(Math.max(0,yaxisMin)) - yScale(d.series[serie]))})
         }
     }
 
@@ -402,7 +421,7 @@ function drawComboChart(div,dataset,opt){
             .attr('class','barlabel')
             .attr('x', d => xScale(d.category) + seriesScale(serie) + seriesScale.bandwidth() / 2 )
             .attr('y', d => yScale(d.series[serie]))
-            .attr('dy', '2em')
+            .attr('dy', d => d.series[serie] >= 0 ? '2em' : '-1em')
             .attr('text-anchor', 'middle')
             .text(d => {return (!bar.labels || d.series[serie] == 0) ? '' : d.series[serie]})
             .style('font-size', bar.labels ? bar.labels.size : 10)
@@ -420,10 +439,7 @@ function drawComboChart(div,dataset,opt){
 
     function addLine(serie,yScale){
         let valueline = d3.line()
-            .x(d => {
-                if (xaxis.date) {return xScale(new Date(d.category))}
-                else {return xScale(d.category) + xScale.bandwidth() / 2}
-            })
+            .x(d => {return xaxis.date ? xScale(new Date(d.category)) : xScale(d.category) + xScale.bandwidth()/2})
             .y(d => yScale(d.series[serie]))
 
         svg.append('g')
@@ -444,10 +460,7 @@ function drawComboChart(div,dataset,opt){
             .enter()
             .append('text')
             .attr('class','linelabel')
-            .attr('x', d => {
-                if (xaxis.date) {return xScale(new Date(d.category))}
-                else {return xScale(d.category) + xScale.bandwidth() / 2}
-            })
+            .attr('x', d => {return xaxis.date ? xScale(new Date(d.category)) : xScale(d.category) + xScale.bandwidth()/2})
             .attr('y', d => yScale(d.series[serie]))
             .attr('dy', '-1em')
             .attr('text-anchor', 'middle')
@@ -535,6 +548,33 @@ function drawComboChart(div,dataset,opt){
             avg.select('text')
                 .transition()
                 .duration(animation.duration * 2|| 1000)
+                .style('opacity', '1')
+        }
+    }
+
+    function addMovingAvg(serie,yScale){
+        let values = data.map(d => d.series[serie])
+        let avgValues = movAvg(values, movingAvg.windowSize || 10)
+        let avgData = data.map((d,i) => {return {'category': d.category, 'movAvg': avgValues[i]}})
+        let line = d3.line()
+            .x(d => {return xaxis.date ? xScale(new Date(d.category)) : xScale(d.category) + xScale.bandwidth()/2})
+            .y(d => yScale(d.movAvg))
+
+        svg.append('g')
+            .attr('class', 'movAvg_' + serie.replace(/[^a-zA-Z0-9-_]/g,'_'))
+            .append('path')
+            .datum(avgData.filter((d) => {return !isNaN(d.movAvg)}))
+            .attr('d', line)
+            .attr('fill', 'none')
+            .style('stroke', movingAvg.color || '#DC3545')
+            .style('stroke-width', line.width || 2)
+            .style('opacity', animation ? '0' : '1')
+
+        if (animation){
+            svg.selectAll('.movAvg_' + serie.replace(/[^a-zA-Z0-9-_]/g,'_'))
+                .select('path')
+                .transition()
+                .duration(animation.duration * 2 || 1000)
                 .style('opacity', '1')
         }
     }
@@ -814,4 +854,26 @@ function addTitles(svg,width,height,centerX,centerY,margin,title,xlabel,ylabel,y
         .style('font-size',y2label.size)
         .style('font-weight', y2label.fontWeight)
         .attr('fill', y2label.color)
+}
+
+
+function movAvg(values, windowSize){
+	movingSum = values.map(function(each, index, array) {
+		let start = index - windowSize + 1
+		let subSet, sum
+		if (start < 0) {
+            return undefined
+        }
+        else {
+            subSet = array.slice(start, index + 1)
+            if (subSet.includes('')){
+                return undefined
+            }
+            else {
+                sum = subSet.reduce((acc,item) => { return acc + item })
+                return sum
+            }
+		}
+	})
+	return movingSum.map((s) => {return s/windowSize})
 }
