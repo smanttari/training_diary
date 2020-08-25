@@ -197,7 +197,7 @@ function drawSleepDuration(){
     grid: true,
     tooltip: true,
     line: {labels:false},
-    avgLine: {size:12, color: '#fd397a', prefix: "ka ", suffix:"h"},
+    movingAvg: {windowSize:7, color: '#fd397a'},
     responsiveness: true
     }
     drawComboChart(div,data,options)
@@ -219,7 +219,7 @@ function drawSleepScore(){
     grid: true,
     tooltip: true,
     line: {labels:false},
-    avgLine: {size:12, color: '#fd397a', prefix: "ka "},
+    movingAvg: {windowSize:7, color: '#fd397a'},
     responsiveness: true
     }
     drawComboChart(div,data,options)
@@ -241,7 +241,7 @@ function drawRechargeHr(){
     grid: true,
     tooltip: true,
     line: {labels:false},
-    avgLine: {size:12, color: '#fd397a', prefix: "ka "},
+    movingAvg: {windowSize:7, color: '#fd397a'},
     responsiveness: true
     }
     drawComboChart(div,data,options)
@@ -263,7 +263,7 @@ function drawRechargeHrv(){
     grid: true,
     tooltip: true,
     line: {labels:false},
-    avgLine: {size:12, color: '#fd397a', prefix: "ka "},
+    movingAvg: {windowSize:7, color: '#fd397a'},
     responsiveness: true
     }
     drawComboChart(div,data,options)
