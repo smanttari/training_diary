@@ -88,8 +88,7 @@ def trainings_view(request):
     sports = tr.sports_to_dict(user_id)
     sport = 'Kaikki'
     zones = tr.zone_areas_to_list(user_id)
-    table_headers = ['details','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma','Kommentti','edit','delete']
-    table_headers = table_headers[:-3] + zones + table_headers[-3:]
+    table_headers = ['details','Vko','Päivä','Laji','Kesto','Keskisyke','Matka (km)','Vauhti (km/h)','Tuntuma'] + zones + ['Kommentti','edit','delete']
     
     if request.method == "POST":
         if 'polar' in request.POST:
@@ -110,8 +109,7 @@ def trainings_view(request):
             sport=sport,
             restdays=restdays,
             duration_format='decimal', 
-            date_format='%d.%m.%Y', 
-            asc=True)
+            date_format='%d.%m.%Y')
 
         if trainings_df is None or trainings_df.empty:
             messages.add_message(request, messages.ERROR, 'Ei harjoituksia')
