@@ -40,7 +40,7 @@ Web application for recording and analyzing trainings. App has direct interface 
 
 * Clone repository
 
-* Move to treenit-folder and install required python libraries
+* Install required python libraries
 
 ````
 pip install -r requirements.txt
@@ -49,13 +49,13 @@ pip install -r requirements.txt
 * Run database migrations
 
 ````
-python manage.py migrate
+python .\treenit\manage.py migrate
 ````
 
 * Import static data
 
 ````
-python manage.py loaddata aika.json
+python .\treenit\manage.py loaddata aika.json
 ````
 
 * Create **config.ini**-file to repository root with following variables (*Accesslink key is needed for interacting with Polar Accesslink API*)
@@ -71,7 +71,7 @@ CLIENT_SECRET =
 
 * Start app by running following command
 ````
-python manage.py runserver
+python .\treenit\manage.py runserver
 ````
 
 * Open web-browser (*preferred Chrome*) and go to
