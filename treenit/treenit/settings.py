@@ -11,30 +11,16 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
-import configparser
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Read configs
-config = configparser.ConfigParser()
-config.read(os.path.join(BASE_DIR, 'config.ini'))
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-try:
-    SECRET_KEY = config['APP']['SECRET_KEY']
-except KeyError:
-    SECRET_KEY = 'secret'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-try:
-    DEBUG = config['APP']['DEBUG']
-except KeyError:
-    DEBUG = True
+DEBUG = os.environ['DEBUG']
+
 
 ALLOWED_HOSTS = []
 
@@ -120,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
-LANGUAGE_CODE = 'fi-FI' #'en-us'
+LANGUAGE_CODE = 'fi-FI'
 
 TIME_ZONE = 'Europe/Helsinki'
 
@@ -192,8 +178,8 @@ ACCESSLINK_URL = 'https://www.polaraccesslink.com/v3'
 ACCESSLINK_AUTH_URL = 'https://flow.polar.com/oauth2/authorization'
 ACCESSLINK_ACCESS_TOKEN_URL = 'https://polarremote.com/v2/oauth2/token'
 try:
-    ACCESSLINK_CLIENT_KEY = config['ACCESSLINK']['CLIENT_KEY']
-    ACCESSLINK_CLIENT_SECRET = config['ACCESSLINK']['CLIENT_SECRET']
+    ACCESSLINK_CLIENT_KEY = os.environ['ACCESSLINK_CLIENT_KEY']
+    ACCESSLINK_CLIENT_SECRET = os.environ['ACCESSLINK_CLIENT_SECRET']
 except KeyError:
     ACCESSLINK_CLIENT_KEY = None
     ACCESSLINK_CLIENT_SECRET = None

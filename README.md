@@ -34,7 +34,7 @@ Web application for recording and analyzing trainings. App has direct interface 
 
 ![settings](./img/settings.png)
 
-## Setting up an development environment ##
+## Setting up the development environment ##
 
 * Install Python 3.6+
 
@@ -58,15 +58,12 @@ python .\treenit\manage.py migrate
 python .\treenit\manage.py loaddata aika.json
 ````
 
-* Create **config.ini**-file to repository root with following variables (*Accesslink key is needed for interacting with Polar Accesslink API*)
+* Set following environment variables (*Accesslink key is needed for interacting with Polar Accesslink API*)
 ````
-[APP]
 DEBUG = True
 SECRET_KEY = your_secret_key
-
-[ACCESSLINK]
-CLIENT_KEY = 
-CLIENT_SECRET = 
+ACCESSLINK_CLIENT_KEY =
+ACCESSLINK_CLIENT_SECRET =
 ````
 
 * Start app by running following command
