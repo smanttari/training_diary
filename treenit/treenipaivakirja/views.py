@@ -514,7 +514,8 @@ def recovery(request):
         recharge_end_date = recharge_df['date'].iloc[-1]
     
     end_date = max(sleep_end_date, recharge_end_date)
-    start_date = '{}-{}-01'.format(end_date.year, ('0'+str(end_date.month-1))[-2:])
+    last_month = end_date.month-1 if end_date.month > 1 else 12
+    start_date = '{}-{}-01'.format(end_date.year, ('0'+str(last_month))[-2:])
     end_date = str(end_date)
 
     return render(request, 'recovery.html', 
